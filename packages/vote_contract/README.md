@@ -108,3 +108,44 @@ Textes adoptés à main levée (ticket #8) :
 - À date égale, l'index place les scrutins publics (numéro décroissant) avant
   les votes à main levée (`id` décroissant) : l'open data ne donne pas
   l'heure.
+
+## Fichier de détail (ticket #6)
+
+Chaque décision de l'index a un fichier `v1/decisions/<id>.json`
+(`decisionDetailPath(id)`, lu par `DecisionDetail`) : la décision telle
+qu'elle figure dans l'index, plus le décompte et le vote par groupe. Le
+fichier ne porte pas d'horodatage : tant que la décision ne change pas, il
+reste identique octet pour octet et le job ne le réécrit pas.
+
+```json
+{
+  "schemaVersion": 1,
+  "source": { "name": "Assemblée nationale — open data", "…": "…" },
+  "decision": { "id": "VTANR5L17V8706", "numero": 8706, "voteMode": "scrutin_public", "…": "mêmes champs que dans l'index" },
+  "count": { "pour": 503, "contre": 0, "abstentions": 67, "nonVotants": 1 },
+  "groups": [
+    {
+      "organeRef": "PO845401",
+      "name": "Rassemblement National",
+      "abbreviation": "RN",
+      "position": "pour",
+      "count": { "pour": 121, "contre": 0, "abstentions": 0, "nonVotants": 0 }
+    }
+  ]
+}
+```
+
+- `count` est absent et `groups` vide pour un texte adopté à main levée.
+- `groups` suit l'ordre de l'open data (du plus grand au plus petit groupe).
+  `name` est le libellé du groupe (organe de type `GP`) dans le jeu de données
+  des acteurs et organes de la législature (AMO20, qui garde aussi les groupes
+  dissous ou renommés) ; « Groupe non identifié » si la référence est
+  inconnue. `abbreviation` (sigle d'usage) est optionnel.
+- `position` : `pour`, `contre`, `abstention` (celle qui a recueilli le plus
+  de voix parmi les membres du groupe), `partage` (égalité) ou `nonVotant`
+  (aucun membre n'a voté). Elle est calculée sur le décompte du groupe : le
+  champ `positionMajoritaire` de l'open data vaut « pour » quand aucun membre
+  n'a voté et contredit le décompte dans environ 5 % des cas. Un groupe dont
+  la position est inconnue d'un lecteur est ignoré.
+- Ajouts rétrocompatibles : l'index n'a pas changé, les anciennes versions de
+  l'app ignorent ces fichiers.

@@ -29,8 +29,10 @@ Le job et l'app dépendent du contrat par chemin relatif (`path: ../packages/vot
 Données publiées dans le bucket :
 
 - `v1/latest.json` : les 50 dernières décisions, de la plus récente à la plus ancienne (format décrit dans `packages/vote_contract/README.md`). Un changement cassant du format publiera sous `v2/`.
+- `v1/decisions/<id>.json` : le détail de chaque décision de l'index (décompte, vote par groupe ; format dans `packages/vote_contract/README.md`). Seuls les fichiers dont le contenu a changé sont réécrits.
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
+- `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
 
