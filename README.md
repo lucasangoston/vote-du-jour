@@ -68,3 +68,27 @@ flutter run --dart-define=DATA_BASE_URL=http://localhost:8765   # autre source (
 ```
 
 Cibles minimales : iOS 17, Android 10 (API 29).
+
+### Hors ligne et rafraîchissement des widgets
+
+- L'app garde le dernier `latest.json` téléchargé (dossier de support de l'app) et l'affiche avant de rafraîchir : sans connexion, la liste montre les dernières données connues.
+- Les widgets se rafraîchissent sans l'app, en téléchargeant eux-mêmes `v1/latest.json` (URL partagée par l'app dans l'espace des widgets, sinon l'URL publique compilée) et en le convertissant au format de l'instantané (`lib/src/home_widget/widget_snapshot.dart`). En cas d'échec, ils gardent l'instantané précédent.
+  - iOS : la timeline WidgetKit (`ios/DecisionWidget/DecisionTimeline.swift`) télécharge au plus une fois par quart d'heure, se recharge au bout d'une heure (dans la limite du budget de WidgetKit) et contient une entrée à minuit pour la date relative.
+  - Android : WorkManager (`DecisionRefreshWorker.kt`), programmé à l'ajout du widget : une tâche toutes les heures avec réseau, et un redessin juste après minuit.
+- Les dates sont relatives (« Aujourd'hui », « Hier », « Il y a 3 jours », puis la date complète), en jours de calendrier dans le fuseau du téléphone, avec les mêmes règles en Dart, Swift et Kotlin.
+
+Vérifier le rafraîchissement sans ouvrir l'app :
+
+```bash
+# Android (build debug) : lancer le worker tout de suite (WorkManager refuse d'avancer la tâche périodique)
+adb shell am broadcast -n com.lucasangoston.votedujour/.widget.DebugRefreshReceiver
+adb shell am broadcast -n com.lucasangoston.votedujour/.widget.DebugRefreshReceiver --ez redraw_only true   # redessin seul (minuit)
+adb shell cmd connectivity airplane-mode enable    # hors ligne : le widget garde l'instantané
+adb logcat -s DecisionFetcher                      # échecs de téléchargement
+adb shell dumpsys jobscheduler | grep -A3 DecisionRefreshWorker   # tâches programmées
+
+# Tests natifs
+(cd android && ./gradlew :app:testDebugUnitTest)
+(cd ios && xcodebuild test -workspace Runner.xcworkspace -scheme Runner -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -only-testing:RunnerTests)
+# + téléchargement réel vers le groupe d'apps : préfixer par TEST_RUNNER_VDJ_NETWORK_TESTS=1
+```

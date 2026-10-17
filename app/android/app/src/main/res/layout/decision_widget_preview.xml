@@ -32,7 +32,7 @@
             android:layout_weight="1"
             android:gravity="end"
             android:text="13 octobre 2026"
-            android:textColor="#FF5E5E5E"
+            android:textColor="@color/decision_widget_secondary"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -42,6 +42,6 @@
         android:layout_marginTop="8dp"
         android:maxLines="4"
         android:text="L'ensemble du projet de loi relatif à la simplification de la vie économique."
-        android:textColor="#FF1B1B1B"
+        android:textColor="@color/decision_widget_primary"
         android:textSize="15sp" />
 </LinearLayout>

@@ -57,4 +57,10 @@ flutter {
 dependencies {
     // Widget d'écran d'accueil (même version que celle exposée par home_widget).
     implementation("androidx.glance:glance-appwidget:1.2.0")
+    // Rafraîchissement du widget sans l'app (même version que celle de home_widget).
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
+
+    testImplementation("junit:junit:4.13.2")
+    // Vraie implémentation d'org.json pour les tests JVM (celle d'Android est un bouchon).
+    testImplementation("org.json:json:20250517")
 }
