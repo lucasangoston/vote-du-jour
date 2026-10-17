@@ -47,6 +47,30 @@ class SnapshotConverterTest {
   }
 
   @Test
+  fun accepte_les_votes_a_main_levee_sans_numero() {
+    val mainLevee =
+        """{"id":"L17-VD234087DEC","voteMode":"main_levee","type":"ensemble",
+        "status":"confirmee","result":"adopte","date":"2026-10-07",
+        "officialTitle":"projet de loi GloBE","sourceUrl":"https://example.test/d""""
+    val index =
+        """{"schemaVersion":1,"decisions":[
+        $mainLevee,"stage":"1re lecture à l'AN"},
+        $mainLevee},
+        ${decision(8717).replace("\"numero\":8717,", "")},
+        ${decision(8718).replace("\"ensemble\",", "\"ensemble\",\"voteMode\":\"inconnu\",")},
+        ${decision(8719).replace("\"numero\":8719,", "\"voteMode\":\"scrutin_public\",\"numero\":8719,")}]}"""
+
+    val decisions = JSONObject(SnapshotConverter.fromIndex(index, savedAt)!!).getJSONArray("decisions")
+
+    assertEquals(3, decisions.length())
+    assertEquals("1re lecture à l'AN · à main levée", decisions.getJSONObject(0).getString("stage"))
+    assertEquals("Projet de loi GloBE", decisions.getJSONObject(0).getString("title"))
+    assertEquals("À main levée", decisions.getJSONObject(1).getString("stage"))
+    // Scrutin public sans numéro et mode inconnu : ignorés.
+    assertEquals("VTANR5L17V8719", decisions.getJSONObject(2).getString("id"))
+  }
+
+  @Test
   fun refuse_une_autre_version_ou_un_index_illisible() {
     assertNull(SnapshotConverter.fromIndex("""{"schemaVersion":2,"decisions":[]}""", savedAt))
     assertNull(SnapshotConverter.fromIndex("pas du json", savedAt))

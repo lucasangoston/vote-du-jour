@@ -1,5 +1,4 @@
 import Foundation
-import WidgetKit
 
 /// Rafraîchissement autonome du widget : la timeline télécharge elle-même
 /// `v1/latest.json`, le convertit en instantané (même format que
@@ -69,6 +68,9 @@ enum SnapshotConverter {
   ]
   private static let statuses: Set<String> = ["provisoire", "confirmee"]
   private static let results: Set<String> = ["adopte", "rejete"]
+  private static let voteModes: Set<String> = ["scrutin_public", "main_levee"]
+  /// Mention du mode de vote (`lib/src/vote_mode_label.dart`).
+  private static let mainLeveeLabel = "à main levée"
 
   /// Instantané JSON, ou `nil` si l'index est illisible ou d'une autre version.
   static func snapshot(fromIndex data: Data, savedAt: Date) -> String? {
@@ -92,9 +94,16 @@ enum SnapshotConverter {
   /// Mêmes règles que `DecisionSummary.tryFromJson` : une décision malformée est
   /// ignorée.
   private static func convert(_ d: [String: Any]) -> [String: Any]? {
+    // `voteMode` absent : scrutin public (index antérieurs au ticket #8) ;
+    // `numero` n'est exigé que pour un scrutin public (absent à main levée).
+    let rawMode = d["voteMode"].flatMap { $0 is NSNull ? nil : $0 }
+    let voteMode = rawMode == nil ? "scrutin_public" : rawMode as? String
+    let numero = d["numero"].flatMap { $0 is NSNull ? nil : $0 }
     guard
+      let voteMode, voteModes.contains(voteMode),
+      numero == nil || numero is Int,
+      numero != nil || voteMode != "scrutin_public",
       let id = d["id"] as? String,
-      d["numero"] is Int,
       let type = d["type"] as? String, types.contains(type),
       let status = d["status"] as? String, statuses.contains(status),
       let result = d["result"] as? String, results.contains(result),
@@ -110,7 +119,15 @@ enum SnapshotConverter {
       "date": date,
       "title": title.prefix(1).uppercased() + title.dropFirst(),
     ]
-    if let stage = optionalString(d["stage"]) { out["stage"] = stage }
+    // Même règle que `WidgetDecision.fromSummary` : la mention « à main levée »
+    // s'ajoute à l'étape, que le widget affiche déjà.
+    let stage = optionalString(d["stage"])
+    if voteMode == "main_levee" {
+      out["stage"] = stage.map { "\($0) · \(mainLeveeLabel)" }
+        ?? mainLeveeLabel.prefix(1).uppercased() + mainLeveeLabel.dropFirst()
+    } else if let stage {
+      out["stage"] = stage
+    }
     return out
   }
 
@@ -128,27 +145,5 @@ enum SnapshotConverter {
       return nil
     }
     return String(format: "%04d-%02d-%02d", parts[0], parts[1], parts[2])
-  }
-}
-
-/// Timeline du widget : une entrée maintenant et une à minuit (la date relative
-/// change), rechargée au bout d'une heure. WidgetKit peut espacer ces
-/// rechargements selon son budget (de l'ordre de 40 à 70 par jour).
-enum DecisionTimeline {
-  static let reloadInterval: TimeInterval = 60 * 60
-
-  static func make(now: Date = .now, calendar: Calendar = .current) async -> Timeline<DecisionEntry> {
-    await DecisionFetcher.refreshIfNeeded(now: now)
-    // Les jours sans séance, l'index publié garde les décisions précédentes :
-    // le widget affiche toujours la dernière.
-    let decision = DecisionSnapshot.load()?.decisions.first
-    var entries = [DecisionEntry(date: now, decision: decision)]
-    if let midnight = calendar.nextDate(
-      after: now, matching: DateComponents(hour: 0, minute: 0, second: 0),
-      matchingPolicy: .nextTime)
-    {
-      entries.append(DecisionEntry(date: midnight, decision: decision))
-    }
-    return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadInterval)))
   }
 }

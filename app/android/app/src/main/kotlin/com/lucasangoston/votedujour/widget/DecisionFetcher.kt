@@ -83,6 +83,11 @@ object SnapshotConverter {
       )
   private val STATUSES = setOf("provisoire", "confirmee")
   private val RESULTS = setOf("adopte", "rejete")
+  private const val SCRUTIN_PUBLIC = "scrutin_public"
+  private const val MAIN_LEVEE = "main_levee"
+
+  /** Mention du mode de vote (`lib/src/vote_mode_label.dart`). */
+  private const val MAIN_LEVEE_LABEL = "à main levée"
 
   /** `null` si l'index est illisible ou d'une autre version de schéma. */
   fun fromIndex(json: String, savedAt: Instant): String? {
@@ -109,8 +114,15 @@ object SnapshotConverter {
   /** Mêmes règles que `DecisionSummary.tryFromJson` : une décision malformée est ignorée. */
   private fun convert(d: JSONObject): JSONObject? {
     val id = d.opt("id") as? String ?: return null
-    val numero = d.opt("numero")
-    if (numero !is Int && numero !is Long) return null
+    // `voteMode` absent : scrutin public (index antérieurs au ticket #8).
+    val voteMode =
+        if (d.isNull("voteMode")) SCRUTIN_PUBLIC
+        else (d.opt("voteMode") as? String)?.takeIf { it == SCRUTIN_PUBLIC || it == MAIN_LEVEE }
+            ?: return null
+    // `numero` n'est exigé que pour un scrutin public (absent à main levée).
+    val numero = if (d.isNull("numero")) null else d.opt("numero")
+    if (numero != null && numero !is Int && numero !is Long) return null
+    if (numero == null && voteMode == SCRUTIN_PUBLIC) return null
     if ((d.opt("type") as? String) !in TYPES || (d.opt("status") as? String) !in STATUSES) {
       return null
     }
@@ -124,7 +136,16 @@ object SnapshotConverter {
     val officialTitle = d.opt("officialTitle") as? String ?: return null
     if (d.opt("sourceUrl") !is String) return null
     val shortTitle = optionalString(d, "shortTitle")
-    val stage = optionalString(d, "stage")
+    // Même règle que `WidgetDecision.fromSummary` : la mention « à main levée »
+    // s'ajoute à l'étape, que le widget affiche déjà.
+    val stage =
+        optionalString(d, "stage").let { stage ->
+          when {
+            voteMode != MAIN_LEVEE -> stage
+            stage != null -> "$stage · $MAIN_LEVEE_LABEL"
+            else -> MAIN_LEVEE_LABEL.replaceFirstChar { it.uppercase() }
+          }
+        }
     val out =
         JSONObject()
             .put("id", id)
