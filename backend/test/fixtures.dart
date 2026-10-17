@@ -11,11 +11,15 @@ const fixtureNumeros = [
 File fixtureFile(int numero) =>
     File('test/fixtures/scrutins/VTANR5L17V$numero.json');
 
+/// Scrutins sur l'article unique d'un texte (et votes sur l'ensemble qui les
+/// suivent), enregistrés dans `test/fixtures/scrutins/` pour le ticket #22.
+const articleUniqueNumeros = [684, 685, 691, 930, 931, 1333, 6902, 7260];
+
 /// Les fixtures réunies dans une archive au format du jeu de données officiel
-/// (`json/<uid>.json`).
-List<int> fixtureArchive() {
+/// (`json/<uid>.json`) : par défaut [fixtureNumeros].
+List<int> fixtureArchive({List<int> numeros = fixtureNumeros}) {
   final archive = Archive();
-  for (final n in fixtureNumeros) {
+  for (final n in numeros) {
     archive.addFile(
       ArchiveFile.bytes(
         'json/VTANR5L17V$n.json',
