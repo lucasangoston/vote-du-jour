@@ -97,9 +97,8 @@ class WidgetDecision {
     id: d.id,
     result: d.result,
     date: d.date,
-    // Le titre court du dossier remplacera l'intitulé officiel quand le
-    // contrat le fournira.
-    title: _capitalize(d.officialTitle.trim()),
+    title: _capitalize(d.displayTitle.trim()),
+    stage: d.stage,
   );
 
   /// Identifiant officiel du scrutin (deep link vers le détail, plus tard).

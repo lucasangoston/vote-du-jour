@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vote_contract/vote_contract.dart';
 
 import 'decisions_repository.dart';
+import 'discovery_actions.dart';
 import 'theme.dart';
 
 /// Liste des dernières décisions. Se rafraîchit à l'ouverture et à chaque
@@ -60,7 +61,10 @@ class _DecisionListPageState extends State<DecisionListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Décisions de l\'Assemblée')),
+      appBar: AppBar(
+        title: const Text('Décisions de l\'Assemblée'),
+        actions: const [AddWidgetAction(), AboutAction()],
+      ),
       body: _body(context),
       bottomNavigationBar: const _SourceNotice(),
     );
@@ -122,9 +126,20 @@ class _DecisionTile extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            capitalize(decision.officialTitle),
+            capitalize(decision.displayTitle),
             style: theme.textTheme.bodyMedium,
           ),
+          // Étape de la procédure ou étiquette (« Résolution (sans valeur de
+          // loi) ») : absente des index publiés avant le ticket #7.
+          if (decision.stage case final stage?) ...[
+            const SizedBox(height: 4),
+            Text(
+              stage,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'src/app_identity.dart';
 import 'src/config.dart';
 import 'src/decision_list_page.dart';
 import 'src/decisions_repository.dart';
@@ -27,7 +28,7 @@ class VoteDuJourApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Vote du jour',
+      title: appName,
       navigatorKey: homeWidgetNavigatorKey,
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),

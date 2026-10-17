@@ -21,6 +21,17 @@ Source : Assemblée nationale, open data. Licence Ouverte / Open Licence (Etalab
 | 5731 | motion de censure | rejeté | |
 | 7349 | l’article unique | adopté | référence de dossier législatif |
 
+Ajoutés pour le ticket #7 (titre court et étape) :
+
+| Scrutin | Catégorie | Particularité |
+| --- | --- | --- |
+| 289 | l'ensemble (CMP) | rattaché par le titre d'un document du dossier |
+| 504 | l'ensemble (deuxième lecture) | |
+| 1194 | l'ensemble (première lecture) | ni `dossierRef` ni `voteRef` : rattaché par l'intitulé |
+| 4696 | l'ensemble (nouvelle lecture) | |
+| 4758 | l'ensemble (lecture définitive) | |
+| 6346 | l'ensemble (CMP) | rattaché par `dossierRef` seulement |
+
 `../titres_non_classes.csv` : les 47 intitulés réels que la règle initiale du
 PRD ne classait pas (numéro, date, code du type de vote, sort, titre), produits
 par le spike #15 (`tools/spike_delai`, branche `spike/15-delai-publication`)

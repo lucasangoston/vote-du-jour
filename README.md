@@ -30,6 +30,7 @@ Données publiées dans le bucket :
 
 - `v1/latest.json` : les 50 dernières décisions, de la plus récente à la plus ancienne (format décrit dans `packages/vote_contract/README.md`). Un changement cassant du format publiera sous `v2/`.
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
+- `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin), réutilisé tant que ce jeu de données ne change pas.
 
 ## Job de publication
 
@@ -41,6 +42,7 @@ dart test
 # Publication dans un dossier local (build/publish par défaut) :
 dart run bin/vote_job.dart                       # télécharge le jeu de données s'il a changé
 dart run bin/vote_job.dart --dump-file Scrutins.json.zip   # à partir d'une archive déjà téléchargée
+dart run bin/vote_job.dart --dump-file Scrutins.json.zip --dossiers-file Dossiers_Legislatifs.json.zip
 dart run bin/vote_job.dart --force               # retraite même si rien n'a changé
 
 # Publication sur R2 (variables R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY) :
@@ -48,6 +50,8 @@ dart run bin/vote_job.dart --store=r2
 ```
 
 Le workflow `publish.yml` lance le job toutes les heures ; il peut aussi être lancé à la main (Actions > Publication des décisions > Run workflow, option « force »). Une exécution sans nouveau jeu de données s'arrête sur une réponse 304, sans rien réécrire.
+
+Le titre court et l'étape de la procédure viennent du jeu de données des dossiers législatifs (`Dossiers_Legislatifs.json.zip`, ~10 Mo), lui aussi téléchargé seulement s'il a changé. De nouveaux dossiers font retraiter les scrutins ; s'ils sont indisponibles, le job publie quand même avec le dernier index connu (ou des libellés tirés des intitulés).
 
 ## App
 

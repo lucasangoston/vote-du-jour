@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
+import 'dossier_index.dart';
 import 'dump_reader.dart';
 import 'dump_source.dart';
 import 'index_builder.dart';
@@ -12,6 +13,11 @@ import 'scrutin.dart';
 /// données traité.
 const stateKey = 'state/scrutins-dump.json';
 
+/// Clé de l'état des dossiers législatifs : le `Last-Modified` du dernier jeu
+/// de données traité et l'index qui en a été tiré, réutilisé tant que le jeu
+/// de données ne change pas.
+const dossiersStateKey = 'state/dossiers.json';
+
 /// Cache HTTP de l'index : court, le job tourne toutes les heures.
 const indexCacheControl = 'public, max-age=300';
 
@@ -20,12 +26,18 @@ sealed class JobOutcome {
   const JobOutcome();
 }
 
-/// Le jeu de données n'a pas changé : rien n'a été retraité ni republié.
+/// Les jeux de données n'ont pas changé : rien n'a été retraité ni republié.
 class JobSkipped extends JobOutcome {
-  const JobSkipped();
+  const JobSkipped({this.warnings = const []});
+
+  /// Problèmes non bloquants (jeu de données des dossiers indisponible…).
+  final List<String> warnings;
 
   @override
-  String toString() => 'Jeu de données inchangé : rien à publier.';
+  String toString() => [
+    'Jeux de données inchangés : rien à publier.',
+    ...warnings.map((w) => 'Attention : $w'),
+  ].join('\n');
 }
 
 /// Un nouvel index a été publié.
@@ -34,6 +46,7 @@ class JobPublished extends JobOutcome {
     required this.scrutins,
     required this.index,
     required this.unrecognized,
+    this.warnings = const [],
   });
 
   /// Nombre de scrutins lus dans le jeu de données.
@@ -43,10 +56,16 @@ class JobPublished extends JobOutcome {
   /// Scrutins écartés faute de règle reconnaissant leur intitulé, à relire.
   final List<Scrutin> unrecognized;
 
+  /// Problèmes non bloquants (jeu de données des dossiers indisponible…).
+  final List<String> warnings;
+
   @override
   String toString() => [
     '$scrutins scrutins lus, ${index.decisions.length} décisions publiées '
-        'dans $indexPath.',
+        'dans $indexPath '
+        '(${index.decisions.where((d) => d.dossierUrl != null).length} '
+        'rattachées à un dossier).',
+    ...warnings.map((w) => 'Attention : $w'),
     if (unrecognized.isNotEmpty)
       '${unrecognized.length} intitulés non reconnus, écartés (à relire) :',
     for (final s in unrecognized)
@@ -54,27 +73,53 @@ class JobPublished extends JobOutcome {
   ].join('\n');
 }
 
-/// Exécute le job : récupère le jeu de données s'il a changé depuis la
-/// dernière exécution, publie l'index des dernières décisions, puis enregistre
-/// l'état. L'état n'est écrit qu'après la publication : en cas d'échec, la
-/// prochaine exécution retraite le même jeu de données.
+/// Exécute le job : récupère les jeux de données des scrutins et des dossiers
+/// législatifs s'ils ont changé depuis la dernière exécution, publie l'index
+/// des dernières décisions, puis enregistre l'état. L'état n'est écrit
+/// qu'après la publication : en cas d'échec, la prochaine exécution retraite
+/// les mêmes jeux de données.
 ///
-/// [force] ignore l'état et retraite le jeu de données.
+/// Les dossiers ([dossiers]) donnent le titre court et l'étape. Leur index
+/// est gardé dans l'état : quand seuls les scrutins changent, il est relu
+/// sans retélécharger les dossiers ; quand les dossiers changent, les
+/// scrutins sont retraités même s'ils n'ont pas changé. Si les dossiers sont
+/// indisponibles ou illisibles, le job publie quand même, avec le dernier
+/// index connu ou, à défaut, des libellés tirés des intitulés.
+///
+/// [force] ignore l'état et retraite les jeux de données.
 Future<JobOutcome> runJob({
   required DumpSource source,
   required ObjectStore store,
+  DumpSource? dossiers,
   DateTime Function() clock = DateTime.now,
   bool force = false,
 }) async {
+  final warnings = <String>[];
   final previous = force ? null : _readLastModified(await store.read(stateKey));
-  final fetch = await source.fetch(ifModifiedSince: previous);
+
+  final dossierState = dossiers == null || force
+      ? null
+      : await _readDossierState(store, warnings);
+  final dossierUpdate = dossiers == null
+      ? null
+      : await _fetchDossiers(dossiers, dossierState, warnings);
+  final dossierIndex = dossierUpdate?.index ?? dossierState?.index;
+
+  final fetch = await source.fetch(
+    // De nouveaux dossiers changent les libellés : on retraite les scrutins.
+    ifModifiedSince: dossierUpdate != null ? null : previous,
+  );
   switch (fetch) {
     case DumpNotModified():
-      return const JobSkipped();
+      return JobSkipped(warnings: warnings);
     case DumpDownloaded(:final bytes, :final lastModified):
       final scrutins = readScrutinsArchive(bytes);
       final now = clock().toUtc();
-      final index = buildDecisionIndex(scrutins, generatedAt: now);
+      final index = buildDecisionIndex(
+        scrutins,
+        generatedAt: now,
+        dossiers: dossierIndex,
+      );
       await store.write(
         indexPath,
         const JsonEncoder.withIndent('  ').convert(index.toJson()),
@@ -88,11 +133,72 @@ Future<JobOutcome> runJob({
         }),
         cacheControl: 'no-store',
       );
+      if (dossierUpdate != null) {
+        await store.write(
+          dossiersStateKey,
+          jsonEncode({
+            'lastModified': dossierUpdate.lastModified,
+            'processedAt': now.toIso8601String(),
+            'index': dossierUpdate.index.toJson(),
+          }),
+          cacheControl: 'no-store',
+        );
+      }
       return JobPublished(
         scrutins: scrutins.length,
         index: index,
         unrecognized: unrecognizedScrutins(scrutins),
+        warnings: warnings,
       );
+  }
+}
+
+/// Index des dossiers et `Last-Modified` du jeu de données dont il est tiré.
+typedef _DossierState = ({String? lastModified, DossierIndex index});
+
+Future<_DossierState?> _readDossierState(
+  ObjectStore store,
+  List<String> warnings,
+) async {
+  final raw = await store.read(dossiersStateKey);
+  if (raw == null) return null;
+  try {
+    final json = jsonDecode(raw) as Map<String, Object?>;
+    return (
+      lastModified: json['lastModified'] as String?,
+      index: DossierIndex.fromJson(json['index']),
+    );
+  } on Object catch (e) {
+    warnings.add('état des dossiers illisible, il sera reconstruit ($e)');
+    return null;
+  }
+}
+
+/// Télécharge et lit les dossiers s'ils ont changé depuis [state] ; `null`
+/// s'ils n'ont pas changé ou sont indisponibles (avertissement ajouté à
+/// [warnings]).
+Future<_DossierState?> _fetchDossiers(
+  DumpSource source,
+  _DossierState? state,
+  List<String> warnings,
+) async {
+  try {
+    // Sans index en cache, il faut les données même si elles n'ont pas
+    // changé.
+    final fetch = await source.fetch(ifModifiedSince: state?.lastModified);
+    return switch (fetch) {
+      DumpNotModified() => null,
+      DumpDownloaded(:final bytes, :final lastModified) => (
+        lastModified: lastModified,
+        index: DossierIndex.fromArchive(bytes),
+      ),
+    };
+  } on Exception catch (e) {
+    final fallback = state != null
+        ? 'dernier index connu utilisé'
+        : 'libellés tirés des intitulés';
+    warnings.add('dossiers législatifs indisponibles, $fallback ($e)');
+    return null;
   }
 }
 
