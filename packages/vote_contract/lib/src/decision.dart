@@ -73,6 +73,9 @@ class DecisionSummary {
     required this.date,
     required this.officialTitle,
     required this.sourceUrl,
+    this.shortTitle,
+    this.stage,
+    this.dossierUrl,
   });
 
   /// Identifiant officiel du scrutin (par exemple `VTANR5L17V7946`).
@@ -97,6 +100,27 @@ class DecisionSummary {
 
   /// Page officielle du scrutin sur le site de l'Assemblée.
   final String sourceUrl;
+
+  /// Titre court et lisible, à afficher à la place de [officialTitle] dans la
+  /// liste et les widgets : titre du dossier législatif, ou libellé construit
+  /// à partir de l'intitulé (motion de censure, déclaration du Gouvernement).
+  ///
+  /// Optionnel : absent des index publiés avant son ajout.
+  final String? shortTitle;
+
+  /// Étape de la procédure (« 1re lecture à l'AN », « Texte de compromis
+  /// (CMP) »…) ou étiquette qui en tient lieu (« Résolution (sans valeur de
+  /// loi) », « Motion de censure »…), prête à afficher. Ne dit jamais qu'une
+  /// loi est votée : c'est l'étape du vote à l'Assemblée.
+  ///
+  /// Optionnel : absent des index publiés avant son ajout.
+  final String? stage;
+
+  /// Page officielle du dossier législatif, si la décision y est rattachée.
+  final String? dossierUrl;
+
+  /// Titre à afficher : [shortTitle], sinon [officialTitle].
+  String get displayTitle => shortTitle ?? officialTitle;
 
   /// Lit une décision ; renvoie `null` si elle utilise une valeur d'énumération
   /// inconnue (ajoutée par une version plus récente du job) ou est malformée.
@@ -128,6 +152,9 @@ class DecisionSummary {
       date: date,
       officialTitle: title,
       sourceUrl: sourceUrl,
+      shortTitle: _optionalString(json['shortTitle']),
+      stage: _optionalString(json['stage']),
+      dossierUrl: _optionalString(json['dossierUrl']),
     );
   }
 
@@ -140,8 +167,16 @@ class DecisionSummary {
     'date': formatDate(date),
     'officialTitle': officialTitle,
     'sourceUrl': sourceUrl,
+    'shortTitle': ?shortTitle,
+    'stage': ?stage,
+    'dossierUrl': ?dossierUrl,
   };
 }
+
+/// Champ optionnel : une valeur absente, vide ou d'un autre type est ignorée
+/// plutôt que de rendre la décision illisible.
+String? _optionalString(Object? value) =>
+    value is String && value.trim().isNotEmpty ? value : null;
 
 /// Formate un jour au format `AAAA-MM-JJ`.
 String formatDate(DateTime date) =>

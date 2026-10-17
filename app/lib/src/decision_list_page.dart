@@ -122,9 +122,20 @@ class _DecisionTile extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            capitalize(decision.officialTitle),
+            capitalize(decision.displayTitle),
             style: theme.textTheme.bodyMedium,
           ),
+          // Étape de la procédure ou étiquette (« Résolution (sans valeur de
+          // loi) ») : absente des index publiés avant le ticket #7.
+          if (decision.stage case final stage?) ...[
+            const SizedBox(height: 4),
+            Text(
+              stage,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ],
       ),
     );

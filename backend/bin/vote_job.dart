@@ -34,9 +34,18 @@ Future<void> main(List<String> arguments) async {
       'dump-file',
       help: 'Lit le jeu de données depuis un fichier zip local.',
     )
+    ..addOption(
+      'dossiers-url',
+      defaultsTo: dossiersDumpUrl,
+      help: 'URL du jeu de données des dossiers législatifs.',
+    )
+    ..addOption(
+      'dossiers-file',
+      help: 'Lit les dossiers législatifs depuis un fichier zip local.',
+    )
     ..addFlag(
       'force',
-      help: "Retraite le jeu de données même s'il n'a pas changé.",
+      help: "Retraite les jeux de données même s'ils n'ont pas changé.",
     )
     ..addFlag('help', abbr: 'h', negatable: false);
 
@@ -62,10 +71,15 @@ Future<void> main(List<String> arguments) async {
   final source = dumpFile != null
       ? FileDumpSource(dumpFile)
       : HttpDumpSource(url: args.option('dump-url')!);
+  final dossiersFile = args.option('dossiers-file');
+  final dossiers = dossiersFile != null
+      ? FileDumpSource(dossiersFile)
+      : HttpDumpSource(url: args.option('dossiers-url')!);
 
   final outcome = await runJob(
     source: source,
     store: store,
+    dossiers: dossiers,
     force: args.flag('force'),
   );
   stdout.writeln(outcome);
