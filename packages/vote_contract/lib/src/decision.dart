@@ -62,11 +62,30 @@ enum DecisionStatus {
       DecisionStatus.values.where((s) => s.json == value).firstOrNull;
 }
 
+/// Manière dont l'Assemblée a voté.
+enum VoteMode {
+  /// Scrutin public : numéro de scrutin, décompte des voix et votes par
+  /// groupe.
+  scrutinPublic('scrutin_public'),
+
+  /// Vote à main levée, repéré dans les dossiers législatifs : ni numéro de
+  /// scrutin, ni décompte, ni vote par groupe. Seuls les textes adoptés sont
+  /// publiés.
+  mainLevee('main_levee');
+
+  const VoteMode(this.json);
+
+  final String json;
+
+  static VoteMode? tryParse(Object? value) =>
+      VoteMode.values.where((m) => m.json == value).firstOrNull;
+}
+
 /// Une décision telle qu'elle apparaît dans l'index (liste et widgets).
 class DecisionSummary {
   const DecisionSummary({
     required this.id,
-    required this.numero,
+    this.numero,
     required this.type,
     required this.status,
     required this.result,
@@ -76,13 +95,25 @@ class DecisionSummary {
     this.shortTitle,
     this.stage,
     this.dossierUrl,
-  });
+    this.voteMode = VoteMode.scrutinPublic,
+  }) : assert(
+         numero != null || voteMode != VoteMode.scrutinPublic,
+         'un scrutin public a un numéro',
+       );
 
-  /// Identifiant officiel du scrutin (par exemple `VTANR5L17V7946`).
+  /// Identifiant stable de la décision : celui du scrutin
+  /// (`VTANR5L17V7946`) pour un scrutin public, celui de l'acte de décision
+  /// du dossier législatif (`L17-VD234087DEC`) pour un vote à main levée.
   final String id;
 
-  /// Numéro du scrutin dans la législature.
-  final int numero;
+  /// Numéro du scrutin dans la législature ; `null` pour un vote à main
+  /// levée ([VoteMode.mainLevee]).
+  final int? numero;
+
+  /// Scrutin public ou main levée. Champ optionnel du JSON : absent des
+  /// index publiés avant le ticket #8, il vaut alors
+  /// [VoteMode.scrutinPublic].
+  final VoteMode voteMode;
 
   final DecisionType type;
   final DecisionStatus status;
@@ -95,10 +126,12 @@ class DecisionSummary {
   /// Jour du vote (l'open data ne donne pas l'heure), à minuit UTC.
   final DateTime date;
 
-  /// Intitulé officiel du scrutin, tel que publié par l'Assemblée.
+  /// Intitulé officiel du scrutin, tel que publié par l'Assemblée ; pour un
+  /// vote à main levée, titre du texte adopté (ou, à défaut, du dossier).
   final String officialTitle;
 
-  /// Page officielle du scrutin sur le site de l'Assemblée.
+  /// Page officielle du scrutin sur le site de l'Assemblée ; pour un vote à
+  /// main levée, page du dossier législatif.
   final String sourceUrl;
 
   /// Titre court et lisible, à afficher à la place de [officialTitle] dans la
@@ -124,7 +157,14 @@ class DecisionSummary {
 
   /// Lit une décision ; renvoie `null` si elle utilise une valeur d'énumération
   /// inconnue (ajoutée par une version plus récente du job) ou est malformée.
+  ///
+  /// `numero` n'est exigé que pour un scrutin public. Les lecteurs antérieurs
+  /// au ticket #8 l'exigent toujours : ils ignorent donc les décisions à
+  /// main levée, sans erreur.
   static DecisionSummary? tryFromJson(Map<String, Object?> json) {
+    final voteMode = json['voteMode'] == null
+        ? VoteMode.scrutinPublic
+        : VoteMode.tryParse(json['voteMode']);
     final type = DecisionType.tryParse(json['type']);
     final status = DecisionStatus.tryParse(json['status']);
     final result = VoteResult.tryParse(json['result']);
@@ -133,11 +173,13 @@ class DecisionSummary {
     final date = DateTime.tryParse('${json['date']}T00:00:00Z');
     final title = json['officialTitle'];
     final sourceUrl = json['sourceUrl'];
-    if (type == null ||
+    if (voteMode == null ||
+        type == null ||
         status == null ||
         result == null ||
         id is! String ||
-        numero is! int ||
+        (numero is! int?) ||
+        (numero == null && voteMode == VoteMode.scrutinPublic) ||
         date == null ||
         title is! String ||
         sourceUrl is! String) {
@@ -146,6 +188,7 @@ class DecisionSummary {
     return DecisionSummary(
       id: id,
       numero: numero,
+      voteMode: voteMode,
       type: type,
       status: status,
       result: result,
@@ -160,7 +203,8 @@ class DecisionSummary {
 
   Map<String, Object?> toJson() => {
     'id': id,
-    'numero': numero,
+    'numero': ?numero,
+    'voteMode': voteMode.json,
     'type': type.json,
     'status': status.json,
     'result': result.json,

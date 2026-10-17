@@ -15,6 +15,22 @@ void main() {
           'schemaVersion': 1,
           'generatedAt': '2026-10-17T10:00:00.000Z',
           'decisions': [
+            // Texte adopté à main levée (ticket #8) : ni numéro ni décompte.
+            {
+              'id': 'L17-VD234087DEC',
+              'voteMode': 'main_levee',
+              'type': 'ensemble',
+              'status': 'confirmee',
+              'result': 'adopte',
+              'date': '2026-10-07',
+              'officialTitle':
+                  "projet de loi autorisant l'approbation de l'accord "
+                  'multilatéral GloBE',
+              'sourceUrl':
+                  'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379',
+              'shortTitle': 'Accord multilatéral GloBE',
+              'stage': "1re lecture à l'AN",
+            },
             {
               'id': 'VTANR5L17V1194',
               'numero': 1194,
@@ -77,7 +93,14 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('narcotrafic (première'), findsNothing);
-      expect(find.text("1re lecture à l'AN"), findsOneWidget);
+      expect(find.text("1re lecture à l'AN"), findsNWidgets(2));
+      expect(find.text('Accord multilatéral GloBE'), findsOneWidget);
+      expect(
+        find.text('à main levée'),
+        findsOneWidget,
+        reason: 'seule la décision à main levée porte la mention',
+      );
+      expect(find.text('Adopté'), findsNWidgets(3));
       expect(find.text('Résolution (sans valeur de loi)'), findsOneWidget);
       expect(find.text("L'ensemble d'un ancien index."), findsOneWidget);
       expect(find.textContaining('loi votée'), findsNothing);

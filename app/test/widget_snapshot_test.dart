@@ -59,6 +59,48 @@ void main() {
     });
   });
 
+  test('décision à main levée : la mention suit l\'étape', () {
+    DecisionSummary mainLevee({String? stage}) => DecisionSummary(
+      id: 'L17-VD234087DEC',
+      voteMode: VoteMode.mainLevee,
+      type: DecisionType.ensembleTexte,
+      status: DecisionStatus.confirmee,
+      result: VoteResult.adopte,
+      date: DateTime.utc(2026, 10, 7),
+      officialTitle: "projet de loi autorisant l'approbation de l'accord.",
+      sourceUrl:
+          'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379',
+      shortTitle: 'Accord multilatéral GloBE',
+      stage: stage,
+    );
+    final snapshot = WidgetSnapshot.fromIndex(
+      DecisionIndex(
+        generatedAt: DateTime.utc(2026, 10, 17),
+        decisions: [
+          mainLevee(stage: "1re lecture à l'AN"),
+          mainLevee(),
+          index.decisions.first,
+        ],
+      ),
+      savedAt: DateTime.utc(2026, 10, 17),
+    );
+
+    final json = jsonDecode(jsonEncode(snapshot.toJson()));
+    expect((json as Map)['decisions'][0], {
+      'id': 'L17-VD234087DEC',
+      'result': 'adopte',
+      'date': '2026-10-07',
+      'title': 'Accord multilatéral GloBE',
+      'stage': "1re lecture à l'AN · à main levée",
+    });
+    final read = WidgetSnapshot.tryFromJson(json)!;
+    expect(read.decisions.map((d) => d.stage), [
+      "1re lecture à l'AN · à main levée",
+      'À main levée',
+      null,
+    ]);
+  });
+
   test('relit ce qu\'il écrit, champs optionnels compris', () {
     final snapshot = WidgetSnapshot(
       savedAt: DateTime.utc(2026, 10, 17),
