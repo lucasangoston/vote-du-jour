@@ -38,6 +38,10 @@ import es.antonborri.home_widget.actionStartActivity
 /** Lien ouvert par un tap : l'app s'ouvre sur la liste des décisions. */
 private val LIST_URI = Uri.parse("votedujour://decisions?homeWidget")
 
+/** Lien ouvert par un tap sur la décision : son écran de détail. */
+private fun detailUri(decision: WidgetDecision): Uri =
+    Uri.parse("votedujour://decisions/${Uri.encode(decision.id)}?homeWidget")
+
 /** Palette neutre (pas de couleur de parti), clair / sombre. */
 private object WidgetColors {
   val background = ColorProvider(day = Color(0xFFFFFFFF), night = Color(0xFF1E1E1E))
@@ -75,7 +79,9 @@ class DecisionWidget : GlanceAppWidget() {
                 .background(WidgetColors.background)
                 .cornerRadius(16.dp)
                 .padding(16.dp)
-                .clickable(actionStartActivity<MainActivity>(context, LIST_URI)),
+                .clickable(
+                    actionStartActivity<MainActivity>(
+                        context, decision?.let(::detailUri) ?: LIST_URI)),
         contentAlignment = Alignment.TopStart,
     ) {
       if (decision != null) DecisionContent(decision) else EmptyContent()

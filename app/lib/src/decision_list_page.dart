@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vote_contract/vote_contract.dart';
 
+import 'decision_detail/decision_route.dart';
 import 'decisions_repository.dart';
 import 'discovery_actions.dart';
 import 'theme.dart';
@@ -93,7 +94,11 @@ class _DecisionListPageState extends State<DecisionListPage> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: index.decisions.length,
         separatorBuilder: (_, _) => const Divider(height: 1),
-        itemBuilder: (context, i) => _DecisionTile(index.decisions[i]),
+        // Le tap ouvre le détail de la décision.
+        itemBuilder: (context, i) => OpenDecisionOnTap(
+          decision: index.decisions[i],
+          child: _DecisionTile(index.decisions[i]),
+        ),
       ),
     );
   }

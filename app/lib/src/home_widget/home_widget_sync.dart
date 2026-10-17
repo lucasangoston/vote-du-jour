@@ -7,6 +7,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:vote_contract/vote_contract.dart';
 
 import '../decisions_repository.dart';
+import 'widget_link.dart';
 import 'widget_snapshot.dart';
 
 /// Groupe d'apps partagé entre l'app iOS et l'extension WidgetKit.
@@ -19,12 +20,13 @@ const _iOSWidgetKind = 'DecisionWidget';
 const _androidWidgetReceiver =
     'com.lucasangoston.votedujour.widget.DecisionWidgetReceiver';
 
-/// Navigateur de l'app, pour revenir à la liste quand on tape sur le widget
-/// alors que l'app est déjà ouverte sur un autre écran.
+/// Navigateur de l'app, pour ouvrir le détail d'une décision (ou revenir à la
+/// liste) quand on tape sur le widget.
 final homeWidgetNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Pont entre l'app et les widgets natifs : écrit l'instantané partagé et
-/// ramène l'app sur la liste quand l'utilisateur tape sur un widget.
+/// ouvre le détail de la décision (ou la liste) quand l'utilisateur tape sur
+/// un widget.
 ///
 /// Sans effet sur le web et les plateformes sans widget.
 class HomeWidgetSync {
@@ -44,9 +46,12 @@ class HomeWidgetSync {
     if (!_supported) return;
     try {
       await HomeWidget.setAppGroupId(appGroupId);
-      // Le lancement à froid depuis le widget ouvre déjà l'app sur la liste ;
-      // seuls les taps app ouverte demandent de revenir à l'écran d'accueil.
-      _taps = HomeWidget.widgetClicked.listen((_) => _showList());
+      _taps = HomeWidget.widgetClicked.listen(_open);
+      // Lancement à froid depuis le widget : ouvrir le détail demandé.
+      final initial = await HomeWidget.initiallyLaunchedFromHomeWidget();
+      if (initial != null && initial.hasScheme) {
+        unawaited(openWidgetLinkWhenReady(homeWidgetNavigatorKey, initial));
+      }
     } catch (e) {
       debugPrint('HomeWidgetSync.start : $e');
     }
@@ -72,8 +77,10 @@ class HomeWidgetSync {
     }
   }
 
-  void _showList() {
-    homeWidgetNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+  void _open(Uri? uri) {
+    if (homeWidgetNavigatorKey.currentState case final navigator?) {
+      openWidgetLink(navigator, uri);
+    }
   }
 
   Future<void> dispose() async => _taps?.cancel();

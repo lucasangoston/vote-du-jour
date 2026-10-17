@@ -7,5 +7,6 @@
 library;
 
 export 'src/decision.dart';
+export 'src/decision_detail.dart';
 export 'src/decision_index.dart';
 export 'src/paths.dart';
