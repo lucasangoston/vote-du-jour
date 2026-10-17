@@ -10,18 +10,27 @@ import 'fixtures.dart';
 /// Source simulée : sert l'archive des fixtures avec un `Last-Modified` donné
 /// et respecte `If-Modified-Since` comme le serveur de l'Assemblée.
 class FakeDumpSource implements DumpSource {
-  FakeDumpSource(this.lastModified);
+  FakeDumpSource(this.lastModified, {List<int> Function()? archive})
+    : _archive = archive ?? fixtureArchive;
 
   String lastModified;
+  final List<int> Function() _archive;
   final requests = <String?>[];
+
+  /// Simule une panne du serveur.
+  bool failing = false;
 
   @override
   Future<DumpFetch> fetch({String? ifModifiedSince}) async {
     requests.add(ifModifiedSince);
+    if (failing) throw const HttpException('HTTP 503');
     if (ifModifiedSince == lastModified) return const DumpNotModified();
-    return DumpDownloaded(fixtureArchive(), lastModified: lastModified);
+    return DumpDownloaded(_archive(), lastModified: lastModified);
   }
 }
+
+FakeDumpSource fakeDossiers(String lastModified) =>
+    FakeDumpSource(lastModified, archive: fixtureDossiersArchive);
 
 void main() {
   late Directory dir;
@@ -48,14 +57,20 @@ void main() {
     final index = await readIndex();
     expect(index.generatedAt, clock);
     expect(index.decisions.map((d) => d.numero), [
+      6346, // l'ensemble (CMP)
       5731, // motion de censure, 2026-02-25
       4802, // déclaration du Gouvernement, 2025-12-17
+      4758, // l'ensemble (lecture définitive)
+      4696, // l'ensemble (nouvelle lecture)
       4241, // rejet de la première partie du PLF 2026, 2025-11-21
       3054, // déclaration de politique générale, 2025-09-08
       2873, // motion de rejet préalable adoptée, 2025-06-30
       2278, // l’ensemble, 2025-06-10
+      1194, // l'ensemble, 2025-04-01
       1018, // l'ensemble d'une proposition de résolution, 2025-03-13
       519, // motion de censure, 2024-12-04
+      504, // l'ensemble (deuxième lecture)
+      289, // l'ensemble (CMP)
       217, // l'ensemble, 2024-10-31
     ]);
     final censure = index.decisions.firstWhere((d) => d.numero == 519);
@@ -131,6 +146,96 @@ void main() {
     );
     expect(outcome, isA<JobPublished>());
     expect(source.requests.last, isNull);
+  });
+
+  group('dossiers législatifs', () {
+    const scrutinsDate = 'Sat, 17 Oct 2026 10:30:00 GMT';
+    const dossiersDate = 'Sat, 17 Oct 2026 13:16:27 GMT';
+
+    Future<DecisionSummary> published(int numero) async =>
+        (await readIndex()).decisions.firstWhere((d) => d.numero == numero);
+
+    test('enrichit les décisions avec le titre court et l\'étape', () async {
+      await runJob(
+        source: FakeDumpSource(scrutinsDate),
+        dossiers: fakeDossiers(dossiersDate),
+        store: store,
+        clock: () => clock,
+      );
+      final d = await published(1194);
+      expect(d.shortTitle, 'Sortir la France du piège du narcotrafic');
+      expect(d.stage, "1re lecture à l'AN");
+      expect(
+        d.dossierUrl,
+        'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50169',
+      );
+    });
+
+    test('ne retélécharge les dossiers que s\'ils ont changé', () async {
+      final scrutins = FakeDumpSource(scrutinsDate);
+      final dossiers = fakeDossiers(dossiersDate);
+      Future<JobOutcome> run() => runJob(
+        source: scrutins,
+        dossiers: dossiers,
+        store: store,
+        clock: () => clock,
+      );
+      await run();
+
+      // Rien n'a changé : requêtes conditionnelles, rien de republié.
+      expect(await run(), isA<JobSkipped>());
+      expect(dossiers.requests, [null, dossiersDate]);
+      expect(scrutins.requests, [null, scrutinsDate]);
+
+      // Seuls les scrutins changent : l'index des dossiers en cache sert.
+      scrutins.lastModified = 'Sun, 18 Oct 2026 10:30:00 GMT';
+      expect(await run(), isA<JobPublished>());
+      expect(dossiers.requests.last, dossiersDate);
+      expect(
+        (await published(1194)).shortTitle,
+        'Sortir la France du piège du narcotrafic',
+      );
+    });
+
+    test(
+      'de nouveaux dossiers font retraiter les scrutins inchangés',
+      () async {
+        final scrutins = FakeDumpSource(scrutinsDate);
+        final dossiers = fakeDossiers(dossiersDate);
+        Future<JobOutcome> run() => runJob(
+          source: scrutins,
+          dossiers: dossiers,
+          store: store,
+          clock: () => clock,
+        );
+        await run();
+
+        dossiers.lastModified = 'Sun, 18 Oct 2026 13:16:27 GMT';
+        expect(await run(), isA<JobPublished>());
+        expect(scrutins.requests.last, isNull);
+        final state = jsonDecode((await store.read(dossiersStateKey))!) as Map;
+        expect(state['lastModified'], 'Sun, 18 Oct 2026 13:16:27 GMT');
+      },
+    );
+
+    test('publie quand même si les dossiers sont indisponibles', () async {
+      final dossiers = fakeDossiers(dossiersDate)..failing = true;
+      final outcome = await runJob(
+        source: FakeDumpSource(scrutinsDate),
+        dossiers: dossiers,
+        store: store,
+        clock: () => clock,
+      );
+      expect(outcome, isA<JobPublished>());
+      expect((outcome as JobPublished).warnings, hasLength(1));
+      final d = await published(1194);
+      expect(
+        d.shortTitle,
+        'Proposition de loi visant à sortir la France du piège du narcotrafic',
+      );
+      expect(d.stage, "1re lecture à l'AN");
+      expect(await store.read(dossiersStateKey), isNull);
+    });
   });
 
   test('l\'index contient au plus 50 décisions, les plus récentes', () {

@@ -31,8 +31,11 @@ Exemple de `v1/latest.json` :
       "status": "confirmee",
       "result": "adopte",
       "date": "2026-10-13",
-      "officialTitle": "la proposition de loi organique visant à …",
-      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8706"
+      "officialTitle": "l'ensemble du projet de loi organique relatif à … (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8706",
+      "shortTitle": "Adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54777"
     }
   ]
 }
@@ -49,3 +52,25 @@ Valeurs :
 - `result` : `adopte`, `rejete` — l'issue à afficher pour le texte : pour
   `rejet_prealable`, la motion est adoptée donc `result` vaut `rejete` ;
 - `status` : `provisoire`, `confirmee`.
+
+Champs optionnels (ajoutés par le ticket #7, absents des index plus anciens ;
+un lecteur doit prévoir leur absence) :
+
+- `shortTitle` : titre court à afficher à la place de `officialTitle` dans la
+  liste et les widgets (`DecisionSummary.displayTitle` fait le repli). Titre du
+  dossier législatif sans la formule « Proposition de loi visant à » ; pour une
+  motion de censure, « Motion de censure : <texte> » après un 49.3 ou
+  « Motion de censure déposée par … » ; pour une déclaration,
+  « Déclaration du Gouvernement sur … ».
+- `stage` : étape de la procédure ou étiquette, prête à afficher. Lectures :
+  `1re lecture à l'AN`, `2e lecture à l'AN`, `3e lecture à l'AN`,
+  `Nouvelle lecture à l'AN`, `Lecture définitive à l'AN`,
+  `Texte de compromis (CMP)`, `Lecture unique à l'AN` (ou
+  `Vote sur l'ensemble du texte` si la lecture est inconnue). Étiquettes :
+  `Résolution (sans valeur de loi)`, `Motion de censure`,
+  `Déclaration du Gouvernement`, `Déclaration de politique générale`,
+  `Motion de rejet préalable, <lecture>`,
+  `Première partie du budget, <lecture>`, `Scrutin solennel`. Jamais « loi
+  votée » : c'est l'étape du vote à l'Assemblée.
+- `dossierUrl` : page officielle du dossier législatif, si la décision y est
+  rattachée.
