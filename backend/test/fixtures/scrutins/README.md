@@ -32,6 +32,14 @@ Ajoutés pour le ticket #7 (titre court et étape) :
 | 4758 | l'ensemble (lecture définitive) | |
 | 6346 | l'ensemble (CMP) | rattaché par `dossierRef` seulement |
 
+Ajoutés pour le ticket #8 (textes adoptés à main levée) :
+
+| Scrutin | Catégorie | Particularité |
+| --- | --- | --- |
+| 1011 | l'article 2 (non retenu) | texte adopté ensuite à main levée le même jour (DLR5L16N49852) |
+| 2633 | l'article unique (non retenu) | vaut vote sur l'ensemble : le texte (DLR5L16N47676) n'est pas adopté à main levée, bien que son acte de décision ne cite aucun scrutin |
+| 2900 | l'ensemble (première lecture) | non rattaché à son dossier (DLR5L17N52002, intitulé « … de la collectivité de Corse ») : écarte le doublon à main levée par l'intitulé |
+
 `../titres_non_classes.csv` : les 47 intitulés réels que la règle initiale du
 PRD ne classait pas (numéro, date, code du type de vote, sort, titre), produits
 par le spike #15 (`tools/spike_delai`, branche `spike/15-delai-publication`)

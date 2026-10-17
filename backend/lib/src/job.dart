@@ -64,7 +64,9 @@ class JobPublished extends JobOutcome {
     '$scrutins scrutins lus, ${index.decisions.length} décisions publiées '
         'dans $indexPath '
         '(${index.decisions.where((d) => d.dossierUrl != null).length} '
-        'rattachées à un dossier).',
+        'rattachées à un dossier, '
+        '${index.decisions.where((d) => d.voteMode == VoteMode.mainLevee).length}'
+        ' adoptées à main levée).',
     ...warnings.map((w) => 'Attention : $w'),
     if (unrecognized.isNotEmpty)
       '${unrecognized.length} intitulés non reconnus, écartés (à relire) :',

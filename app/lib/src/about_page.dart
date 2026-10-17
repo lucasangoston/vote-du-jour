@@ -83,8 +83,9 @@ class AboutPage extends StatelessWidget {
                 'l\'Assemblée sans valeur de loi ;',
               ),
               _Bullet(
-                'bientôt, les textes adoptés à main levée, sans décompte des '
-                'voix.',
+                'les textes adoptés à main levée, sans scrutin public : ils '
+                'sont repérés dans les dossiers législatifs et signalés « à '
+                'main levée », sans décompte des voix ni vote par groupe.',
               ),
               _Paragraph(
                 'Les votes sur les amendements et sur les articles ne sont pas '

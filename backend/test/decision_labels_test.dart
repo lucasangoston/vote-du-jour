@@ -18,7 +18,7 @@ void main() {
         generatedAt: DateTime.utc(2026, 10, 17),
         dossiers: dossiers,
       ).decisions)
-        d.numero: d,
+        ?d.numero: d,
     };
     published = build(DossierIndex.fromArchive(fixtureDossiersArchive()));
     withoutDossiers = build(null);

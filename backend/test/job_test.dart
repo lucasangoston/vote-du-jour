@@ -64,6 +64,7 @@ void main() {
       4696, // l'ensemble (nouvelle lecture)
       4241, // rejet de la première partie du PLF 2026, 2025-11-21
       3054, // déclaration de politique générale, 2025-09-08
+      2900, // l'ensemble, 2025-07-02
       2873, // motion de rejet préalable adoptée, 2025-06-30
       2278, // l’ensemble, 2025-06-10
       1194, // l'ensemble, 2025-04-01
@@ -169,6 +170,29 @@ void main() {
         d.dossierUrl,
         'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50169',
       );
+    });
+
+    test('publie les textes adoptés à main levée', () async {
+      final outcome = await runJob(
+        source: FakeDumpSource(scrutinsDate),
+        dossiers: fakeDossiers(dossiersDate),
+        store: store,
+        clock: () => clock,
+      );
+      final json = jsonDecode((await store.read(indexPath))!) as Map;
+      final convention = (json['decisions'] as List).cast<Map>().firstWhere(
+        (d) => d['id'] == 'L17-VD234087DEC',
+      );
+      expect(convention['voteMode'], 'main_levee');
+      expect(convention.containsKey('numero'), isFalse);
+      expect(convention['result'], 'adopte');
+      expect(
+        (await readIndex()).decisions
+            .where((d) => d.voteMode == VoteMode.mainLevee)
+            .map((d) => d.id),
+        ['L17-VD234087DEC', 'L17-VD230548DEC', 'L17-VD224512DEC'],
+      );
+      expect(outcome.toString(), contains('3 adoptées à main levée'));
     });
 
     test('ne retélécharge les dossiers que s\'ils ont changé', () async {
