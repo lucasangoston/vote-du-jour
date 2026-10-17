@@ -3,10 +3,20 @@ import 'package:flutter/material.dart';
 import 'src/config.dart';
 import 'src/decision_list_page.dart';
 import 'src/decisions_repository.dart';
+import 'src/home_widget/home_widget_sync.dart';
 import 'src/theme.dart';
 
 void main() {
-  runApp(VoteDuJourApp(repository: DecisionsRepository(baseUrl: dataBaseUrl)));
+  WidgetsFlutterBinding.ensureInitialized();
+  final widgetSync = HomeWidgetSync()..start();
+  runApp(
+    VoteDuJourApp(
+      repository: WidgetSyncingRepository(
+        baseUrl: dataBaseUrl,
+        sync: widgetSync,
+      ),
+    ),
+  );
 }
 
 class VoteDuJourApp extends StatelessWidget {
@@ -18,6 +28,7 @@ class VoteDuJourApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Vote du jour',
+      navigatorKey: homeWidgetNavigatorKey,
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),

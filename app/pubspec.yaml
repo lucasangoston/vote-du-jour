@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  home_widget: ^0.10.0
   http: ^1.2.0
   vote_contract:
     path: ../packages/vote_contract
