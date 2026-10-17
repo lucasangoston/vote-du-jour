@@ -16,7 +16,7 @@ void openWidgetLink(NavigatorState navigator, Uri? uri) {
 /// (lancement à froid : le lien est connu avant la première image).
 Future<void> openWidgetLinkWhenReady(
   GlobalKey<NavigatorState> key,
-  Uri uri,
+  Uri? uri,
 ) async {
   for (var frame = 0; frame < 120; frame++) {
     if (key.currentState case final navigator?) {

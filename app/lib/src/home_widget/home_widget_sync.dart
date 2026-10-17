@@ -48,9 +48,11 @@ class HomeWidgetSync {
       await HomeWidget.setAppGroupId(appGroupId);
       _taps = HomeWidget.widgetClicked.listen(_open);
       // Lancement à froid depuis le widget : ouvrir le détail demandé.
+      // Le lien peut aussi arriver par le flux (Android : tâche gardée par le
+      // système après la mort du processus) : il n'est ouvert qu'une fois.
       final initial = await HomeWidget.initiallyLaunchedFromHomeWidget();
-      if (initial != null && initial.hasScheme) {
-        unawaited(openWidgetLinkWhenReady(homeWidgetNavigatorKey, initial));
+      if (initial != null && initial.hasScheme && initial != _lastOpened) {
+        _open(initial);
       }
     } catch (e) {
       debugPrint('HomeWidgetSync.start : $e');
@@ -77,10 +79,13 @@ class HomeWidgetSync {
     }
   }
 
+  Uri? _lastOpened;
+
+  /// Ouvre le lien d'un tap, dès que le navigateur existe (le flux peut
+  /// livrer un tap avant la première image, au lancement).
   void _open(Uri? uri) {
-    if (homeWidgetNavigatorKey.currentState case final navigator?) {
-      openWidgetLink(navigator, uri);
-    }
+    _lastOpened = uri;
+    unawaited(openWidgetLinkWhenReady(homeWidgetNavigatorKey, uri));
   }
 
   Future<void> dispose() async => _taps?.cancel();
