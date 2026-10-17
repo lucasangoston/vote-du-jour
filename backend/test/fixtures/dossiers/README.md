@@ -42,3 +42,11 @@ rattachée par l'intitulé (DLR5L17N50169, scrutin 1194) ou par `dossierRef`
 (DLR5L17N52635, scrutin 6346), décision `CMP-DEBATS-DEC` du Sénat
 (DLR5L16N47722), adoption ou rejet sans vote après un 49.3 (DLR5L17N50588,
 DLR5L17N52428), rejets (DLR5L17N50453, DLR5L16N47697).
+
+Ajouté pour le ticket #22 (article unique), même archive, dans
+`article_unique/` (hors de l'archive de fixtures commune, ajouté par
+`test/article_unique_test.dart`) :
+
+| Dossier | Scrutins | Particularité |
+| --- | --- | --- |
+| DLR5L17N52700 | 7349 | résolution (art. 34-1) ; l'acte de décision cite le scrutin sur l'article unique |

@@ -92,6 +92,7 @@ class WidgetSyncingRepository extends DecisionsRepository {
   WidgetSyncingRepository({
     required super.baseUrl,
     super.client,
+    super.cache,
     required HomeWidgetSync sync,
   }) : _sync = sync;
 

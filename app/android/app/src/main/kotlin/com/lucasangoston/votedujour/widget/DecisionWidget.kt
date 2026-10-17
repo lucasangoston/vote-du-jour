@@ -1,5 +1,6 @@
 package com.lucasangoston.votedujour.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Composable
@@ -101,7 +102,8 @@ class DecisionWidget : GlanceAppWidget() {
           Text(it, style = caption(), maxLines = 1)
         }
         Spacer(GlanceModifier.defaultWeight())
-        Text(decision.dateLabel, style = caption(), maxLines = 1)
+        // Calculée à chaque rendu : le worker redessine le widget juste après minuit.
+        Text(RelativeDate.label(decision.date), style = caption(), maxLines = 1)
       }
       Spacer(GlanceModifier.height(8.dp))
       Text(
@@ -157,4 +159,25 @@ class DecisionWidget : GlanceAppWidget() {
 
 class DecisionWidgetReceiver : HomeWidgetGlanceWidgetReceiver<DecisionWidget>() {
   override val glanceAppWidget = DecisionWidget()
+
+  // Rafraîchissement autonome (voir DecisionRefreshWorker.kt) : programmé à l'ajout du widget et
+  // réarmé à chaque mise à jour système (démarrage, mise à jour de l'app).
+  override fun onEnabled(context: Context) {
+    super.onEnabled(context)
+    DecisionRefreshScheduler.schedule(context)
+  }
+
+  override fun onUpdate(
+      context: Context,
+      appWidgetManager: AppWidgetManager,
+      appWidgetIds: IntArray,
+  ) {
+    super.onUpdate(context, appWidgetManager, appWidgetIds)
+    DecisionRefreshScheduler.schedule(context)
+  }
+
+  override fun onDisabled(context: Context) {
+    super.onDisabled(context)
+    DecisionRefreshScheduler.cancel(context)
+  }
 }

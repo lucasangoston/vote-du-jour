@@ -57,6 +57,7 @@ void main() {
     final index = await readIndex();
     expect(index.generatedAt, clock);
     expect(index.decisions.map((d) => d.numero), [
+      7349, // l'article unique d'une proposition de résolution, 2026-06-04
       6346, // l'ensemble (CMP)
       5731, // motion de censure, 2026-02-25
       4802, // déclaration du Gouvernement, 2025-12-17
@@ -66,6 +67,7 @@ void main() {
       3054, // déclaration de politique générale, 2025-09-08
       2900, // l'ensemble, 2025-07-02
       2873, // motion de rejet préalable adoptée, 2025-06-30
+      2633, // l'article unique (vaut vote sur l'ensemble), 2025-06-23
       2278, // l’ensemble, 2025-06-10
       1194, // l'ensemble, 2025-04-01
       1018, // l'ensemble d'une proposition de résolution, 2025-03-13

@@ -5,17 +5,21 @@ import 'src/config.dart';
 import 'src/decision_detail/decision_detail_repository.dart';
 import 'src/decision_detail/decision_route.dart';
 import 'src/decision_list_page.dart';
+import 'src/decisions_cache.dart';
 import 'src/decisions_repository.dart';
 import 'src/home_widget/home_widget_sync.dart';
+import 'src/home_widget/widget_data_source.dart';
 import 'src/theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final widgetSync = HomeWidgetSync()..start();
+  shareDataBaseUrl(dataBaseUrl);
   runApp(
     VoteDuJourApp(
       repository: WidgetSyncingRepository(
         baseUrl: dataBaseUrl,
+        cache: FileDecisionsCache(),
         sync: widgetSync,
       ),
     ),

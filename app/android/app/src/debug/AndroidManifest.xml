@@ -4,4 +4,11 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <application>
+        <!-- Déclencheur manuel du rafraîchissement du widget (debug uniquement,
+             voir DebugRefreshReceiver.kt). -->
+        <receiver
+            android:name=".widget.DebugRefreshReceiver"
+            android:exported="true" />
+    </application>
 </manifest>
