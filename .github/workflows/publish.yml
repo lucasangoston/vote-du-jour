@@ -1,0 +1,47 @@
+name: Publication des décisions
+
+on:
+  schedule:
+    # Toutes les heures. Le jeu de données des scrutins est régénéré une fois
+    # par jour vers 12h30 (Paris) ; les autres exécutions s'arrêtent sur un 304.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Retraiter le jeu de données même s'il n'a pas changé"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+      - run: dart pub get
+      - name: Job (publication sur R2)
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: dart run bin/vote_job.dart --store=r2 ${{ inputs.force && '--force' || '' }}
+      - name: Vérification de la lecture publique
+        env:
+          R2_PUBLIC_BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
+        run: |
+          curl -fsS "$R2_PUBLIC_BASE_URL/v1/latest.json" \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print("schemaVersion", d["schemaVersion"], "-", len(d["decisions"]), "décisions, générées le", d["generatedAt"])'

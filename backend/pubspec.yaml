@@ -1,0 +1,22 @@
+name: vote_job
+description: >-
+  Job planifié : lit le jeu de données des scrutins de l'Assemblée nationale,
+  retient les décisions et publie l'index JSON (contrat vote_contract).
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  archive: ^4.0.0
+  args: ^2.7.0
+  crypto: ^3.0.0
+  http: ^1.2.0
+  path: ^1.9.0
+  vote_contract:
+    path: ../packages/vote_contract
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
