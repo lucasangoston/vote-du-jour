@@ -20,7 +20,7 @@ Données : open data de l'Assemblée nationale (Licence Ouverte Etalab).
 packages/vote_contract/  contrat de données partagé (Dart pur) : DecisionIndex, schemaVersion, chemin v1/latest.json
 backend/                 job Dart planifié : téléchargement conditionnel, lecture du dump, sélection des décisions, publication
 app/                     app Flutter (iOS, Android ; cible web pour le développement)
-.github/workflows/       ci.yml (tests) et publish.yml (job horaire + lancement manuel)
+.github/workflows/       ci.yml (tests), publish.yml (job horaire + lancement manuel) et live.yml (détection en direct)
 tools/                   outils ponctuels (spikes)
 ```
 
@@ -31,6 +31,8 @@ Données publiées dans le bucket :
 - `v1/latest.json` : les 50 dernières décisions, de la plus récente à la plus ancienne (format décrit dans `packages/vote_contract/README.md`). Un changement cassant du format publiera sous `v2/`.
 - `v1/decisions/<id>.json` : le détail de chaque décision de l'index (décompte, vote par groupe ; format dans `packages/vote_contract/README.md`). Seuls les fichiers dont le contenu a changé sont réécrits.
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
+- `state/scrutins-confirmes.json` : scrutins du dernier jeu de données utiles à l'index (retenus ou sur l'article unique), sans vote par groupe, et dernier numéro du jeu de données. Écrit par le job, relu par la détection en direct pour reconstruire l'index sans retélécharger l'archive.
+- `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
@@ -58,6 +60,22 @@ Un scrutin sur l'article unique d'un texte vaut vote sur l'ensemble : il est pub
 Les textes adoptés à main levée viennent aussi des dossiers législatifs : un acte de décision de l'Assemblée en séance (`AN…-DEBATS-DEC`, `CMP-DEBATS-AN-DEC`), au statut d'adoption, qui ne cite aucun scrutin (`voteRefs`), et sans scrutin public retenu ni scrutin sur l'article unique du même texte le même jour. Ils sont publiés avec `voteMode: main_levee`, sans numéro ni décompte.
 
 Le titre court et l'étape de la procédure viennent du jeu de données des dossiers législatifs (`Dossiers_Legislatifs.json.zip`, ~10 Mo), lui aussi téléchargé seulement s'il a changé. De nouveaux dossiers font retraiter les scrutins ; s'ils sont indisponibles, le job publie quand même avec le dernier index connu (ou des libellés tirés des intitulés).
+
+## Détection en direct
+
+Pendant les séances, le job lit la liste des 50 derniers scrutins du site de l'Assemblée (`https://www.assemblee-nationale.fr/dyn/17/scrutins?limit=50`, un GET par passage, User-Agent `vote-du-jour/1.0`), plus la page d'un nouveau scrutin seulement si la liste n'en donne pas le sort. Les scrutins plus récents que le jeu de données passent par le même sélecteur et le même rattachement aux dossiers ; ceux qui sont retenus sont publiés avec `status: provisoire`. Le jeu de données du lendemain les confirme (`status: confirmee`, même `id`) ; un scrutin provisoire qu'il ne contient pas encore reste publié comme provisoire.
+
+```bash
+cd backend
+dart run bin/vote_job.dart --live                    # dans les plages seulement (lun.-ven., 9h-24h, heure de Paris)
+dart run bin/vote_job.dart --live --ignore-window    # tout de suite
+dart run bin/vote_job.dart --live --live-days=1-5 --live-hours=9-24
+dart run bin/vote_job.dart --live --store=r2
+```
+
+Le workflow `live.yml` lance un passage toutes les 10 minutes. Les plages se règlent en tête du fichier (`LIVE_DAYS`, `LIVE_HOURS`, en heure de Paris, vérifiées par le job) ; le cron, en UTC, doit les englober en heure d'été comme en heure d'hiver. Il partage le groupe de concurrence `publish` avec `publish.yml` : jamais deux publications simultanées.
+
+Si le site est illisible (panne, structure changée), le passage s'arrête sans rien écrire et l'erreur apparaît en avertissement dans GitHub Actions ; le jeu de données continue d'être publié par `publish.yml`. Le site ne donne ni le type de vote (le garde-fou des scrutins solennels ne s'applique qu'avec le jeu de données), ni le dossier, ni le vote par groupe.
 
 ## App
 

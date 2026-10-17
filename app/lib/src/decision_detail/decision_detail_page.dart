@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:vote_contract/vote_contract.dart';
 
 import '../decision_list_page.dart' show capitalize, formatFrenchDate;
+import '../provisional_badge.dart';
 import '../theme.dart';
 import '../vote_mode_label.dart';
 import 'decision_detail_repository.dart';
@@ -94,6 +95,17 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
         null => const _Muted(mainLeveeNotice),
       },
     ),
+    // Décision provisoire (détection en direct, #10) : le site ne donne pas
+    // le vote par groupe, le jeu de données du lendemain le complète.
+    if (detail.groups.isEmpty &&
+        detail.count != null &&
+        detail.decision.status == DecisionStatus.provisoire) ...[
+      const SizedBox(height: 24),
+      const _Section(
+        title: 'Vote par groupe politique',
+        child: _Muted(provisionalGroupsNotice),
+      ),
+    ],
     if (detail.groups.isNotEmpty) ...[
       const SizedBox(height: 24),
       _Section(
@@ -115,6 +127,11 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
 /// Mention d'une décision sans scrutin public (ticket #8) : ni barre ni vote
 /// par groupe.
 const mainLeveeNotice = 'Adopté à main levée, sans décompte des voix.';
+
+/// Vote par groupe d'une décision provisoire, pas encore publié.
+const provisionalGroupsNotice =
+    'Vote par groupe disponible après confirmation par les données '
+    'officielles.';
 
 /// Résultat, date, titre court, étape, type et intitulé officiel.
 class _Header extends StatelessWidget {
@@ -140,6 +157,10 @@ class _Header extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+            ],
+            if (decision.status == DecisionStatus.provisoire) ...[
+              const SizedBox(width: 8),
+              const ProvisionalBadge(),
             ],
             const SizedBox(width: 12),
             Expanded(
@@ -170,7 +191,8 @@ class _Header extends StatelessWidget {
           const _Field(
             label: 'Statut',
             value:
-                'Provisoire : pas encore confirmé par les données officielles',
+                'Provisoire : lu sur le site de l\'Assemblée, pas encore '
+                'confirmé par les données officielles',
           ),
         _Field(
           label: 'Intitulé officiel',

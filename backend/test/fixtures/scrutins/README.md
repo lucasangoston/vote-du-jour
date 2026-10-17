@@ -55,6 +55,14 @@ Ajoutés pour le ticket #22 (article unique), même archive téléchargée le
 | 6902 | l'article unique (projet de loi, deuxième lecture) | ensemble voté en scrutin solennel une semaine plus tard (7260) : non publié |
 | 7260 | l'ensemble du projet de loi (deuxième lecture) | scrutin solennel |
 
+Ajoutés pour le ticket #10 (détection en direct), archive téléchargée le
+18/10/2026 (hors de `fixtureNumeros`) :
+
+| Scrutin | Catégorie | Particularité |
+| --- | --- | --- |
+| 8705 | la proposition de loi (première lecture) | scrutin solennel ; aussi lu sur le site (`../site/`) |
+| 8706 | la proposition de loi organique (première lecture) | idem : provisoire puis confirmé |
+
 `../titres_non_classes.csv` : les 47 intitulés réels que la règle initiale du
 PRD ne classait pas (numéro, date, code du type de vote, sort, titre), produits
 par le spike #15 (`tools/spike_delai`, branche `spike/15-delai-publication`)

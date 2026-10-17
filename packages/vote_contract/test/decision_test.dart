@@ -187,4 +187,57 @@ void main() {
       expect(old.map((d) => d.id), ['VTANR5L17V8706']);
     });
   });
+
+  group('statut (#10)', () {
+    test('absent : confirmée', () {
+      final json = {..._legacyScrutin}..remove('status');
+      expect(
+        DecisionSummary.tryFromJson(json)!.status,
+        DecisionStatus.confirmee,
+      );
+    });
+
+    test('aller-retour d\'une décision provisoire', () {
+      final json = {..._legacyScrutin, 'status': 'provisoire'};
+      final d = DecisionSummary.tryFromJson(json)!;
+      expect(d.status, DecisionStatus.provisoire);
+      final again = DecisionSummary.tryFromJson(
+        _roundTrip(d.toJson()) as Map<String, Object?>,
+      )!;
+      expect(again.status, DecisionStatus.provisoire);
+      expect(again.toJson(), d.toJson());
+    });
+
+    test('toujours écrit, même confirmée (lecteurs antérieurs à #10)', () {
+      final d = DecisionSummary.tryFromJson(
+        {..._legacyScrutin}..remove('status'),
+      )!;
+      expect(d.toJson()['status'], 'confirmee');
+      expect(_readerBefore8(d.toJson()), isNotNull);
+    });
+
+    test('un statut inconnu (job plus récent) rend la décision illisible', () {
+      expect(
+        DecisionSummary.tryFromJson({..._legacyScrutin, 'status': 'annulee'}),
+        isNull,
+      );
+    });
+
+    test(
+      'un index mêlant provisoires et confirmées se relit à l\'identique',
+      () {
+        final index = DecisionIndex.fromJson(
+          _index([
+            {..._legacyScrutin, 'status': 'provisoire'},
+            _mainLevee,
+          ]),
+        );
+        final again = DecisionIndex.fromJson(_roundTrip(index.toJson()));
+        expect(again.decisions.map((d) => d.status), [
+          DecisionStatus.provisoire,
+          DecisionStatus.confirmee,
+        ]);
+      },
+    );
+  });
 }

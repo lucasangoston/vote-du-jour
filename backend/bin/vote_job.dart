@@ -53,6 +53,34 @@ Future<void> main(List<String> arguments) async {
       help: 'Lit les acteurs et organes depuis un fichier zip local.',
     )
     ..addFlag(
+      'live',
+      negatable: false,
+      help:
+          "Détection en direct : lit la liste des scrutins du site de "
+          "l'Assemblée et publie les décisions provisoires (sans télécharger "
+          'le jeu de données).',
+    )
+    ..addOption(
+      'live-days',
+      defaultsTo: '1-5',
+      help: 'Jours de la détection en direct (1 = lundi), heure de Paris.',
+    )
+    ..addOption(
+      'live-hours',
+      defaultsTo: '9-24',
+      help: 'Heures de la détection en direct, heure de Paris.',
+    )
+    ..addFlag(
+      'ignore-window',
+      negatable: false,
+      help: 'Détection en direct même hors des jours et heures prévus.',
+    )
+    ..addOption(
+      'site-list-url',
+      defaultsTo: siteListUrl,
+      help: 'Page de liste des scrutins lue par la détection en direct.',
+    )
+    ..addFlag(
       'force',
       help: "Retraite les jeux de données même s'ils n'ont pas changé.",
     )
@@ -76,6 +104,12 @@ Future<void> main(List<String> arguments) async {
     'r2' => _r2StoreFromEnvironment(),
     _ => LocalDirectoryStore(args.option('out')!),
   };
+  if (args.flag('live')) {
+    await _runLive(args, store);
+    // Le client HTTP par défaut garde des connexions ouvertes.
+    exit(0);
+  }
+
   final dumpFile = args.option('dump-file');
   final source = dumpFile != null
       ? FileDumpSource(dumpFile)
@@ -99,6 +133,38 @@ Future<void> main(List<String> arguments) async {
   stdout.writeln(outcome);
   // Le client HTTP par défaut garde des connexions ouvertes.
   exit(0);
+}
+
+/// Détection en direct. Une erreur de lecture du site est journalisée (en
+/// avertissement dans GitHub Actions) sans faire échouer l'exécution.
+Future<void> _runLive(ArgResults args, ObjectStore store) async {
+  final LiveWindow window;
+  try {
+    window = LiveWindow.parse(
+      days: args.option('live-days')!,
+      hours: args.option('live-hours')!,
+    );
+  } on FormatException catch (e) {
+    stderr.writeln(e.message);
+    exit(64);
+  }
+  if (!args.flag('ignore-window') && !window.contains(DateTime.now())) {
+    stdout.writeln(LiveOutsideWindow(window));
+    return;
+  }
+  final outcome = await runLivePass(
+    site: HttpSiteSource(listUrl: args.option('site-list-url')!),
+    store: store,
+  );
+  stdout.writeln(outcome);
+  if (Platform.environment['GITHUB_ACTIONS'] == 'true') {
+    for (final w in [
+      if (outcome is LiveFailed) 'Site illisible : ${outcome.error}',
+      ...outcome.warnings,
+    ]) {
+      stdout.writeln('::warning title=Détection en direct::$w');
+    }
+  }
 }
 
 R2Store _r2StoreFromEnvironment() {

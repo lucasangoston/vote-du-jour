@@ -1,0 +1,64 @@
+name: Détection en direct des décisions
+
+# Pendant les séances, lit la liste des scrutins du site de l'Assemblée et
+# publie les décisions provisoires (ticket #10). Le jeu de données du
+# lendemain les confirme (publish.yml).
+#
+# Réglages, à ajuster avec les mesures du spike #15 :
+# - fréquence : le cron ci-dessous (toutes les 10 minutes) ;
+# - plages : LIVE_DAYS et LIVE_HOURS, en heure de Paris, vérifiées par le job.
+#   Le cron GitHub est en UTC : il doit englober ces plages en heure d'été
+#   (UTC+2) comme en heure d'hiver (UTC+1). 7-22 UTC couvre 9h-24h à Paris
+#   toute l'année (passages de 8h à 23h50 l'hiver, de 9h à 0h50 l'été) ; le
+#   job écarte ceux qui sortent des plages.
+#   Pour ajouter un jour (séance le samedi…), changer LIVE_DAYS et le cron.
+
+on:
+  schedule:
+    - cron: '*/10 7-22 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      ignore_window:
+        description: 'Lire le site même hors des plages de séance'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  LIVE_DAYS: '1-5'
+  LIVE_HOURS: '9-24'
+
+# Même groupe que publish.yml : jamais deux publications simultanées dans le
+# bucket (index et état).
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+      - run: dart pub get
+      - name: Passage de détection (publication sur R2)
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        # Une erreur de lecture du site est journalisée en avertissement sans
+        # faire échouer l'exécution ; le jeu de données reste publié par
+        # publish.yml.
+        run: >-
+          dart run bin/vote_job.dart --store=r2 --live
+          --live-days="$LIVE_DAYS" --live-hours="$LIVE_HOURS"
+          ${{ inputs.ignore_window && '--ignore-window' || '' }}

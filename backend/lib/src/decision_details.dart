@@ -28,6 +28,24 @@ List<DecisionDetail> buildDecisionDetails(
   ];
 }
 
+/// Détails des décisions provisoires de [index] (détection en direct, #10)
+/// à partir des scrutins lus sur le site ([provisional]) : décompte du site,
+/// sans vote par groupe, que le site ne donne pas. Les détails des décisions
+/// confirmées ne sont pas reconstruits : le passage en direct n'a pas les
+/// votes par groupe du jeu de données.
+List<DecisionDetail> buildProvisionalDetails(
+  Iterable<Scrutin> provisional,
+  DecisionIndex index,
+) {
+  final byUid = {for (final s in provisional) s.uid: s};
+  return [
+    for (final d in index.decisions)
+      if (d.status == DecisionStatus.provisoire)
+        if (byUid[d.id] case final scrutin?)
+          buildDecisionDetail(d, scrutin: scrutin),
+  ];
+}
+
 /// Détail d'une décision : [decision] (champs de l'index), plus le décompte
 /// et le vote par groupe de son [scrutin].
 DecisionDetail buildDecisionDetail(

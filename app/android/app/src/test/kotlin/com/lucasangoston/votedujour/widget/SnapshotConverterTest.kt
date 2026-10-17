@@ -71,6 +71,25 @@ class SnapshotConverterTest {
   }
 
   @Test
+  fun ajoute_provisoire_a_l_etape() {
+    val index =
+        """{"schemaVersion":1,"decisions":[
+        ${decision(8721, ""","stage":"1re lecture à l'AN"""").replace("\"confirmee\"", "\"provisoire\"")},
+        ${decision(8720).replace("\"confirmee\"", "\"provisoire\"")},
+        ${decision(8719, ""","stage":"1re lecture à l'AN"""").replace("\"status\":\"confirmee\",", "")},
+        ${decision(8718).replace("\"confirmee\"", "\"annulee\"")}]}"""
+
+    val decisions = JSONObject(SnapshotConverter.fromIndex(index, savedAt)!!).getJSONArray("decisions")
+
+    assertEquals(3, decisions.length())
+    assertEquals("1re lecture à l'AN · provisoire", decisions.getJSONObject(0).getString("stage"))
+    assertEquals("L'ensemble du projet de loi n° 8721.", decisions.getJSONObject(0).getString("title"))
+    assertEquals("Provisoire", decisions.getJSONObject(1).getString("stage"))
+    // `status` absent : confirmée ; statut inconnu : ignorée.
+    assertEquals("1re lecture à l'AN", decisions.getJSONObject(2).getString("stage"))
+  }
+
+  @Test
   fun refuse_une_autre_version_ou_un_index_illisible() {
     assertNull(SnapshotConverter.fromIndex("""{"schemaVersion":2,"decisions":[]}""", savedAt))
     assertNull(SnapshotConverter.fromIndex("pas du json", savedAt))

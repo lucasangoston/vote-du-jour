@@ -8,6 +8,8 @@ import 'dump_reader.dart';
 import 'dump_source.dart';
 import 'group_directory.dart';
 import 'index_builder.dart';
+import 'live/live_state.dart';
+import 'live/reconciler.dart';
 import 'object_store.dart';
 import 'scrutin.dart';
 
@@ -96,6 +98,13 @@ class JobPublished extends JobOutcome {
 /// indisponibles ou illisibles, le job publie quand même, avec le dernier
 /// index connu ou, à défaut, des libellés tirés des intitulés.
 ///
+/// Les scrutins provisoires de la détection en direct ([LiveState]) passent
+/// par le réconciliateur ([reconcile]) : ceux que le jeu de données contient
+/// sont confirmés, les autres restent publiés comme provisoires. Le job
+/// enregistre aussi l'instantané des scrutins dont la détection en direct a
+/// besoin ([ConfirmedSnapshot]) ; s'il manque, le jeu de données est
+/// retraité.
+///
 /// [force] ignore l'état et retraite les jeux de données.
 Future<JobOutcome> runJob({
   required DumpSource source,
@@ -106,7 +115,11 @@ Future<JobOutcome> runJob({
   bool force = false,
 }) async {
   final warnings = <String>[];
-  final previous = force ? null : _readLastModified(await store.read(stateKey));
+  // Sans instantané pour la détection en direct (#10), on retraite le jeu
+  // de données pour l'écrire.
+  final previous = force || await store.read(confirmedSnapshotKey) == null
+      ? null
+      : _readLastModified(await store.read(stateKey));
 
   final dossierState = dossiers == null || force
       ? null
@@ -135,15 +148,25 @@ Future<JobOutcome> runJob({
     case DumpDownloaded(:final bytes, :final lastModified):
       final scrutins = readScrutinsArchive(bytes);
       final now = clock().toUtc();
-      final index = buildDecisionIndex(
-        scrutins,
+      // Les décisions provisoires détectées en direct (#10) que le jeu de
+      // données ne contient pas encore restent publiées.
+      final live = await LiveState.read(store, warnings);
+      final reconciled = reconcile(
+        confirmed: scrutins,
+        provisional: live.provisionalScrutins,
         generatedAt: now,
         dossiers: dossierIndex,
       );
-      // Les détails avant l'index, qui renvoie vers eux.
+      final index = reconciled.index;
+      // Les détails avant l'index, qui renvoie vers eux. Les décisions
+      // encore provisoires ont le décompte du site, sans vote par groupe.
       final detailsWritten = await publishDecisionDetails(
         store,
-        buildDecisionDetails(scrutins, index, groups: groups.directory),
+        buildDecisionDetails(
+          [...scrutins, ...reconciled.pending],
+          index,
+          groups: groups.directory,
+        ),
       );
       await store.write(
         indexPath,
@@ -170,6 +193,13 @@ Future<JobOutcome> runJob({
         );
       }
       await groups.save(store);
+      await ConfirmedSnapshot.fromDump(
+        scrutins,
+        lastModified: lastModified,
+      ).write(store);
+      await live
+          .keepOnly({for (final s in reconciled.pending) s.uid})
+          .write(store);
       return JobPublished(
         scrutins: scrutins.length,
         index: index,

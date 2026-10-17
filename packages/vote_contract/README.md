@@ -65,7 +65,20 @@ Valeurs :
   solennel dont l'intitulé n'est pas reconnu) ;
 - `result` : `adopte`, `rejete` — l'issue à afficher pour le texte : pour
   `rejet_prealable`, la motion est adoptée donc `result` vaut `rejete` ;
-- `status` : `provisoire`, `confirmee`.
+- `status` : `provisoire`, `confirmee` (voir ci-dessous).
+
+Statut (ticket #10, détection en direct) :
+
+- `status` vaut `provisoire` pour une décision lue sur le site de l'Assemblée
+  pendant la séance, avant le jeu de données officiel, et `confirmee` une fois
+  qu'elle y figure (même `id`, celui du scrutin). Une décision provisoire n'a
+  ni dossier rattaché par référence ni vote par groupe ; son titre court et son
+  étape peuvent changer à la confirmation.
+- Le champ est optionnel à la lecture : absent, il vaut `confirmee`. Le job
+  l'écrit toujours, car les versions de l'app antérieures au ticket #10
+  l'exigent (elles connaissent déjà la valeur `provisoire`).
+- Une valeur inconnue rend la décision illisible (elle est ignorée), comme
+  pour les autres énumérations.
 
 Champs optionnels (ajoutés par le ticket #7, absents des index plus anciens ;
 un lecteur doit prévoir leur absence) :
@@ -136,6 +149,10 @@ reste identique octet pour octet et le job ne le réécrit pas.
 ```
 
 - `count` est absent et `groups` vide pour un texte adopté à main levée.
+- Une décision provisoire (détection en direct, #10) a le décompte lu sur le
+  site (`nonVotants` à 0, le site ne le donne pas) et `groups` vide ; le
+  passage en direct n'écrit que les détails des décisions provisoires, et la
+  publication du jeu de données les réécrit, confirmés et complétés.
 - `groups` suit l'ordre de l'open data (du plus grand au plus petit groupe).
   `name` est le libellé du groupe (organe de type `GP`) dans le jeu de données
   des acteurs et organes de la législature (AMO20, qui garde aussi les groupes

@@ -207,6 +207,60 @@ void main() {
     expect(find.text("Dossier sur le site de l'Assemblée"), findsOneWidget);
   });
 
+  testWidgets('détail d\'une décision provisoire', (tester) async {
+    final provisional = DecisionDetail(
+      decision: DecisionSummary.tryFromJson({
+        ..._summary.toJson(),
+        'id': 'VTANR5L17V8706',
+        'numero': 8706,
+        'status': 'provisoire',
+      })!,
+      count: const VoteCount(
+        pour: 503,
+        contre: 0,
+        abstentions: 67,
+        nonVotants: 0,
+      ),
+    );
+    final client = MockClient(
+      (request) async => request.url.path == '/v1/decisions/VTANR5L17V8706.json'
+          ? http.Response.bytes(
+              utf8.encode(jsonEncode(provisional.toJson())),
+              200,
+            )
+          : http.Response('', 404),
+    );
+    final navigatorKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: const Scaffold(body: Text('Liste')),
+        onGenerateRoute: (settings) => generateDecisionRoute(
+          settings,
+          repository: DecisionDetailRepository(
+            baseUrl: 'https://example.test',
+            client: client,
+          ),
+        ),
+      ),
+    );
+    openWidgetLink(
+      navigatorKey.currentState!,
+      Uri.parse('votedujour://decisions/VTANR5L17V8706?homeWidget'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('provisoire'), findsOneWidget);
+    expect(find.text('503'), findsOneWidget);
+    expect(
+      find.text(
+        'Vote par groupe disponible après confirmation par les données '
+        'officielles.',
+      ),
+      findsOneWidget,
+    );
+  });
+
   test('liens profonds des widgets', () {
     expect(
       decisionIdFromDeepLink(
