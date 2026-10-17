@@ -1,0 +1,16 @@
+name: spike_delai
+description: >-
+  Spike #15 : mesure du délai de publication des scrutins sur le site de
+  l'Assemblée nationale et fiabilité du filtrage par titre. Outil jetable,
+  indépendant du paquet backend.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  archive: ^3.6.1
+
+dev_dependencies:
+  test: ^1.25.0
