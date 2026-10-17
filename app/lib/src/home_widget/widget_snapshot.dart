@@ -1,5 +1,7 @@
 import 'package:vote_contract/vote_contract.dart';
 
+import '../vote_mode_label.dart';
+
 /// Instantané des dernières décisions, écrit par l'app dans l'espace partagé
 /// avec les widgets natifs (App Group sur iOS, SharedPreferences sur Android).
 ///
@@ -93,15 +95,22 @@ class WidgetDecision {
     this.explanation,
   });
 
+  /// Les widgets natifs ne connaissent pas le mode de vote : la mention
+  /// « à main levée » est ajoutée à l'étape, qu'ils affichent déjà.
   factory WidgetDecision.fromSummary(DecisionSummary d) => WidgetDecision(
     id: d.id,
     result: d.result,
     date: d.date,
     title: _capitalize(d.displayTitle.trim()),
-    stage: d.stage,
+    stage: switch ((d.stage, voteModeLabel(d.voteMode))) {
+      (final stage?, final mode?) => '$stage · $mode',
+      (null, final mode?) => _capitalize(mode),
+      (final stage, null) => stage,
+    },
   );
 
-  /// Identifiant officiel du scrutin (deep link vers le détail, plus tard).
+  /// Identifiant de la décision (deep link vers le détail) : celui du
+  /// scrutin, ou de l'acte de décision pour un vote à main levée.
   final String id;
 
   final VoteResult result;
@@ -113,7 +122,8 @@ class WidgetDecision {
   /// Titre principal, déjà prêt à afficher.
   final String title;
 
-  /// Étape de la procédure (« 1re lecture à l'AN »), si connue.
+  /// Étape de la procédure (« 1re lecture à l'AN »), si connue, suivie de
+  /// « · à main levée » pour un vote sans scrutin public.
   final String? stage;
 
   /// Phrase d'explication en langage simple, si disponible.

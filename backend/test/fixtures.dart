@@ -4,8 +4,8 @@ import 'package:archive/archive.dart';
 
 /// Numéros des scrutins enregistrés dans `test/fixtures/scrutins/`.
 const fixtureNumeros = [
-  217, 289, 504, 519, 1018, 1194, 2278, 2372, 2873, 3022, 3054, 4241, //
-  4696, 4758, 4802, 5731, 6346, 7349,
+  217, 289, 504, 519, 1011, 1018, 1194, 2278, 2372, 2633, 2873, 2900, //
+  3022, 3054, 4241, 4696, 4758, 4802, 5731, 6346, 7349,
 ];
 
 File fixtureFile(int numero) =>

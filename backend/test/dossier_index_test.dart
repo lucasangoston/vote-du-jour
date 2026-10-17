@@ -28,7 +28,7 @@ void main() {
 
   group('lecture de l\'index des dossiers (fixtures réelles)', () {
     test('lit chaque dossier de l\'archive', () {
-      expect(index.length, 13);
+      expect(index.length, 18);
     });
 
     test('lit le titre du dossier (titreDossier.titre)', () {
@@ -47,14 +47,14 @@ void main() {
       final withNoise = DossierIndex.fromArchive(
         fixtureDossiersArchive(extra: {'LISEZMOI.txt': 'rien'}),
       );
-      expect(withNoise.length, 13);
+      expect(withNoise.length, 18);
     });
 
     test('un document illisible est ignoré', () {
       final withBadDoc = DossierIndex.fromArchive(
         fixtureDossiersArchive(extra: {'json/document/X.json': '{"doc'}),
       );
-      expect(withBadDoc.length, 13);
+      expect(withBadDoc.length, 18);
     });
 
     test('un dossier sans titre est signalé', () {

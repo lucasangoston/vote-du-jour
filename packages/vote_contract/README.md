@@ -27,6 +27,7 @@ Exemple de `v1/latest.json` :
     {
       "id": "VTANR5L17V8706",
       "numero": 8706,
+      "voteMode": "scrutin_public",
       "type": "ensemble",
       "status": "confirmee",
       "result": "adopte",
@@ -36,6 +37,19 @@ Exemple de `v1/latest.json` :
       "shortTitle": "Adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
       "stage": "1re lecture à l'AN",
       "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54777"
+    },
+    {
+      "id": "L17-VD234087DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-07",
+      "officialTitle": "projet de loi autorisant l'approbation de l'accord multilatéral entre autorités compétentes portant sur l'échange des informations GloBE",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379",
+      "shortTitle": "Projet de loi autorisant l’approbation de l’accord multilatéral entre autorités compétentes portant sur l’échange des informations GloBE",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379"
     }
   ]
 }
@@ -74,3 +88,23 @@ un lecteur doit prévoir leur absence) :
   votée » : c'est l'étape du vote à l'Assemblée.
 - `dossierUrl` : page officielle du dossier législatif, si la décision y est
   rattachée.
+
+Textes adoptés à main levée (ticket #8) :
+
+- `voteMode` (optionnel) : `scrutin_public` ou `main_levee`. Absent des index
+  plus anciens, il vaut alors `scrutin_public`. Une valeur inconnue rend la
+  décision illisible (elle est ignorée), comme pour les autres énumérations.
+- Une décision `main_levee` n'a **pas de `numero`** (champ omis), ni décompte,
+  ni vote par groupe : seuls les textes adoptés sont publiés (`result` vaut
+  toujours `adopte`). Son `id` est l'identifiant de l'acte de décision du
+  dossier législatif (`L17-VD…DEC`), stable d'une publication à l'autre ;
+  `officialTitle` est l'intitulé du texte adopté (à défaut, le titre du
+  dossier) et `sourceUrl` la page du dossier. `type` vaut `ensemble` ou
+  `resolution`, `stage` suit les mêmes règles que pour un scrutin.
+- `numero` reste obligatoire pour un `scrutin_public`.
+- Une version de l'app antérieure à ce champ exige `numero` : elle ignore donc
+  les décisions à main levée, sans erreur, et lit les autres (vérifié par
+  `test/decision_test.dart`).
+- À date égale, l'index place les scrutins publics (numéro décroissant) avant
+  les votes à main levée (`id` décroissant) : l'open data ne donne pas
+  l'heure.
