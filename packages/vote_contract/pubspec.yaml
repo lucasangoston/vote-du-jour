@@ -1,0 +1,12 @@
+name: vote_contract
+description: >-
+  Contrat de données publié par le job et lu par l'app (format JSON versionné
+  des décisions de l'Assemblée nationale).
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dev_dependencies:
+  lints: ^6.0.0
