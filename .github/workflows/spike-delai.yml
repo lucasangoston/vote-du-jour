@@ -1,0 +1,59 @@
+# Spike #15 : mesure du délai de publication des scrutins sur le site de l'AN.
+# Ne tourne qu'une fois ce fichier présent sur la branche par défaut (main).
+# Le relevé est commité sur la branche `spike-data`.
+# À supprimer une fois le spike terminé.
+name: Spike délai de publication (#15)
+
+on:
+  schedule:
+    # Toutes les 5 minutes, du lundi au vendredi, 07:00-22:55 UTC, soit
+    # 09:00-00:55 à Paris en heure d'été et 08:00-23:55 en heure d'hiver
+    # (le cron GitHub est en UTC). Les passages réels sont souvent retardés :
+    # passages.csv en garde la trace.
+    - cron: "*/5 7-22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: spike-delai
+  cancel-in-progress: false
+
+jobs:
+  releve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          ref: spike-data
+          path: spike-data
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Dépendances
+        working-directory: tools/spike_delai
+        run: dart pub get
+
+      - name: Passage de mesure
+        working-directory: tools/spike_delai
+        run: dart run bin/spike_delai.dart releve "$GITHUB_WORKSPACE/spike-data"
+
+      - name: Synthèse
+        if: always()
+        working-directory: tools/spike_delai
+        run: dart run bin/spike_delai.dart resume "$GITHUB_WORKSPACE/spike-data" > "$GITHUB_WORKSPACE/spike-data/resume.md"
+
+      - name: Enregistrer le relevé
+        if: always()
+        working-directory: spike-data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -q -m "relevé $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push -q origin HEAD:spike-data
