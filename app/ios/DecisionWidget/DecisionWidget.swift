@@ -22,12 +22,10 @@ struct DecisionProvider: TimelineProvider {
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<DecisionEntry>) -> Void) {
-    let entry = DecisionEntry(date: .now, decision: DecisionSnapshot.load()?.decisions.first)
-    // L'app recharge le widget dès qu'elle écrit un nouvel instantané ; on
-    // redessine aussi à minuit, pour une future date relative.
-    let midnight = Calendar.current.nextDate(
-      after: .now, matching: DateComponents(hour: 0, minute: 1), matchingPolicy: .nextTime)
-    completion(Timeline(entries: [entry], policy: midnight.map { .after($0) } ?? .never))
+    // Rafraîchi sans l'app toutes les heures, avec une entrée à minuit pour la
+    // date relative (voir DecisionFetcher.swift). L'app recharge aussi le widget
+    // dès qu'elle écrit un nouvel instantané.
+    Task { completion(await DecisionTimeline.make()) }
   }
 }
 
@@ -37,7 +35,7 @@ struct DecisionWidgetView: View {
   var body: some View {
     Group {
       if let decision = entry.decision {
-        DecisionView(decision: decision)
+        DecisionView(decision: decision, now: entry.date)
       } else {
         EmptyDecisionView()
       }
@@ -49,6 +47,8 @@ struct DecisionWidgetView: View {
 
 private struct DecisionView: View {
   let decision: WidgetDecision
+  /// Instant d'affichage de l'entrée, pour la date relative.
+  let now: Date
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
@@ -61,7 +61,7 @@ private struct DecisionView: View {
             .lineLimit(1)
         }
         Spacer(minLength: 4)
-        Text(decision.dateLabel)
+        Text(RelativeDate.label(day: decision.date, now: now))
           .font(.caption)
           .foregroundStyle(.secondary)
           .lineLimit(1)

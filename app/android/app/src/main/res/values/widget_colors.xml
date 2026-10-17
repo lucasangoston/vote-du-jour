@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Couleurs de l'aperçu du widget (sélecteur de widgets), mêmes valeurs que
+     WidgetColors dans DecisionWidget.kt. Variante sombre dans values-night. -->
+<resources>
+    <color name="decision_widget_background">#FFFFFFFF</color>
+    <color name="decision_widget_primary">#FF1B1B1B</color>
+    <color name="decision_widget_secondary">#FF5E5E5E</color>
+</resources>

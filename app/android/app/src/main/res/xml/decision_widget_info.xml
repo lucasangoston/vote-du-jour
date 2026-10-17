@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Widget moyen (4 x 2) : la dernière décision. L'app le met à jour à chaque
-     chargement réussi des décisions ; pas de rafraîchissement périodique. -->
+     chargement réussi des décisions ; sans l'app, DecisionRefreshWorker (WorkManager)
+     le rafraîchit toutes les heures, d'où updatePeriodMillis à 0. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/decision_widget_description"
     android:initialLayout="@layout/glance_default_loading_layout"

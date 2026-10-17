@@ -13,6 +13,10 @@
 		40F2E89E65CEB1EBA11791AA /* DecisionWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9E3B57ADD6442E51B7DC5962 /* DecisionWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		46499EF79BC5F4D8CAC79BCB /* DecisionWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1DBD681933F4F3FA946FCC /* DecisionWidget.swift */; };
 		5C98907F8E933BEE600B6BA8 /* DecisionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD7708118B29BD5A8CBBD0F /* DecisionSnapshot.swift */; };
+		A12E0C0F1A2B3C4D5E6F7003 /* RelativeDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7001 /* RelativeDate.swift */; };
+		A12E0C0F1A2B3C4D5E6F7004 /* DecisionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7002 /* DecisionFetcher.swift */; };
+		A12E0C0F1A2B3C4D5E6F7005 /* RelativeDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7001 /* RelativeDate.swift */; };
+		A12E0C0F1A2B3C4D5E6F7007 /* RelativeDateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7006 /* RelativeDateTests.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
@@ -70,6 +74,9 @@
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		4FD7708118B29BD5A8CBBD0F /* DecisionSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DecisionSnapshot.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7001 /* RelativeDate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RelativeDate.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7002 /* DecisionFetcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DecisionFetcher.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7006 /* RelativeDateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelativeDateTests.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -111,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
+				A12E0C0F1A2B3C4D5E6F7006 /* RelativeDateTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -120,6 +128,8 @@
 			children = (
 				7F1DBD681933F4F3FA946FCC /* DecisionWidget.swift */,
 				4FD7708118B29BD5A8CBBD0F /* DecisionSnapshot.swift */,
+				A12E0C0F1A2B3C4D5E6F7001 /* RelativeDate.swift */,
+				A12E0C0F1A2B3C4D5E6F7002 /* DecisionFetcher.swift */,
 				2D84410258265CFF9C57F2CA /* Info.plist */,
 				DD45EEFB39A6CDC5893A2728 /* DecisionWidget.entitlements */,
 			);
@@ -350,6 +360,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7005 /* RelativeDate.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7007 /* RelativeDateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -369,6 +381,8 @@
 			files = (
 				46499EF79BC5F4D8CAC79BCB /* DecisionWidget.swift in Sources */,
 				5C98907F8E933BEE600B6BA8 /* DecisionSnapshot.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7003 /* RelativeDate.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7004 /* DecisionFetcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

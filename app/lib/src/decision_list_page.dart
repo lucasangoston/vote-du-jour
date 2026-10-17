@@ -3,6 +3,7 @@ import 'package:vote_contract/vote_contract.dart';
 
 import 'decisions_repository.dart';
 import 'discovery_actions.dart';
+import 'relative_date.dart';
 import 'theme.dart';
 
 /// Liste des dernières décisions. Se rafraîchit à l'ouverture et à chaque
@@ -38,6 +39,13 @@ class _DecisionListPageState extends State<DecisionListPage> {
   Future<void> _refresh() async {
     if (_loading) return;
     setState(() => _loading = true);
+    // Hors ligne : afficher d'abord les dernières données connues.
+    if (_index == null) {
+      final cached = await widget.repository.readCached();
+      if (mounted && cached != null && _index == null) {
+        setState(() => _index = cached);
+      }
+    }
     try {
       final index = await widget.repository.fetchLatest();
       if (!mounted) return;
@@ -50,7 +58,11 @@ class _DecisionListPageState extends State<DecisionListPage> {
       setState(() => _error = e);
       if (_index != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Actualisation impossible.')),
+          const SnackBar(
+            content: Text(
+              'Actualisation impossible : dernières données connues.',
+            ),
+          ),
         );
       }
     } finally {
@@ -117,7 +129,7 @@ class _DecisionTile extends StatelessWidget {
               _ResultBadge(decision.result),
               const SizedBox(width: 12),
               Text(
-                formatFrenchDate(decision.date),
+                relativeDayLabel(decision.date, now: DateTime.now()),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
