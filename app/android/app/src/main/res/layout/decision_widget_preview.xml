@@ -24,14 +24,13 @@
             android:textSize="12sp"
             android:textStyle="bold" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
+        <!-- RemoteViews n'accepte pas de View nue : la date prend la place
+             restante et s'aligne à droite. -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
             android:text="13 octobre 2026"
             android:textColor="#FF5E5E5E"
             android:textSize="12sp" />
