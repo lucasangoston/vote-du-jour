@@ -89,6 +89,9 @@ object SnapshotConverter {
   /** Mention du mode de vote (`lib/src/vote_mode_label.dart`). */
   private const val MAIN_LEVEE_LABEL = "à main levée"
 
+  /** Mention d'une décision pas encore confirmée (`lib/src/decision_status_label.dart`). */
+  private const val PROVISIONAL_LABEL = "provisoire"
+
   /** `null` si l'index est illisible ou d'une autre version de schéma. */
   fun fromIndex(json: String, savedAt: Instant): String? {
     val root =
@@ -123,7 +126,9 @@ object SnapshotConverter {
     val numero = if (d.isNull("numero")) null else d.opt("numero")
     if (numero != null && numero !is Int && numero !is Long) return null
     if (numero == null && voteMode == SCRUTIN_PUBLIC) return null
-    if ((d.opt("type") as? String) !in TYPES || (d.opt("status") as? String) !in STATUSES) {
+    // `status` absent : confirmée (champ optionnel depuis le ticket #10).
+    val status = if (d.isNull("status")) "confirmee" else d.opt("status") as? String
+    if ((d.opt("type") as? String) !in TYPES || status !in STATUSES) {
       return null
     }
     val result = (d.opt("result") as? String)?.takeIf { it in RESULTS } ?: return null
@@ -136,14 +141,20 @@ object SnapshotConverter {
     val officialTitle = d.opt("officialTitle") as? String ?: return null
     if (d.opt("sourceUrl") !is String) return null
     val shortTitle = optionalString(d, "shortTitle")
-    // Même règle que `WidgetDecision.fromSummary` : la mention « à main levée »
-    // s'ajoute à l'étape, que le widget affiche déjà.
+    // Même règle que `WidgetDecision.fromSummary` : les mentions « à main levée »
+    // et « provisoire » s'ajoutent à l'étape, que le widget affiche déjà.
+    val mentions =
+        listOfNotNull(
+                MAIN_LEVEE_LABEL.takeIf { voteMode == MAIN_LEVEE },
+                PROVISIONAL_LABEL.takeIf { status == "provisoire" },
+            )
+            .joinToString(" · ")
     val stage =
         optionalString(d, "stage").let { stage ->
           when {
-            voteMode != MAIN_LEVEE -> stage
-            stage != null -> "$stage · $MAIN_LEVEE_LABEL"
-            else -> MAIN_LEVEE_LABEL.replaceFirstChar { it.uppercase() }
+            mentions.isEmpty() -> stage
+            stage != null -> "$stage · $mentions"
+            else -> mentions.replaceFirstChar { it.uppercase() }
           }
         }
     val out =

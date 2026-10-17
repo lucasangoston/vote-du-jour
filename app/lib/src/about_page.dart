@@ -99,14 +99,14 @@ class AboutPage extends StatelessWidget {
             title: 'Délai de publication',
             children: [
               _Paragraph(
-                'Les décisions sont mises à jour une fois par jour, à partir '
-                'du jeu de données publié par l\'Assemblée : un vote apparaît '
-                'en général le lendemain.',
+                'Pendant les séances, le site de l\'Assemblée est consulté '
+                'régulièrement : une décision apparaît, marquée « provisoire », '
+                'environ 10 à 30 minutes après le vote.',
               ),
               _Paragraph(
-                'Une publication plus rapide pendant les séances est à '
-                'l\'étude : une décision y serait marquée provisoire jusqu\'à '
-                'sa confirmation par les données officielles du lendemain.',
+                'Elle est confirmée le lendemain par le jeu de données officiel '
+                'publié par l\'Assemblée, qui complète le décompte et le vote '
+                'par groupe. Le titre court peut alors être précisé.',
               ),
             ],
           ),

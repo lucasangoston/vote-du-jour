@@ -3,6 +3,7 @@ import 'package:vote_contract/vote_contract.dart';
 
 import 'decisions_repository.dart';
 import 'discovery_actions.dart';
+import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'theme.dart';
 import 'vote_mode_label.dart';
@@ -139,6 +140,11 @@ class _DecisionTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+              ],
+              // Lue pendant la séance, pas encore confirmée (ticket #10).
+              if (decision.status == DecisionStatus.provisoire) ...[
+                const SizedBox(width: 8),
+                const ProvisionalBadge(),
               ],
               const SizedBox(width: 12),
               Text(

@@ -116,6 +116,12 @@ class DecisionSummary {
   final VoteMode voteMode;
 
   final DecisionType type;
+
+  /// [DecisionStatus.provisoire] pour une décision lue sur le site de
+  /// l'Assemblée pendant la séance (#10), [DecisionStatus.confirmee] une fois
+  /// dans le jeu de données officiel. Champ optionnel à la lecture : absent,
+  /// il vaut [DecisionStatus.confirmee]. Le job l'écrit toujours, car les
+  /// versions de l'app antérieures au ticket #10 l'exigent.
   final DecisionStatus status;
 
   /// Issue pour le texte ou l'objet du vote, à afficher dans le badge. Elle
@@ -166,7 +172,9 @@ class DecisionSummary {
         ? VoteMode.scrutinPublic
         : VoteMode.tryParse(json['voteMode']);
     final type = DecisionType.tryParse(json['type']);
-    final status = DecisionStatus.tryParse(json['status']);
+    final status = json['status'] == null
+        ? DecisionStatus.confirmee
+        : DecisionStatus.tryParse(json['status']);
     final result = VoteResult.tryParse(json['result']);
     final id = json['id'];
     final numero = json['numero'];
