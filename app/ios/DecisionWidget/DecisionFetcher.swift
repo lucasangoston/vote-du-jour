@@ -71,6 +71,8 @@ enum SnapshotConverter {
   private static let voteModes: Set<String> = ["scrutin_public", "main_levee"]
   /// Mention du mode de vote (`lib/src/vote_mode_label.dart`).
   private static let mainLeveeLabel = "à main levée"
+  /// Mention d'une décision pas encore confirmée (`lib/src/decision_status_label.dart`).
+  private static let provisionalLabel = "provisoire"
 
   /// Instantané JSON, ou `nil` si l'index est illisible ou d'une autre version.
   static func snapshot(fromIndex data: Data, savedAt: Date) -> String? {
@@ -99,13 +101,16 @@ enum SnapshotConverter {
     let rawMode = d["voteMode"].flatMap { $0 is NSNull ? nil : $0 }
     let voteMode = rawMode == nil ? "scrutin_public" : rawMode as? String
     let numero = d["numero"].flatMap { $0 is NSNull ? nil : $0 }
+    // `status` absent : confirmée (champ optionnel depuis le ticket #10).
+    let rawStatus = d["status"].flatMap { $0 is NSNull ? nil : $0 }
+    let status = rawStatus == nil ? "confirmee" : rawStatus as? String
     guard
       let voteMode, voteModes.contains(voteMode),
       numero == nil || numero is Int,
       numero != nil || voteMode != "scrutin_public",
       let id = d["id"] as? String,
       let type = d["type"] as? String, types.contains(type),
-      let status = d["status"] as? String, statuses.contains(status),
+      let status, statuses.contains(status),
       let result = d["result"] as? String, results.contains(result),
       let date = normalizedDay(d["date"]),
       let officialTitle = d["officialTitle"] as? String,
@@ -119,14 +124,18 @@ enum SnapshotConverter {
       "date": date,
       "title": title.prefix(1).uppercased() + title.dropFirst(),
     ]
-    // Même règle que `WidgetDecision.fromSummary` : la mention « à main levée »
-    // s'ajoute à l'étape, que le widget affiche déjà.
+    // Même règle que `WidgetDecision.fromSummary` : les mentions « à main
+    // levée » et « provisoire » s'ajoutent à l'étape, que le widget affiche déjà.
     let stage = optionalString(d["stage"])
-    if voteMode == "main_levee" {
-      out["stage"] = stage.map { "\($0) · \(mainLeveeLabel)" }
-        ?? mainLeveeLabel.prefix(1).uppercased() + mainLeveeLabel.dropFirst()
-    } else if let stage {
-      out["stage"] = stage
+    let mentions = [
+      voteMode == "main_levee" ? mainLeveeLabel : nil,
+      status == "provisoire" ? provisionalLabel : nil,
+    ].compactMap { $0 }.joined(separator: " · ")
+    if mentions.isEmpty {
+      if let stage { out["stage"] = stage }
+    } else {
+      out["stage"] = stage.map { "\($0) · \(mentions)" }
+        ?? mentions.prefix(1).uppercased() + mentions.dropFirst()
     }
     return out
   }

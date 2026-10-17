@@ -1,5 +1,6 @@
 import 'package:vote_contract/vote_contract.dart';
 
+import '../decision_status_label.dart';
 import '../vote_mode_label.dart';
 
 /// Instantané des dernières décisions, écrit par l'app dans l'espace partagé
@@ -95,18 +96,18 @@ class WidgetDecision {
     this.explanation,
   });
 
-  /// Les widgets natifs ne connaissent pas le mode de vote : la mention
-  /// « à main levée » est ajoutée à l'étape, qu'ils affichent déjà.
+  /// Les widgets natifs ne connaissent ni le mode de vote ni le statut : les
+  /// mentions « à main levée » et « provisoire » sont ajoutées à l'étape,
+  /// qu'ils affichent déjà.
   factory WidgetDecision.fromSummary(DecisionSummary d) => WidgetDecision(
     id: d.id,
     result: d.result,
     date: d.date,
     title: _capitalize(d.displayTitle.trim()),
-    stage: switch ((d.stage, voteModeLabel(d.voteMode))) {
-      (final stage?, final mode?) => '$stage · $mode',
-      (null, final mode?) => _capitalize(mode),
-      (final stage, null) => stage,
-    },
+    stage: _stageWith(d.stage, [
+      ?voteModeLabel(d.voteMode),
+      ?statusLabel(d.status),
+    ]),
   );
 
   /// Identifiant de la décision (deep link vers le détail) : celui du
@@ -123,7 +124,8 @@ class WidgetDecision {
   final String title;
 
   /// Étape de la procédure (« 1re lecture à l'AN »), si connue, suivie de
-  /// « · à main levée » pour un vote sans scrutin public.
+  /// « · à main levée » pour un vote sans scrutin public et de
+  /// « · provisoire » pour une décision pas encore confirmée.
   final String? stage;
 
   /// Phrase d'explication en langage simple, si disponible.
@@ -157,6 +159,13 @@ class WidgetDecision {
     'stage': ?stage,
     'explanation': ?explanation,
   };
+}
+
+/// « 1re lecture à l'AN · provisoire » ; sans étape, « Provisoire ».
+String? _stageWith(String? stage, List<String> mentions) {
+  if (mentions.isEmpty) return stage;
+  final suffix = mentions.join(' · ');
+  return stage == null ? _capitalize(suffix) : '$stage · $suffix';
 }
 
 String _capitalize(String s) =>

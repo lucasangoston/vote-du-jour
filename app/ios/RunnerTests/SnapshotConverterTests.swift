@@ -63,6 +63,23 @@ final class SnapshotConverterTests: XCTestCase {
     XCTAssertEqual(decisions[2]["id"] as? String, "VTANR5L17V8719")
   }
 
+  func testProvisoireDansLEtape() throws {
+    let decisions = try convert([
+      decision(8721, #","stage":"1re lecture à l'AN""#)
+        .replacingOccurrences(of: #""confirmee""#, with: #""provisoire""#),
+      decision(8720).replacingOccurrences(of: #""confirmee""#, with: #""provisoire""#),
+      // `status` absent : confirmée.
+      decision(8719, #","stage":"1re lecture à l'AN""#)
+        .replacingOccurrences(of: #""status":"confirmee","#, with: ""),
+      decision(8718).replacingOccurrences(of: #""confirmee""#, with: #""annulee""#),
+    ])
+    XCTAssertEqual(decisions.count, 3)
+    XCTAssertEqual(decisions[0]["stage"] as? String, "1re lecture à l'AN · provisoire")
+    XCTAssertEqual(decisions[0]["title"] as? String, "L'ensemble du projet de loi n° 8721.")
+    XCTAssertEqual(decisions[1]["stage"] as? String, "Provisoire")
+    XCTAssertEqual(decisions[2]["stage"] as? String, "1re lecture à l'AN")
+  }
+
   /// Téléchargement réel de `latest.json` vers le groupe d'apps, comme le fait
   /// la timeline. Réseau requis : lancé seulement avec
   /// `TEST_RUNNER_VDJ_NETWORK_TESTS=1 xcodebuild test …`.

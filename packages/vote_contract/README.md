@@ -65,7 +65,20 @@ Valeurs :
   solennel dont l'intitulé n'est pas reconnu) ;
 - `result` : `adopte`, `rejete` — l'issue à afficher pour le texte : pour
   `rejet_prealable`, la motion est adoptée donc `result` vaut `rejete` ;
-- `status` : `provisoire`, `confirmee`.
+- `status` : `provisoire`, `confirmee` (voir ci-dessous).
+
+Statut (ticket #10, détection en direct) :
+
+- `status` vaut `provisoire` pour une décision lue sur le site de l'Assemblée
+  pendant la séance, avant le jeu de données officiel, et `confirmee` une fois
+  qu'elle y figure (même `id`, celui du scrutin). Une décision provisoire n'a
+  ni dossier rattaché par référence ni vote par groupe ; son titre court et son
+  étape peuvent changer à la confirmation.
+- Le champ est optionnel à la lecture : absent, il vaut `confirmee`. Le job
+  l'écrit toujours, car les versions de l'app antérieures au ticket #10
+  l'exigent (elles connaissent déjà la valeur `provisoire`).
+- Une valeur inconnue rend la décision illisible (elle est ignorée), comme
+  pour les autres énumérations.
 
 Champs optionnels (ajoutés par le ticket #7, absents des index plus anciens ;
 un lecteur doit prévoir leur absence) :
