@@ -13,6 +13,10 @@ import 'scrutin.dart';
 /// passent d'abord (numéro le plus élevé en tête), puis les votes à main
 /// levée (identifiant d'acte le plus élevé en tête).
 ///
+/// Un scrutin sur l'article unique d'un texte est publié comme vote sur
+/// l'ensemble, sauf si l'ensemble est ensuite voté à part dans la même
+/// lecture : seul ce dernier vote est alors publié.
+///
 /// [dossiers] fournit le titre court, l'étape et les textes adoptés à main
 /// levée ; sans lui, les libellés sont tirés de l'intitulé du scrutin et
 /// aucun vote à main levée n'est publié.
@@ -22,7 +26,7 @@ DecisionIndex buildDecisionIndex(
   DossierIndex? dossiers,
   int limit = maxIndexDecisions,
 }) {
-  final decisions = <DecisionSummary>[];
+  final retainedScrutins = <_RetainedScrutin>[];
   // Textes votés par scrutin public, par jour : dossier rattaché, ou
   // intitulé faute de rattachement. Un texte adopté ce jour-là dans ce
   // dossier l'a été par ce scrutin, pas à main levée.
@@ -30,8 +34,9 @@ DecisionIndex buildDecisionIndex(
   final unlinked = <DateTime, List<String>>{};
   for (final s in scrutins) {
     final classification = _classify(s);
-    final retained = classification is Retained;
-    if (!retained && !_isArticleUnique(s.titre)) continue;
+    // Un scrutin sur l'article unique vaut vote sur l'ensemble : même s'il
+    // n'est pas publié, le texte n'a pas été adopté à main levée.
+    if (classification is! Retained && !isArticleUniqueVote(s.titre)) continue;
     final link = dossiers?.link(
       scrutinUid: s.uid,
       date: s.date,
@@ -44,9 +49,19 @@ DecisionIndex buildDecisionIndex(
       unlinked.putIfAbsent(s.date, () => []).add(s.titre);
     }
     if (classification case Retained(:final type, :final result)) {
-      decisions.add(_summary(s, type, result, link));
+      retainedScrutins.add((
+        scrutin: s,
+        type: type,
+        result: result,
+        link: link,
+      ));
     }
   }
+  final decisions = <DecisionSummary>[
+    for (final r in retainedScrutins)
+      if (!_followedByWholeVote(r, retainedScrutins))
+        _summary(r.scrutin, r.type, r.result, r.link),
+  ];
   // Textes adoptés à main levée, sauf s'ils ont eu un scrutin public le même
   // jour (voir ci-dessus).
   for (final a in dossiers?.mainLeveeAdoptions() ?? <MainLeveeAdoption>[]) {
@@ -135,11 +150,38 @@ DecisionSummary _mainLeveeSummary(MainLeveeAdoption a) {
   );
 }
 
-/// Scrutin sur l'article unique d'un texte : il vaut vote sur l'ensemble
-/// (le texte n'a qu'un article), même si le sélecteur ne le retient pas. Le
-/// texte n'a donc pas été adopté à main levée.
-bool _isArticleUnique(String titre) =>
-    normalizeTitle(titre).startsWith("l'article unique ");
+typedef _RetainedScrutin = ({
+  Scrutin scrutin,
+  DecisionType type,
+  VoteResult result,
+  DossierLink? link,
+});
+
+/// Le scrutin [r] porte sur l'article unique d'un texte dont l'ensemble est
+/// ensuite voté à part, dans la même lecture (articles additionnels) : seul
+/// ce vote sur l'ensemble est publié.
+///
+/// Le vote sur l'ensemble a souvent lieu le même jour, mais il peut être
+/// reporté à un scrutin solennel la semaine suivante (6902 puis 7260,
+/// assurance chômage). Même texte : même dossier rattaché, ou même intitulé
+/// du texte voté ; même lecture : même parenthèse finale.
+bool _followedByWholeVote(_RetainedScrutin r, List<_RetainedScrutin> all) {
+  final s = r.scrutin;
+  if (!isArticleUniqueVote(s.titre)) return false;
+  final dossier = r.link?.dossier.uid;
+  final text = votedTextKey(s.titre);
+  final lecture = Lecture.fromScrutinTitle(s.titre);
+  return all.any(
+    (o) =>
+        o.scrutin.numero > s.numero &&
+        (o.type == DecisionType.ensembleTexte ||
+            o.type == DecisionType.resolution) &&
+        !isArticleUniqueVote(o.scrutin.titre) &&
+        Lecture.fromScrutinTitle(o.scrutin.titre) == lecture &&
+        ((dossier != null && o.link?.dossier.uid == dossier) ||
+            (text != null && votedTextKey(o.scrutin.titre) == text)),
+  );
+}
 
 Classification _classify(Scrutin s) => classifyScrutin(
   titre: s.titre,

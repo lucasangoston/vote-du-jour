@@ -51,6 +51,8 @@ dart run bin/vote_job.dart --store=r2
 
 Le workflow `publish.yml` lance le job toutes les heures ; il peut aussi être lancé à la main (Actions > Publication des décisions > Run workflow, option « force »). Une exécution sans nouveau jeu de données s'arrête sur une réponse 304, sans rien réécrire.
 
+Un scrutin sur l'article unique d'un texte vaut vote sur l'ensemble : il est publié comme tel (type `ensemble`, ou `resolution` pour une proposition de résolution), sauf si l'ensemble du même texte est ensuite voté à part dans la même lecture, auquel cas seul ce dernier vote est publié.
+
 Les textes adoptés à main levée viennent aussi des dossiers législatifs : un acte de décision de l'Assemblée en séance (`AN…-DEBATS-DEC`, `CMP-DEBATS-AN-DEC`), au statut d'adoption, qui ne cite aucun scrutin (`voteRefs`), et sans scrutin public retenu ni scrutin sur l'article unique du même texte le même jour. Ils sont publiés avec `voteMode: main_levee`, sans numéro ni décompte.
 
 Le titre court et l'étape de la procédure viennent du jeu de données des dossiers législatifs (`Dossiers_Legislatifs.json.zip`, ~10 Mo), lui aussi téléchargé seulement s'il a changé. De nouveaux dossiers font retraiter les scrutins ; s'ils sont indisponibles, le job publie quand même avec le dernier index connu (ou des libellés tirés des intitulés).

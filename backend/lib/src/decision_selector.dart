@@ -102,6 +102,18 @@ Classification classifyScrutin({
   if (_amendement.hasMatch(t)) {
     return const Excluded(ExclusionReason.amendement);
   }
+  // Un texte qui n'a qu'un article est adopté ou rejeté avec lui : le vote sur
+  // l'article unique vaut vote sur l'ensemble (#22). Quand des articles
+  // additionnels suivent, l'ensemble est voté à part ; le constructeur de
+  // l'index ne garde alors que ce vote (voir `buildDecisionIndex`).
+  if (_articleUnique.hasMatch(t)) {
+    if (!_articleUniqueResolution.hasMatch(t)) {
+      return Retained(DecisionType.ensembleTexte, sort);
+    }
+    return retainResolutions
+        ? Retained(DecisionType.resolution, sort)
+        : const Excluded(ExclusionReason.resolution);
+  }
   if (_article.hasMatch(t)) {
     return const Excluded(ExclusionReason.article);
   }
@@ -151,6 +163,19 @@ Classification classifyScrutin({
 final _sousAmendement = RegExp(r'^le sous-amen[a-z]*');
 final _amendement = RegExp(r"^l'amen[a-z]*ment");
 final _article = RegExp(r"^l'ar?ticle");
+final _articleUnique = RegExp(r"^l'ar?ticle unique ");
+final _articleUniqueResolution = RegExp(
+  r"^l'ar?ticle unique de la proposition de résolution",
+);
+
+/// Le scrutin d'intitulé [titre] porte-t-il sur l'article unique d'un texte
+/// (« l'article unique de la proposition de loi… ») ? Un tel vote vaut vote
+/// sur l'ensemble, sauf si l'ensemble est ensuite voté à part.
+bool isArticleUniqueVote(String titre) {
+  var t = normalizeTitle(titre);
+  if (t.startsWith('sur ')) t = t.substring(4);
+  return _articleUnique.hasMatch(t);
+}
 
 const _procedure = [
   'la demande de', // suspension de séance, seconde délibération

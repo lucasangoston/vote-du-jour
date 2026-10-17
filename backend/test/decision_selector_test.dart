@@ -181,23 +181,123 @@ void main() {
         ),
         const Excluded(ExclusionReason.amendement),
       );
+    });
+
+    test('un article voté en scrutin solennel reste écarté', () {
+      // 2350, tel quel en scrutin solennel (le code ne change rien).
+      expect(
+        classify(
+          "l'article 17 bis du projet de loi de simplification de la vie économique (première lecture).",
+          code: 'SPS',
+        ),
+        const Excluded(ExclusionReason.article),
+      );
+    });
+  });
+
+  group('article unique : vaut vote sur l\'ensemble (#22)', () {
+    test('proposition de loi', () {
+      // 2633
+      expect(
+        classify(
+          "l'article unique de la proposition de loi visant à mettre en place un registre national des cancers (première lecture).",
+        ),
+        retained(DecisionType.ensembleTexte, adopte),
+      );
+      // 4704 (loi organique)
+      expect(
+        classify(
+          'l\'article unique de la proposition de loi organique tendant à modifier le II de l’article 43 de la loi organique n° 2004-192 du 27 février 2004 portant statut d’autonomie de la Polynésie française (première lecture).',
+        ),
+        retained(DecisionType.ensembleTexte, adopte),
+      );
+    });
+
+    test('projet de loi, y compris rejeté', () {
+      // 3057
+      expect(
+        classify(
+          "l'article unique du projet de loi autorisant la ratification de la convention n° 155 sur la sécurité et la santé des travailleurs, 1981 (première lecture).",
+        ),
+        retained(DecisionType.ensembleTexte, adopte),
+      );
+      // 1333 : le texte est rejeté avec son article unique ; « résolution »
+      // désigne ici l'objet de la ratification, pas le texte voté.
+      expect(
+        classify(
+          "l'article unique du projet de loi autorisant la ratification de la résolution LP.3 (4) portant amendement de l'article 6 du Protocole de Londres de 1966 à la Convention de 1972 sur la prévention de la pollution des mers résultant de l'immersion de déchets et autres matières (première lecture).",
+          sort: rejete,
+        ),
+        retained(DecisionType.ensembleTexte, rejete),
+      );
+    });
+
+    test('apostrophe typographique', () {
+      // 2936
+      expect(
+        classify(
+          'l’article unique de la proposition de loi relative à la restitution d’un bien culturel à la République de Côte d’Ivoire (première lecture).',
+        ),
+        retained(DecisionType.ensembleTexte, adopte),
+      );
+    });
+
+    test('proposition de résolution : retenue comme résolution', () {
       // 7349
       expect(
         classify(
           'l’article unique de la proposition de résolution visant à évaluer précisément le coût réel et sociétal de l’insécurité routière et son impact sur les finances publiques (article 34-1 de la Constitution).',
         ),
-        const Excluded(ExclusionReason.article),
+        retained(DecisionType.resolution, adopte),
       );
-    });
-
-    test('un article voté en scrutin solennel reste écarté', () {
-      // 988
+      // 691 (Mercosur)
+      expect(
+        classify(
+          "l'article unique de la proposition de résolution européenne visant à refuser la ratification de l'accord commercial entre l'Union européenne et le Mercosur.",
+        ),
+        retained(DecisionType.resolution, adopte),
+      );
+      // 988, scrutin solennel
       expect(
         classify(
           "l'article unique de la proposition de résolution européenne appelant au renforcement du soutien à l'Ukraine.",
           code: 'SPS',
         ),
-        const Excluded(ExclusionReason.article),
+        retained(DecisionType.resolution, adopte),
+      );
+    });
+
+    test('amendements et seconde délibération sur l\'article unique : '
+        'écartés', () {
+      // 1014
+      expect(
+        isArticleUniqueVote(
+          "l'amendement n° 18 de Mme Parmentier à l'article unique de la proposition de résolution tendant à la création d'une commission d'enquête sur les effets psychologiques de TikTok sur les mineurs.",
+        ),
+        isFalse,
+      );
+      // 737 (aussi dans les 47 cas du spike)
+      expect(
+        classify(
+          "la demande de seconde délibération, présentée par M. Bernalicis, de l'article unique de la proposition de loi visant à renforcer les conditions d'accès à la nationalité française à Mayotte (première lecture).",
+          sort: rejete,
+        ),
+        const Excluded(ExclusionReason.procedure),
+      );
+    });
+
+    test('isArticleUniqueVote', () {
+      expect(
+        isArticleUniqueVote(
+          'l’article unique de la proposition de loi relative à la restitution d’un bien culturel à la République de Côte d’Ivoire (première lecture).',
+        ),
+        isTrue,
+      );
+      expect(
+        isArticleUniqueVote(
+          "l'article 17 bis du projet de loi de simplification de la vie économique (première lecture).",
+        ),
+        isFalse,
       );
     });
   });
