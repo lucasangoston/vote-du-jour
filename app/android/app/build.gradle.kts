@@ -1,5 +1,7 @@
 plugins {
     id("com.android.application")
+    // Compilateur Compose, pour le widget Glance.
+    id("org.jetbrains.kotlin.plugin.compose")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -29,6 +31,10 @@ android {
         versionName = flutter.versionName
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -46,4 +52,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Widget d'écran d'accueil (même version que celle exposée par home_widget).
+    implementation("androidx.glance:glance-appwidget:1.2.0")
 }

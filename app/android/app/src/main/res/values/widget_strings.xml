@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="decision_widget_label">Dernière décision</string>
+    <string name="decision_widget_description">La dernière décision de l\'Assemblée nationale et son résultat.</string>
+</resources>
