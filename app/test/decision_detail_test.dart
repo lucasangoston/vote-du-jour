@@ -50,6 +50,25 @@ final _detail = DecisionDetail(
   ],
 );
 
+// Texte adopté à main levée (ticket #8) : ni numéro, ni décompte, ni groupes.
+final _mainLevee = DecisionDetail(
+  decision: DecisionSummary(
+    id: 'L17-VD234087DEC',
+    voteMode: VoteMode.mainLevee,
+    type: DecisionType.ensembleTexte,
+    status: DecisionStatus.confirmee,
+    result: VoteResult.adopte,
+    date: DateTime.utc(2026, 10, 7),
+    officialTitle: "projet de loi autorisant l'approbation d'un accord",
+    sourceUrl:
+        'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379',
+    shortTitle: "Approbation d'un accord",
+    stage: "1re lecture à l'AN",
+    dossierUrl:
+        'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379',
+  ),
+);
+
 /// Serveur simulé : l'index (une décision) et son fichier de détail.
 MockClient _server(List<Uri> requested) => MockClient((request) async {
   requested.add(request.url);
@@ -59,6 +78,7 @@ MockClient _server(List<Uri> requested) => MockClient((request) async {
       decisions: [_summary],
     ).toJson(),
     '/v1/decisions/VTANR5L17V6346.json' => _detail.toJson(),
+    '/v1/decisions/L17-VD234087DEC.json' => _mainLevee.toJson(),
     _ => null,
   };
   return body == null
@@ -155,6 +175,38 @@ void main() {
     expect(find.text('Restitution de biens culturels'), findsNothing);
   });
 
+  testWidgets('détail d\'un texte adopté à main levée', (tester) async {
+    final navigatorKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: const Scaffold(body: Text('Liste')),
+        onGenerateRoute: (settings) => generateDecisionRoute(
+          settings,
+          repository: DecisionDetailRepository(
+            baseUrl: 'https://example.test',
+            client: _server([]),
+          ),
+        ),
+      ),
+    );
+    openWidgetLink(
+      navigatorKey.currentState!,
+      Uri.parse('votedujour://decisions/L17-VD234087DEC?homeWidget'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text("Approbation d'un accord"), findsOneWidget);
+    expect(find.text('à main levée'), findsOneWidget);
+    expect(
+      find.text('Adopté à main levée, sans décompte des voix.'),
+      findsOneWidget,
+    );
+    expect(find.text('Vote par groupe politique'), findsNothing);
+    expect(find.textContaining('Scrutin n°'), findsNothing);
+    expect(find.text("Dossier sur le site de l'Assemblée"), findsOneWidget);
+  });
+
   test('liens profonds des widgets', () {
     expect(
       decisionIdFromDeepLink(
@@ -165,6 +217,12 @@ void main() {
     expect(
       decisionIdFromDeepLink(Uri.parse('votedujour://decisions?homeWidget')),
       isNull,
+    );
+    expect(
+      decisionIdFromDeepLink(
+        Uri.parse('votedujour://decisions/L17-VD234087DEC?homeWidget'),
+      ),
+      'L17-VD234087DEC',
     );
     expect(decisionIdFromDeepLink(Uri.parse('https://example.test/x')), isNull);
     expect(decisionRouteName('VTANR5L17V6346'), '/decisions/VTANR5L17V6346');

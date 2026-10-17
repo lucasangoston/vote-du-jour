@@ -5,6 +5,7 @@ import 'decision_detail/decision_route.dart';
 import 'decisions_repository.dart';
 import 'discovery_actions.dart';
 import 'theme.dart';
+import 'vote_mode_label.dart';
 
 /// Liste des dernières décisions. Se rafraîchit à l'ouverture et à chaque
 /// retour de l'app au premier plan.
@@ -120,6 +121,18 @@ class _DecisionTile extends StatelessWidget {
           Row(
             children: [
               _ResultBadge(decision.result),
+              // « à main levée » : adopté sans scrutin public, donc sans
+              // décompte (ticket #8).
+              if (voteModeLabel(decision.voteMode) case final mode?) ...[
+                const SizedBox(width: 8),
+                Text(
+                  mode,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
               const SizedBox(width: 12),
               Text(
                 formatFrenchDate(decision.date),

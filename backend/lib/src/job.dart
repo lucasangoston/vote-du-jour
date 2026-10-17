@@ -70,7 +70,9 @@ class JobPublished extends JobOutcome {
     '$scrutins scrutins lus, ${index.decisions.length} décisions publiées '
         'dans $indexPath '
         '(${index.decisions.where((d) => d.dossierUrl != null).length} '
-        'rattachées à un dossier).',
+        'rattachées à un dossier, '
+        '${index.decisions.where((d) => d.voteMode == VoteMode.mainLevee).length}'
+        ' adoptées à main levée).',
     '$detailsWritten fichiers de détail réécrits '
         '(${decisionDetailPath('<id>')}).',
     ...warnings.map((w) => 'Attention : $w'),

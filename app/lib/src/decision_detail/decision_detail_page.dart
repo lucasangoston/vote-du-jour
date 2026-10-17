@@ -4,6 +4,7 @@ import 'package:vote_contract/vote_contract.dart';
 
 import '../decision_list_page.dart' show capitalize, formatFrenchDate;
 import '../theme.dart';
+import '../vote_mode_label.dart';
 import 'decision_detail_repository.dart';
 import 'vote_bar.dart';
 
@@ -90,10 +91,7 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       title: 'Décompte',
       child: switch (detail.count) {
         final count? => _Count(count),
-        null => const _Muted(
-          'Pas de scrutin public : texte adopté à main levée, sans décompte '
-          'des voix.',
-        ),
+        null => const _Muted(mainLeveeNotice),
       },
     ),
     if (detail.groups.isNotEmpty) ...[
@@ -114,6 +112,10 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
   ];
 }
 
+/// Mention d'une décision sans scrutin public (ticket #8) : ni barre ni vote
+/// par groupe.
+const mainLeveeNotice = 'Adopté à main levée, sans décompte des voix.';
+
 /// Résultat, date, titre court, étape, type et intitulé officiel.
 class _Header extends StatelessWidget {
   const _Header(this.decision);
@@ -130,6 +132,15 @@ class _Header extends StatelessWidget {
         Row(
           children: [
             _ResultBadge(decision.result),
+            if (voteModeLabel(decision.voteMode) case final mode?) ...[
+              const SizedBox(width: 8),
+              Text(
+                mode,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -387,7 +398,11 @@ class _SourceLinks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dossierUrl = decision.dossierUrl;
+    // Vote à main levée : `sourceUrl` est déjà la page du dossier.
+    final dossierUrl =
+        decision.dossierUrl ??
+        (decision.voteMode == VoteMode.mainLevee ? decision.sourceUrl : null);
+    final numero = decision.numero;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -400,11 +415,11 @@ class _SourceLinks extends StatelessWidget {
                 : 'Scrutin sur le site de l\'Assemblée',
           ),
         ),
-        if (dossierUrl != null)
+        if (dossierUrl != null && numero != null)
           TextButton.icon(
             onPressed: () => _open(decision.sourceUrl),
             icon: const Icon(Icons.open_in_new, size: 18),
-            label: Text('Scrutin n° ${decision.numero}'),
+            label: Text('Scrutin n° $numero'),
           ),
         const SizedBox(height: 8),
         Text(

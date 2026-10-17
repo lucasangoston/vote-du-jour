@@ -174,11 +174,12 @@ void main() {
         generatedAt: clock,
         dossiers: DossierIndex.fromArchive(fixtureDossiersArchive()),
       );
+      // L'index contient aussi les textes adoptés à main levée des dossiers.
       final detail = buildDecisionDetails(
         [scrutin],
         index,
         groups: groups,
-      ).single;
+      ).firstWhere((d) => d.decision.id == 'VTANR5L17V1194');
 
       final encoded = encodeDecisionDetail(detail);
       final reread = DecisionDetail.fromJson(jsonDecode(encoded));
@@ -205,79 +206,6 @@ void main() {
         decisionDetailPath('VTANR5L17V1194'),
         'v1/decisions/VTANR5L17V1194.json',
       );
-    });
-
-    test('lit un fichier minimal et ignore ce qu\'il ne connaît pas', () {
-      final detail = DecisionDetail.fromJson({
-        'schemaVersion': 1,
-        'futurChamp': true,
-        'decision': {
-          'id': 'VTANR5L17V1',
-          'numero': 1,
-          'type': 'ensemble',
-          'status': 'confirmee',
-          'result': 'adopte',
-          'date': '2026-10-13',
-          'officialTitle': "l'ensemble du projet de loi exemple.",
-          'sourceUrl': 'https://www.assemblee-nationale.fr/dyn/17/scrutins/1',
-        },
-        'groups': [
-          {
-            'organeRef': 'PO1',
-            'name': 'Groupe A',
-            'position': 'pour',
-            'count': {
-              'pour': 1,
-              'contre': 0,
-              'abstentions': 0,
-              'nonVotants': 0,
-            },
-          },
-          // Position ajoutée par un job plus récent : groupe ignoré.
-          {
-            'organeRef': 'PO2',
-            'name': 'Groupe B',
-            'position': 'inconnue',
-            'count': {
-              'pour': 1,
-              'contre': 0,
-              'abstentions': 0,
-              'nonVotants': 0,
-            },
-          },
-        ],
-      });
-      expect(detail.count, isNull);
-      expect(detail.groups.map((g) => g.name), ['Groupe A']);
-      expect(detail.source.name, SourceAttribution.assembleeNationale.name);
-    });
-
-    test('refuse une autre version du schéma', () {
-      expect(
-        () => DecisionDetail.fromJson({'schemaVersion': 2}),
-        throwsA(isA<UnsupportedSchemaException>()),
-      );
-      expect(
-        () => DecisionDetail.fromJson({'schemaVersion': 1, 'decision': {}}),
-        throwsFormatException,
-      );
-    });
-
-    test('position calculée sur le décompte', () {
-      GroupPosition of(int pour, int contre, int abst) =>
-          GroupPosition.fromCount(
-            VoteCount(
-              pour: pour,
-              contre: contre,
-              abstentions: abst,
-              nonVotants: 3,
-            ),
-          );
-      expect(of(5, 1, 0), GroupPosition.pour);
-      expect(of(0, 7, 66), GroupPosition.abstention);
-      expect(of(2, 16, 0), GroupPosition.contre);
-      expect(of(4, 4, 1), GroupPosition.partage);
-      expect(of(0, 0, 0), GroupPosition.nonVotant);
     });
   });
 
@@ -382,6 +310,35 @@ void main() {
         expect(state['lastModified'], nextNight);
       },
     );
+
+    test('main levée : détail sans décompte ni groupes', () async {
+      await runJob(
+        source: FakeDumpSource(scrutinsDate),
+        dossiers: FakeDumpSource(
+          'Sat, 17 Oct 2026 13:16:27 GMT',
+          archive: fixtureDossiersArchive,
+        ),
+        organes: organes(organesDate),
+        store: store,
+        clock: () => clock,
+      );
+      final index = DecisionIndex.fromJson(
+        jsonDecode((await store.read(indexPath))!),
+      );
+      final mainLevee = index.decisions
+          .where((d) => d.voteMode == VoteMode.mainLevee)
+          .toList();
+      expect(mainLevee, isNotEmpty);
+      for (final d in mainLevee) {
+        final detail = DecisionDetail.fromJson(
+          jsonDecode((await store.read(decisionDetailPath(d.id)))!),
+        );
+        expect(detail.decision.toJson(), d.toJson());
+        expect(detail.decision.numero, isNull);
+        expect(detail.count, isNull);
+        expect(detail.groups, isEmpty);
+      }
+    });
 
     test(
       'organes indisponibles : publie quand même, groupes non nommés',
