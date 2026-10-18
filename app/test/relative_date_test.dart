@@ -59,4 +59,26 @@ void main() {
   test('une date future (horloge décalée) reste « Aujourd\'hui »', () {
     expect(label(DateTime(2026, 10, 15, 22)), "Aujourd'hui");
   });
+
+  test('intertitres de la liste : jour de la semaine et date (#29)', () {
+    String group(DateTime day, DateTime now) => dayGroupLabel(day, now: now);
+    expect(group(vendredi, DateTime(2026, 10, 16, 9)), "Aujourd'hui");
+    expect(group(vendredi, DateTime(2026, 10, 17, 9)), 'Hier');
+    expect(
+      group(DateTime.utc(2026, 10, 13), DateTime(2026, 10, 18)),
+      'Mardi 13 octobre',
+    );
+    expect(
+      group(DateTime.utc(2026, 10, 12), DateTime(2026, 10, 18)),
+      'Lundi 12 octobre',
+    );
+    expect(
+      group(DateTime.utc(2026, 11, 1), DateTime(2026, 11, 20)),
+      'Dimanche 1er novembre',
+    );
+    expect(
+      group(DateTime.utc(2025, 4, 1), DateTime(2026, 10, 18)),
+      'Mardi 1er avril 2025',
+    );
+  });
 }

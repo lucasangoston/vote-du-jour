@@ -67,6 +67,10 @@ class VoteCount {
   /// Votants : pour, contre et abstentions.
   int get votants => pour + contre + abstentions;
 
+  /// Version légère publiée dans l'index ([DecisionSummary.count]).
+  VoteTally get tally =>
+      VoteTally(pour: pour, contre: contre, abstentions: abstentions);
+
   static VoteCount? tryFromJson(Object? json) {
     if (json is! Map<String, Object?>) return null;
     final pour = json['pour'];

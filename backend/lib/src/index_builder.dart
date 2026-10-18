@@ -119,11 +119,20 @@ DecisionSummary _summary(
     shortTitle: labels.shortTitle,
     stage: labels.stage,
     dossierUrl: labels.dossierUrl,
+    count: voteCountOf(s.decompte).tally,
   );
 }
 
+/// Décompte publié d'un scrutin ou d'un groupe.
+VoteCount voteCountOf(Decompte d) => VoteCount(
+  pour: d.pour,
+  contre: d.contre,
+  abstentions: d.abstentions,
+  nonVotants: d.nonVotants,
+);
+
 /// Texte adopté à main levée : résultat « adopté », sans numéro de scrutin
-/// ni décompte. L'étape suit la même règle que pour un scrutin (lecture de
+/// ni décompte (`count` absent). L'étape suit la même règle que pour un scrutin (lecture de
 /// l'acte, étiquette des résolutions) ; la page officielle est celle du
 /// dossier.
 DecisionSummary _mainLeveeSummary(MainLeveeAdoption a) {

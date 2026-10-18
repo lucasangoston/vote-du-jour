@@ -42,18 +42,21 @@ void main() {
           'result': 'adopte',
           'date': '2026-10-15',
           'title': "L'ensemble du projet de loi n° 8710.",
+          'voteMode': 'scrutin_public',
         },
         {
           'id': 'VTANR5L17V8709',
           'result': 'rejete',
           'date': '2026-10-14',
           'title': "L'ensemble du projet de loi n° 8709.",
+          'voteMode': 'scrutin_public',
         },
         {
           'id': 'VTANR5L17V8708',
           'result': 'adopte',
           'date': '2026-10-13',
           'title': "L'ensemble du projet de loi n° 8708.",
+          'voteMode': 'scrutin_public',
         },
       ],
     });
@@ -92,6 +95,7 @@ void main() {
       'date': '2026-10-07',
       'title': 'Accord multilatéral GloBE',
       'stage': "1re lecture à l'AN · à main levée",
+      'voteMode': 'main_levee',
     });
     final read = WidgetSnapshot.tryFromJson(json)!;
     expect(read.decisions.map((d) => d.stage), [
@@ -112,6 +116,8 @@ void main() {
           title: 'Budget de la Sécurité sociale',
           stage: "1re lecture à l'AN",
           explanation: 'La première partie est rejetée, le texte tombe.',
+          count: const VoteTally(pour: 144, contre: 199, abstentions: 5),
+          voteMode: VoteMode.scrutinPublic,
         ),
       ],
     );
@@ -136,5 +142,52 @@ void main() {
     })!;
 
     expect(read.decisions.map((d) => d.id), ['y']);
+  });
+
+  test('décompte et mode de vote : format fixé pour les widgets (#29)', () {
+    final summary = DecisionSummary(
+      id: 'VTANR5L17V8706',
+      numero: 8706,
+      type: DecisionType.ensembleTexte,
+      status: DecisionStatus.confirmee,
+      result: VoteResult.adopte,
+      date: DateTime.utc(2026, 10, 13),
+      officialTitle: 'Juges spécialisés',
+      sourceUrl: 'https://www.assemblee-nationale.fr/dyn/17/scrutins/8706',
+      count: const VoteTally(pour: 503, contre: 0, abstentions: 67),
+    );
+    final json = jsonDecode(
+      jsonEncode(WidgetDecision.fromSummary(summary).toJson()),
+    );
+    expect(json, {
+      'id': 'VTANR5L17V8706',
+      'result': 'adopte',
+      'date': '2026-10-13',
+      'title': 'Juges spécialisés',
+      'count': {'pour': 503, 'contre': 0, 'abstentions': 67},
+      'voteMode': 'scrutin_public',
+    });
+  });
+
+  test('lit un instantané antérieur à #29, sans décompte ni mode', () {
+    final read = WidgetSnapshot.tryFromJson({
+      'version': 1,
+      'savedAt': '2026-10-17T00:00:00.000Z',
+      'decisions': [
+        {'id': 'y', 'result': 'adopte', 'date': '2026-10-15', 'title': 't'},
+        {
+          'id': 'z',
+          'result': 'adopte',
+          'date': '2026-10-15',
+          'title': 't',
+          'count': {'pour': 'beaucoup'},
+          'voteMode': 'vote_electronique',
+        },
+      ],
+    })!;
+    expect(read.decisions.map((d) => (d.count, d.voteMode)), [
+      (null, null),
+      (null, null),
+    ]);
   });
 }

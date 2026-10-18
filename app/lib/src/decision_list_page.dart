@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vote_contract/vote_contract.dart';
 
+import 'app_identity.dart';
 import 'decision_detail/decision_route.dart';
 import 'decisions_repository.dart';
 import 'discovery_actions.dart';
+import 'hemicycle/hemicycle_logo.dart';
+import 'hemicycle/result_style.dart';
+import 'hemicycle/vote_arc.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'theme.dart';
 import 'vote_mode_label.dart';
 
-/// Liste des dernières décisions. Se rafraîchit à l'ouverture et à chaque
-/// retour de l'app au premier plan.
+/// Liste des dernières décisions, groupées par jour. Se rafraîchit à
+/// l'ouverture et à chaque retour de l'app au premier plan.
 class DecisionListPage extends StatefulWidget {
   const DecisionListPage({super.key, required this.repository});
 
@@ -75,155 +80,238 @@ class _DecisionListPageState extends State<DecisionListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Décisions de l\'Assemblée'),
-        actions: const [AddWidgetAction(), AboutAction()],
-      ),
-      body: _body(context),
-      bottomNavigationBar: const _SourceNotice(),
-    );
-  }
-
-  Widget _body(BuildContext context) {
-    final index = _index;
-    if (index == null) {
-      if (_error != null && !_loading) {
-        return _Message(
-          text: 'Impossible de charger les décisions.',
-          action: FilledButton.tonal(
-            onPressed: _refresh,
-            child: const Text('Réessayer'),
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          edgeOffset: MediaQuery.paddingOf(context).top,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              const SliverToBoxAdapter(child: _Header()),
+              ..._body(context),
+            ],
           ),
-        );
-      }
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (index.decisions.isEmpty) {
-      return const _Message(text: 'Aucune décision publiée pour le moment.');
-    }
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: index.decisions.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
-        // Le tap ouvre le détail de la décision.
-        itemBuilder: (context, i) => OpenDecisionOnTap(
-          decision: index.decisions[i],
-          child: _DecisionTile(index.decisions[i]),
         ),
       ),
     );
   }
+
+  List<Widget> _body(BuildContext context) {
+    final index = _index;
+    if (index == null) {
+      if (_error != null && !_loading) {
+        return [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: _Message(
+              text: 'Impossible de charger les décisions.',
+              action: FilledButton(
+                onPressed: _refresh,
+                child: const Text('Réessayer'),
+              ),
+            ),
+          ),
+        ];
+      }
+      return const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
+    }
+    if (index.decisions.isEmpty) {
+      return const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _Message(text: 'Aucune décision publiée pour le moment.'),
+        ),
+      ];
+    }
+    final now = DateTime.now();
+    return [
+      for (final day in groupByDay(index.decisions)) ...[
+        SliverToBoxAdapter(
+          child: _DayHeading(dayGroupLabel(day.first.date, now: now)),
+        ),
+        SliverList.separated(
+          itemCount: day.length,
+          separatorBuilder: (_, _) => const _RowSeparator(),
+          // Le tap ouvre le détail de la décision.
+          itemBuilder: (context, i) =>
+              OpenDecisionOnTap(decision: day[i], child: DecisionRow(day[i])),
+        ),
+      ],
+      const SliverToBoxAdapter(child: _SourceNotice()),
+    ];
+  }
 }
 
-class _DecisionTile extends StatelessWidget {
-  const _DecisionTile(this.decision);
+/// Décisions groupées par jour de vote, dans l'ordre de l'index.
+List<List<DecisionSummary>> groupByDay(List<DecisionSummary> decisions) {
+  final days = <List<DecisionSummary>>[];
+  for (final d in decisions) {
+    final last = days.lastOrNull?.first.date;
+    if (last != null &&
+        last.year == d.date.year &&
+        last.month == d.date.month &&
+        last.day == d.date.day) {
+      days.last.add(d);
+    } else {
+      days.add([d]);
+    }
+  }
+  return days;
+}
 
-  final DecisionSummary decision;
+/// Logo et nom, boutons « Ajouter le widget » et « À propos », grand titre.
+class _Header extends StatelessWidget {
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final top = MediaQuery.paddingOf(context).top;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.only(top: top + 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _ResultBadge(decision.result),
-              // « à main levée » : adopté sans scrutin public, donc sans
-              // décompte (ticket #8).
-              if (voteModeLabel(decision.voteMode) case final mode?) ...[
-                const SizedBox(width: 8),
-                Text(
-                  mode,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.w600,
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 10),
+            child: Row(
+              children: [
+                const HemicycleLogo.small(),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    appName,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),
+                const AddWidgetAction(),
+                const AboutAction(),
               ],
-              // Lue pendant la séance, pas encore confirmée (ticket #10).
-              if (decision.status == DecisionStatus.provisoire) ...[
-                const SizedBox(width: 8),
-                const ProvisionalBadge(),
-              ],
-              const SizedBox(width: 12),
-              Text(
-                relativeDayLabel(decision.date, now: DateTime.now()),
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            capitalize(decision.displayTitle),
-            style: theme.textTheme.bodyMedium,
-          ),
-          // Phrase d'explication du résumé (#9), si la décision est résumée.
-          if (decision.explanation case final explanation?) ...[
-            const SizedBox(height: 4),
-            Text(
-              explanation,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface,
-              ),
             ),
-          ],
-          // Étape de la procédure ou étiquette (« Résolution (sans valeur de
-          // loi) ») : absente des index publiés avant le ticket #7.
-          if (decision.stage case final stage?) ...[
-            const SizedBox(height: 4),
-            Text(
-              stage,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: Text('Décisions', style: HemicycleText.largeTitle),
+          ),
         ],
       ),
     );
   }
 }
 
-class _ResultBadge extends StatelessWidget {
-  const _ResultBadge(this.result);
+class _DayHeading extends StatelessWidget {
+  const _DayHeading(this.label);
 
-  final VoteResult result;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 22, 20, 6),
+    child: Semantics(
+      header: true,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: context.colors.ink2,
+        ),
+      ),
+    ),
+  );
+}
+
+class _RowSeparator extends StatelessWidget {
+  const _RowSeparator();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: 74, right: 20),
+    child: Divider(height: 1, color: context.colors.rule),
+  );
+}
+
+/// Ligne de la liste : mini-arc du vote, résultat coloré · étape, titre et
+/// phrase d'explication sur deux lignes.
+class DecisionRow extends StatelessWidget {
+  const DecisionRow(this.decision, {super.key});
+
+  final DecisionSummary decision;
 
   @override
   Widget build(BuildContext context) {
-    final (label, icon, color) = switch (result) {
-      VoteResult.adopte => ('Adopté', Icons.check, ResultColors.adopted),
-      VoteResult.rejete => ('Rejeté', Icons.close, ResultColors.rejected),
-    };
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 2, 8, 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: Colors.white),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: VoteArc.mini(
+              result: decision.result,
+              count: decision.count,
+              voteMode: decision.voteMode,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MetaLine(
+                  style: TextStyle(fontSize: 12.5, color: colors.ink2),
+                  parts: [
+                    Text(
+                      resultWord(decision.result),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: resultColor(context, decision.result),
+                      ),
+                    ),
+                    // Étape de la procédure ou étiquette (« Résolution (sans
+                    // valeur de loi) ») : absente des index antérieurs à #7.
+                    if (decision.stage case final stage?) Text(stage),
+                    // Adopté sans scrutin public, donc sans décompte (#8).
+                    if (voteModeLabel(decision.voteMode) case final mode?)
+                      Text(mode),
+                  ],
+                  // Lue pendant la séance, pas encore confirmée (#10).
+                  trailing: decision.status == DecisionStatus.provisoire
+                      ? const ProvisionalBadge()
+                      : null,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  capitalize(decision.displayTitle),
+                  style: HemicycleText.rowTitle.copyWith(color: colors.ink),
+                ),
+                // Phrase d'explication du résumé (#9), si la décision est
+                // résumée.
+                if (decision.explanation case final explanation?) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    explanation,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.45,
+                      color: colors.ink2,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -234,23 +322,24 @@ class _SourceNotice extends StatelessWidget {
   const _SourceNotice();
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        child: Text(
-          'Source : Assemblée nationale, open data (data.assemblee-nationale.fr). '
-          'Licence Ouverte Etalab. Application indépendante, non officielle.',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      20,
+      28,
+      20,
+      24 + MediaQuery.paddingOf(context).bottom,
+    ),
+    child: Text(
+      sourceNotice,
+      style: TextStyle(fontSize: 12, height: 1.5, color: context.colors.ink2),
+    ),
+  );
 }
+
+/// Mention de la source, en bas de la liste et du détail.
+const sourceNotice =
+    'Source : Assemblée nationale, open data, Licence Ouverte Etalab. '
+    'Application indépendante, non officielle.';
 
 class _Message extends StatelessWidget {
   const _Message({required this.text, this.action});
@@ -266,7 +355,11 @@ class _Message extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(text, textAlign: TextAlign.center),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, color: context.colors.ink2),
+            ),
             if (action != null) ...[const SizedBox(height: 16), action!],
           ],
         ),
