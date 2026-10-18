@@ -11,7 +11,7 @@ Données : open data de l'Assemblée nationale (Licence Ouverte Etalab).
 - Données publiées : `https://pub-51ad28220f184398acec4e2b145afd20.r2.dev` (bucket R2 `vote-du-jour`, domaine r2.dev réservé au développement).
 - Identifiant de l'app (iOS et Android) : `com.lucasangoston.votedujour`.
 - Team ID Apple : `792WRWDFHZ`.
-- Secrets GitHub Actions : `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `ANTHROPIC_API_KEY`.
+- Secrets GitHub Actions : `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `ANTHROPIC_API_KEY`, `FCM_SERVICE_ACCOUNT` (clé JSON du compte de service Firebase, notifications push ; facultatif).
 - Variables GitHub Actions : `R2_PUBLIC_BASE_URL`, `APPLE_TEAM_ID`, `APP_ID`.
 
 ## Structure
@@ -35,6 +35,7 @@ Données publiées dans le bucket :
 - `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin, texte déposé de chaque dossier), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
 - `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
+- `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service).
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
@@ -87,6 +88,17 @@ dart run bin/vote_job.dart --live --store=r2
 Le workflow `live.yml` lance un passage toutes les 10 minutes. Les plages se règlent en tête du fichier (`LIVE_DAYS`, `LIVE_HOURS`, en heure de Paris, vérifiées par le job) ; le cron, en UTC, doit les englober en heure d'été comme en heure d'hiver. Il partage le groupe de concurrence `publish` avec `publish.yml` : jamais deux publications simultanées.
 
 Si le site est illisible (panne, structure changée), le passage s'arrête sans rien écrire et l'erreur apparaît en avertissement dans GitHub Actions ; le jeu de données continue d'être publié par `publish.yml`. Le site ne donne ni le type de vote (le garde-fou des scrutins solennels ne s'applique qu'avec le jeu de données), ni le dossier, ni le vote par groupe.
+
+## Notifications push des votes importants
+
+Après la publication et les résumés, chaque exécution de `publish.yml` envoie une notification au sujet Firebase Cloud Messaging `votes-importants` pour chaque nouvelle décision importante (`backend/lib/src/notifications/`) :
+
+- vote important : scrutin public solennel (`typeVote` `SPS`, lu dans `state/scrutins-confirmes.json`), motion de censure, ou texte en lecture définitive ou texte de compromis (CMP), adopté ou rejeté ;
+- jamais : vote à main levée, proposition de résolution, décision provisoire (notifiée à sa confirmation par le jeu de données, pour ne jamais annoncer un résultat faux), décision de plus de 7 jours ;
+- message : titre « Adopté : <titre> » ou « Rejeté : <titre> » (titre du résumé, sinon titre court), corps = phrase d'explication (sinon l'étape), données `decisionId` et `link` (`votedujour://decisions/<id>`), son par défaut sur Android et iOS ;
+- au plus 3 envois par passage, les plus anciennes d'abord ; les suivantes partent au passage suivant (une heure plus tard) ;
+- mémoire `state/notifications.json`, écrite après chaque envoi réussi : une décision n'est jamais notifiée deux fois ; un envoi en échec est retenté au passage suivant. Au premier passage, les décisions déjà publiées sont marquées sans envoi.
+- Envoi par l'API FCM HTTP v1 : jeton OAuth2 obtenu avec un JWT RS256 signé par la clé du compte de service. Sans le secret `FCM_SERVICE_ACCOUNT`, la fonction est désactivée (une ligne dans le journal) ; un échec d'envoi est journalisé en avertissement sans faire échouer l'exécution. Le passage en direct (`live.yml`) n'envoie jamais de notification.
 
 ## App
 
