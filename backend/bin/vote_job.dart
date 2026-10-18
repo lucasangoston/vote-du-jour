@@ -128,6 +128,7 @@ Future<void> main(List<String> arguments) async {
     store: store,
     dossiers: dossiers,
     organes: organes,
+    summaries: _summaryServiceFromEnvironment(),
     force: args.flag('force'),
   );
   stdout.writeln(outcome);
@@ -184,5 +185,16 @@ R2Store _r2StoreFromEnvironment() {
     bucket: env['R2_BUCKET']!,
     accessKeyId: env['R2_ACCESS_KEY_ID']!,
     secretAccessKey: env['R2_SECRET_ACCESS_KEY']!,
+  );
+}
+
+/// Résumeur (#9), si la clé `ANTHROPIC_API_KEY` est définie (secret GitHub,
+/// jamais en local) ; sans clé, le job publie sans nouveau résumé.
+SummaryService? _summaryServiceFromEnvironment() {
+  final key = Platform.environment['ANTHROPIC_API_KEY'] ?? '';
+  if (key.trim().isEmpty) return null;
+  return SummaryService(
+    llm: AnthropicClient(apiKey: key.trim()),
+    texts: HttpLegislativeTextSource(),
   );
 }

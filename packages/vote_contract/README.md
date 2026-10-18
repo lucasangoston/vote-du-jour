@@ -166,3 +166,34 @@ reste identique octet pour octet et le job ne le réécrit pas.
   la position est inconnue d'un lecteur est ignoré.
 - Ajouts rétrocompatibles : l'index n'a pas changé, les anciennes versions de
   l'app ignorent ces fichiers.
+
+## Résumés (ticket #9)
+
+Champ optionnel `summary` d'une décision, rédigé automatiquement par Claude
+Haiku 5.5 avec une consigne de neutralité (`backend/lib/src/summary/summary_prompt.dart`),
+sans relecture humaine :
+
+```json
+"summary": {
+  "title": "Retour de l'âge légal de départ à 62 ans",
+  "explanation": "Le texte prévoit de ramener l'âge légal de départ à la retraite à 62 ans.",
+  "points": ["…", "…", "…"],
+  "promptVersion": 1
+}
+```
+
+- Dans l'index : `title`, `explanation` et `promptVersion` seulement ; dans
+  le fichier de détail (`decision.summary`), `points` en plus (3 ou 4 phrases ;
+  liste vide quand le résumé ne s'appuie que sur l'intitulé : motion de
+  censure, déclaration du Gouvernement, texte introuvable).
+- `title` remplace `shortTitle` à l'affichage
+  (`DecisionSummary.displayTitle` : résumé, sinon `shortTitle`, sinon
+  `officialTitle`) ; `explanation` (`DecisionSummary.explanation`) s'affiche
+  sous le titre dans la liste et le widget moyen.
+- Absent tant que la décision n'est pas résumée (texte pas encore en ligne,
+  échec du modèle : la décision est « à régénérer » côté job) et dans les
+  index plus anciens. Un résumé malformé (titre ou phrase vide, version
+  absente) est ignoré : la décision reste lisible. Un point illisible est
+  ignoré.
+- `promptVersion` : version de la consigne qui a produit le résumé.
+- Ajout rétrocompatible : les anciennes versions de l'app ignorent le champ.

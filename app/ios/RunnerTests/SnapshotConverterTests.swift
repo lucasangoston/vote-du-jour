@@ -80,6 +80,23 @@ final class SnapshotConverterTests: XCTestCase {
     XCTAssertEqual(decisions[2]["stage"] as? String, "1re lecture à l'AN")
   }
 
+  func testResumeTitreEtExplication() throws {
+    let summary =
+      #","summary":{"title":"retraite à 62 ans","explanation":" Le texte prévoit… ","promptVersion":1}"#
+    let decisions = try convert([
+      decision(8724, #","shortTitle":"budget""# + summary),
+      // Résumé malformé (pas de version) : ignoré, la décision reste lisible.
+      decision(8723, #","shortTitle":"budget","summary":{"title":"x","explanation":"y"}"#),
+      decision(8722),
+    ])
+    XCTAssertEqual(decisions.count, 3)
+    XCTAssertEqual(decisions[0]["title"] as? String, "Retraite à 62 ans")
+    XCTAssertEqual(decisions[0]["explanation"] as? String, "Le texte prévoit…")
+    XCTAssertEqual(decisions[1]["title"] as? String, "Budget")
+    XCTAssertNil(decisions[1]["explanation"])
+    XCTAssertNil(decisions[2]["explanation"])
+  }
+
   /// Téléchargement réel de `latest.json` vers le groupe d'apps, comme le fait
   /// la timeline. Réseau requis : lancé seulement avec
   /// `TEST_RUNNER_VDJ_NETWORK_TESTS=1 xcodebuild test …`.

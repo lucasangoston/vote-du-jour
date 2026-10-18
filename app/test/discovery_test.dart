@@ -45,7 +45,7 @@ void main() {
     expect(find.text('Licence Ouverte Etalab'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Résumés'), 200);
     expect(
-      find.textContaining('générés automatiquement par une intelligence'),
+      find.textContaining('rédigés automatiquement par une intelligence'),
       findsOneWidget,
     );
   });

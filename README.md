@@ -33,7 +33,8 @@ Données publiées dans le bucket :
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
 - `state/scrutins-confirmes.json` : scrutins du dernier jeu de données utiles à l'index (retenus ou sur l'article unique), sans vote par groupe, et dernier numéro du jeu de données. Écrit par le job, relu par la détection en direct pour reconstruire l'index sans retélécharger l'archive.
 - `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
-- `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
+- `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin, texte déposé de chaque dossier), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
+- `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
@@ -60,6 +61,16 @@ Un scrutin sur l'article unique d'un texte vaut vote sur l'ensemble : il est pub
 Les textes adoptés à main levée viennent aussi des dossiers législatifs : un acte de décision de l'Assemblée en séance (`AN…-DEBATS-DEC`, `CMP-DEBATS-AN-DEC`), au statut d'adoption, qui ne cite aucun scrutin (`voteRefs`), et sans scrutin public retenu ni scrutin sur l'article unique du même texte le même jour. Ils sont publiés avec `voteMode: main_levee`, sans numéro ni décompte.
 
 Le titre court et l'étape de la procédure viennent du jeu de données des dossiers législatifs (`Dossiers_Legislatifs.json.zip`, ~10 Mo), lui aussi téléchargé seulement s'il a changé. De nouveaux dossiers font retraiter les scrutins ; s'ils sont indisponibles, le job publie quand même avec le dernier index connu (ou des libellés tirés des intitulés).
+
+## Résumés (Claude Haiku 5.5)
+
+À chaque exécution horaire (`publish.yml`), que le jeu de données ait changé ou non, le job résume les décisions de l'index qui ne le sont pas encore : un titre lisible, une phrase d'explication et 3 ou 4 points sur ce que dit le texte. Modèle `claude-haiku-5-5`, API Messages appelée en HTTP (`backend/lib/src/summary/`), sortie structurée (schéma JSON). La consigne, avec ses règles de neutralité, est versionnée dans `backend/lib/src/summary/summary_prompt.dart` (`summaryPromptVersion`, enregistré dans chaque résumé).
+
+- Texte source : le texte déposé à l'Assemblée (premier acte `AN…-DEPOT` du dossier), lu sur `https://www.assemblee-nationale.fr/dyn/opendata/<uid>.html` : son exposé des motifs, sinon ses articles (texte transmis par le Sénat), tronqué à 24 000 caractères. Les motions de censure et déclarations du Gouvernement sont résumées sur leur intitulé, sans points. Le texte est isolé entre balises `<texte_source>` et traité comme une donnée.
+- Un texte pas encore en ligne (HTTP 404), une décision provisoire pas encore rattachée à son dossier ou un échec du modèle marquent la décision « à régénérer » : elle est publiée avec son titre court officiel et retentée aux passages suivants. Un texte toujours introuvable 14 jours après le vote est résumé sur son intitulé ; après 3 échecs du modèle, la décision est abandonnée.
+- Coût borné : un seul appel par décision (cache `state/resumes.json`, résumé repris sans appel pour un autre vote sur le même texte), au plus 15 appels et 5 décisions « à régénérer » retentées par passage.
+- Le passage en direct (`live.yml`) n'appelle pas le modèle : il applique les résumés du cache. Une décision provisoire est résumée au passage horaire suivant.
+- Sans `ANTHROPIC_API_KEY`, le job publie sans nouveau résumé (les résumés existants restent publiés). La clé n'existe que dans les secrets GitHub : en local, le job ne résume rien.
 
 ## Détection en direct
 

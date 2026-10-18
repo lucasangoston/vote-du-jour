@@ -108,6 +108,8 @@ class WidgetDecision {
       ?voteModeLabel(d.voteMode),
       ?statusLabel(d.status),
     ]),
+    // Phrase du résumé (#9), affichée par le widget moyen.
+    explanation: d.explanation?.trim(),
   );
 
   /// Identifiant de la décision (deep link vers le détail) : celui du

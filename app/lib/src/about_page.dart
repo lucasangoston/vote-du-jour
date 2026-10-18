@@ -115,10 +115,14 @@ class AboutPage extends StatelessWidget {
             title: 'Résumés',
             children: [
               Text(
-                'Les résumés sont générés automatiquement par une '
-                'intelligence artificielle, avec une consigne de neutralité, '
-                'et ne sont pas relus. Seuls le texte officiel et le résultat '
-                'du vote font foi.',
+                'Le titre, la phrase d\'explication et les points « Ce que '
+                'prévoit le texte » sont rédigés automatiquement par une '
+                'intelligence artificielle (Claude, d\'Anthropic), à partir de '
+                'l\'exposé des motifs du texte, sinon de ses articles, avec '
+                'une consigne de neutralité. Ils ne sont pas relus. Tant '
+                'qu\'un texte n\'est pas résumé, son titre officiel est '
+                'affiché. Seuls le texte officiel et le résultat du vote font '
+                'foi.',
                 style: muted,
               ),
             ],
