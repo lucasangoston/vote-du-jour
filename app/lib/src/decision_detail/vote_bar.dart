@@ -3,54 +3,42 @@ import 'package:vote_contract/vote_contract.dart';
 
 import '../theme.dart';
 
-/// Barre horizontale pour / contre / abstention, proportionnelle aux voix
-/// exprimées et aux abstentions (les non-votants n'y figurent pas).
+/// Barre segmentée du vote d'un groupe : pour, abstentions puis contre (même
+/// ordre que l'arc), proportionnelle aux votants, sans piste de fond. Les
+/// non-votants n'y figurent pas.
 ///
-/// Mêmes teintes que les badges (vert pour, brique contre), gris neutre pour
-/// les abstentions : aucune couleur de parti.
+/// Mêmes teintes que l'arc : vert pour, brique contre, gris abstentions,
+/// aucune couleur de parti.
 class VoteBar extends StatelessWidget {
-  const VoteBar(this.count, {super.key, this.height = 12});
+  const VoteBar(this.count, {super.key, this.height = 6});
 
   final VoteCount count;
   final double height;
 
-  static const pourColor = ResultColors.adopted;
-  static const contreColor = ResultColors.rejected;
-
-  static Color abstentionColor(BuildContext context) =>
-      Theme.of(context).colorScheme.outline;
-
   @override
   Widget build(BuildContext context) {
-    final empty = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final colors = context.colors;
     final segments = [
-      (count.pour, pourColor),
-      (count.contre, contreColor),
-      (count.abstentions, abstentionColor(context)),
+      (count.pour, colors.pour),
+      (count.abstentions, colors.abstention),
+      (count.contre, colors.contre),
     ].where((s) => s.$1 > 0).toList();
-    return Semantics(
-      label:
-          '${count.pour} pour, ${count.contre} contre, '
-          '${count.abstentions} abstentions',
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(height / 2),
-        child: SizedBox(
-          height: height,
-          child: segments.isEmpty
-              ? ColoredBox(color: empty)
-              : Row(
-                  children: [
-                    for (final (i, (value, color)) in segments.indexed)
-                      Expanded(
-                        flex: value,
-                        child: Container(
-                          margin: EdgeInsets.only(left: i == 0 ? 0 : 1.5),
-                          color: color,
-                        ),
-                      ),
-                  ],
+    return SizedBox(
+      height: height,
+      child: Row(
+        children: [
+          for (final (i, (value, color)) in segments.indexed)
+            Expanded(
+              flex: value,
+              child: Container(
+                margin: EdgeInsets.only(left: i == 0 ? 0 : 2),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }

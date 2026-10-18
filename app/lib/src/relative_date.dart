@@ -33,3 +33,22 @@ String formatFrenchDay(DateTime day) {
   final dayOfMonth = day.day == 1 ? '1er' : '${day.day}';
   return '$dayOfMonth ${_months[day.month - 1]} ${day.year}';
 }
+
+const _weekdays = [
+  'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche', //
+];
+
+/// Intertitre d'un groupe de décisions du même jour dans la liste :
+/// « Aujourd'hui », « Hier », sinon « Mardi 13 octobre » (avec l'année si ce
+/// n'est pas l'année en cours).
+String dayGroupLabel(DateTime day, {required DateTime now}) {
+  final voteDay = DateTime.utc(day.year, day.month, day.day);
+  final today = DateTime.utc(now.year, now.month, now.day);
+  final days = today.difference(voteDay).inDays;
+  if (days <= 0) return "Aujourd'hui";
+  if (days == 1) return 'Hier';
+  final dayOfMonth = day.day == 1 ? '1er' : '${day.day}';
+  final year = day.year == now.year ? '' : ' ${day.year}';
+  return '${_weekdays[voteDay.weekday - 1]} $dayOfMonth '
+      '${_months[day.month - 1]}$year';
+}

@@ -61,8 +61,10 @@ void main() {
     expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
     expect(find.text('Adopté'), findsOneWidget);
     expect(find.text('Rejeté'), findsOneWidget);
+    // Décisions groupées par jour (#29).
+    expect(find.text('Décisions'), findsOneWidget);
     expect(find.text("Aujourd'hui"), findsOneWidget);
-    expect(find.text(formatFrenchDay(older)), findsOneWidget);
+    expect(find.text(dayGroupLabel(older, now: now)), findsOneWidget);
     expect(find.textContaining('Licence Ouverte'), findsOneWidget);
   });
 }

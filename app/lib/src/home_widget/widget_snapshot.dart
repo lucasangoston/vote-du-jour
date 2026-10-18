@@ -22,7 +22,9 @@ import '../vote_mode_label.dart';
 ///       "date": "2026-10-13",
 ///       "title": "L'ensemble du projet de loi …",
 ///       "stage": "1re lecture à l'AN",
-///       "explanation": "Le texte prévoit …"
+///       "explanation": "Le texte prévoit …",
+///       "count": {"pour": 503, "contre": 0, "abstentions": 67},
+///       "voteMode": "scrutin_public"
 ///     }
 ///   ]
 /// }
@@ -94,11 +96,13 @@ class WidgetDecision {
     required this.title,
     this.stage,
     this.explanation,
+    this.count,
+    this.voteMode,
   });
 
-  /// Les widgets natifs ne connaissent ni le mode de vote ni le statut : les
-  /// mentions « à main levée » et « provisoire » sont ajoutées à l'étape,
-  /// qu'ils affichent déjà.
+  /// Les mentions « à main levée » et « provisoire » sont ajoutées à l'étape,
+  /// que les widgets antérieurs à #29 affichent déjà ; [voteMode] et [count]
+  /// servent à dessiner l'arc du vote.
   factory WidgetDecision.fromSummary(DecisionSummary d) => WidgetDecision(
     id: d.id,
     result: d.result,
@@ -110,6 +114,8 @@ class WidgetDecision {
     ]),
     // Phrase du résumé (#9), affichée par le widget moyen.
     explanation: d.explanation?.trim(),
+    count: d.count,
+    voteMode: d.voteMode,
   );
 
   /// Identifiant de la décision (deep link vers le détail) : celui du
@@ -133,6 +139,17 @@ class WidgetDecision {
   /// Phrase d'explication en langage simple, si disponible.
   final String? explanation;
 
+  /// Décompte du scrutin public (pour, contre, abstentions), pour l'arc du
+  /// vote (#29). Absent pour un vote à main levée, ou si l'index publié ne le
+  /// donne pas encore : les widgets dessinent alors un arc plein de la
+  /// couleur du résultat.
+  final VoteTally? count;
+
+  /// Mode de vote (`scrutin_public` ou `main_levee`, #29) : arc en
+  /// pointillés pour un vote à main levée. Champ optionnel : absent d'un
+  /// instantané antérieur.
+  final VoteMode? voteMode;
+
   static WidgetDecision? tryFromJson(Map<String, Object?> json) {
     final id = json['id'];
     final result = VoteResult.tryParse(json['result']);
@@ -150,6 +167,8 @@ class WidgetDecision {
       title: title,
       stage: stage is String ? stage : null,
       explanation: explanation is String ? explanation : null,
+      count: VoteTally.tryFromJson(json['count']),
+      voteMode: VoteMode.tryParse(json['voteMode']),
     );
   }
 
@@ -160,6 +179,8 @@ class WidgetDecision {
     'title': title,
     'stage': ?stage,
     'explanation': ?explanation,
+    'count': ?count?.toJson(),
+    'voteMode': ?voteMode?.json,
   };
 }
 

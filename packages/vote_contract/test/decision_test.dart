@@ -240,4 +240,73 @@ void main() {
       },
     );
   });
+
+  group('décompte dans l\'index (#29)', () {
+    const count = {'pour': 503, 'contre': 0, 'abstentions': 67};
+
+    test('absent (index antérieur) : pas de décompte', () {
+      expect(DecisionSummary.tryFromJson(_legacyScrutin)!.count, isNull);
+      expect(
+        DecisionSummary.tryFromJson(_legacyScrutin)!.toJson(),
+        isNot(contains('count')),
+      );
+    });
+
+    test('aller-retour d\'un scrutin public avec décompte', () {
+      final d = DecisionSummary.tryFromJson({
+        ..._legacyScrutin,
+        'count': count,
+      })!;
+      expect(d.count, const VoteTally(pour: 503, contre: 0, abstentions: 67));
+      final json = _roundTrip(d.toJson()) as Map<String, Object?>;
+      expect(json['count'], count);
+      expect(DecisionSummary.tryFromJson(json)!.count, d.count);
+    });
+
+    test('un décompte malformé est ignoré, la décision reste lisible', () {
+      final d = DecisionSummary.tryFromJson({
+        ..._legacyScrutin,
+        'count': {'pour': '503'},
+      })!;
+      expect(d.count, isNull);
+      expect(
+        DecisionSummary.tryFromJson({
+          ..._legacyScrutin,
+          'count': {'pour': -1, 'contre': 0, 'abstentions': 0},
+        })!.count,
+        isNull,
+      );
+    });
+
+    test('conservé par withSummary, remplacé par withCount', () {
+      final d = DecisionSummary.tryFromJson({
+        ..._legacyScrutin,
+        'count': count,
+      })!;
+      expect(d.withSummary(null).count, d.count);
+      expect(d.withCount(null).count, isNull);
+    });
+
+    test('VoteCount.tally : sans les non-votants', () {
+      const full = VoteCount(
+        pour: 503,
+        contre: 0,
+        abstentions: 67,
+        nonVotants: 2,
+      );
+      expect(
+        full.tally,
+        const VoteTally(pour: 503, contre: 0, abstentions: 67),
+      );
+      expect(full.tally.total, 570);
+    });
+
+    test('lu sans erreur par une app antérieure', () {
+      final json = DecisionSummary.tryFromJson({
+        ..._legacyScrutin,
+        'count': count,
+      })!.toJson();
+      expect(_readerBefore8(json), isNotNull);
+    });
+  });
 }
