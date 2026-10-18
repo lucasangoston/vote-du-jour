@@ -93,4 +93,40 @@ void main() {
     expect(confirmed.groups, isNotEmpty);
     expect(confirmed.groups.first.name, 'Rassemblement National');
   });
+
+  test('le passage en direct garde les résumés du cache, sans appel ni '
+      'écriture du cache (#9)', () async {
+    await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
+    const summary = PlainSummary(
+      title: 'Titre résumé',
+      explanation: 'Phrase.',
+      points: ['Un.', 'Deux.', 'Trois.'],
+      promptVersion: 1,
+    );
+    final cache = SummaryCache()
+      ..['VTANR5L17V6346'] = SummaryEntry(
+        status: SummaryStatus.resume,
+        updatedAt: now,
+        summary: summary,
+        source: SourceKind.expose,
+      );
+    await cache.write(store);
+    store.writes.clear();
+
+    final site = FakeSite(sitePage('liste_scrutins_solennels.html'));
+    await runLivePass(site: site, store: store, clock: () => now);
+
+    final index = DecisionIndex.fromJson(
+      jsonDecode((await store.read(indexPath))!),
+    );
+    expect(
+      index.decisions.firstWhere((d) => d.id == 'VTANR5L17V6346').summary,
+      const PlainSummary(
+        title: 'Titre résumé',
+        explanation: 'Phrase.',
+        promptVersion: 1,
+      ),
+    );
+    expect(store.writes, isNot(contains(summaryCacheKey)));
+  });
 }

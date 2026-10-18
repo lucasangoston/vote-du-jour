@@ -7,6 +7,7 @@ import '../decision_selector.dart';
 import '../dossier_index.dart';
 import '../job.dart' show dossiersStateKey, indexCacheControl;
 import '../object_store.dart';
+import '../summary/summary_cache.dart';
 import 'live_state.dart';
 import 'paris_time.dart';
 import 'reconciler.dart';
@@ -267,22 +268,26 @@ Future<LiveOutcome> runLivePass({
     generatedAt: now,
     dossiers: dossiers,
   );
+  // Les résumés (#9) sont rédigés par le job horaire, pas ici : le passage
+  // en direct applique seulement ceux du cache, et ceux de l'index publié
+  // si le cache est perdu. Il n'écrit jamais le cache.
+  final published = await store.read(indexPath);
+  final summaries = await SummaryCache.read(store, warnings)
+    ..adoptPublished(_tryIndex(published), now: now);
+  final index = summaries.applyTo(reconciled.index);
 
   // Détails des décisions provisoires avant l'index qui renvoie vers eux
   // (#6) ; seuls ceux qui ont changé sont réécrits.
   await publishDecisionDetails(
     store,
-    buildProvisionalDetails(reconciled.pending, reconciled.index),
+    buildProvisionalDetails(reconciled.pending, index),
   );
 
-  final changed = !_sameDecisions(
-    await store.read(indexPath),
-    reconciled.index,
-  );
+  final changed = !_sameDecisions(published, index);
   if (changed) {
     await store.write(
       indexPath,
-      const JsonEncoder.withIndent('  ').convert(reconciled.index.toJson()),
+      const JsonEncoder.withIndent('  ').convert(index.toJson()),
       cacheControl: indexCacheControl,
     );
   }
@@ -304,7 +309,7 @@ Future<LiveOutcome> runLivePass({
     newSinceDump: listed.where((s) => s.numero > upTo).length,
     detected: detected,
     provisional: [
-      for (final d in reconciled.index.decisions)
+      for (final d in index.decisions)
         if (d.status == DecisionStatus.provisoire) d,
     ],
     published: changed,
@@ -337,6 +342,15 @@ bool _sameDecisions(String? published, DecisionIndex index) {
             jsonEncode(index.toJson()['decisions']);
   } on FormatException {
     return false;
+  }
+}
+
+DecisionIndex? _tryIndex(String? raw) {
+  if (raw == null) return null;
+  try {
+    return DecisionIndex.fromJson(jsonDecode(raw));
+  } on Object {
+    return null;
   }
 }
 

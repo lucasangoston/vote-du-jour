@@ -1,3 +1,5 @@
+import 'plain_summary.dart';
+
 /// Nature d'une décision retenue parmi les scrutins.
 enum DecisionType {
   /// Vote sur l'ensemble d'un projet ou d'une proposition de loi.
@@ -96,6 +98,7 @@ class DecisionSummary {
     this.stage,
     this.dossierUrl,
     this.voteMode = VoteMode.scrutinPublic,
+    this.summary,
   }) : assert(
          numero != null || voteMode != VoteMode.scrutinPublic,
          'un scrutin public a un numéro',
@@ -158,8 +161,35 @@ class DecisionSummary {
   /// Page officielle du dossier législatif, si la décision y est rattachée.
   final String? dossierUrl;
 
-  /// Titre à afficher : [shortTitle], sinon [officialTitle].
-  String get displayTitle => shortTitle ?? officialTitle;
+  /// Résumé en langage simple (ticket #9) : titre lisible et phrase
+  /// d'explication dans l'index ; les points en plus dans le fichier de
+  /// détail. Absent tant que la décision n'est pas résumée (texte pas encore
+  /// en ligne, échec du modèle) et dans les index publiés avant son ajout.
+  final PlainSummary? summary;
+
+  /// Titre à afficher : celui du résumé, sinon [shortTitle], sinon
+  /// [officialTitle].
+  String get displayTitle => summary?.title ?? shortTitle ?? officialTitle;
+
+  /// Phrase d'explication du résumé, si la décision est résumée.
+  String? get explanation => summary?.explanation;
+
+  /// La même décision avec le résumé [summary] (ou sans résumé).
+  DecisionSummary withSummary(PlainSummary? summary) => DecisionSummary(
+    id: id,
+    numero: numero,
+    type: type,
+    status: status,
+    result: result,
+    date: date,
+    officialTitle: officialTitle,
+    sourceUrl: sourceUrl,
+    shortTitle: shortTitle,
+    stage: stage,
+    dossierUrl: dossierUrl,
+    voteMode: voteMode,
+    summary: summary,
+  );
 
   /// Lit une décision ; renvoie `null` si elle utilise une valeur d'énumération
   /// inconnue (ajoutée par une version plus récente du job) ou est malformée.
@@ -206,10 +236,13 @@ class DecisionSummary {
       shortTitle: _optionalString(json['shortTitle']),
       stage: _optionalString(json['stage']),
       dossierUrl: _optionalString(json['dossierUrl']),
+      summary: PlainSummary.tryFromJson(json['summary']),
     );
   }
 
-  Map<String, Object?> toJson() => {
+  /// [summaryPoints] : les points du résumé ne sont publiés que dans le
+  /// fichier de détail (`true`), pas dans l'index.
+  Map<String, Object?> toJson({bool summaryPoints = false}) => {
     'id': id,
     'numero': ?numero,
     'voteMode': voteMode.json,
@@ -222,6 +255,7 @@ class DecisionSummary {
     'shortTitle': ?shortTitle,
     'stage': ?stage,
     'dossierUrl': ?dossierUrl,
+    'summary': ?summary?.toJson(withPoints: summaryPoints),
   };
 }
 

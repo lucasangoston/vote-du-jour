@@ -12,6 +12,8 @@ import 'live/live_state.dart';
 import 'live/reconciler.dart';
 import 'object_store.dart';
 import 'scrutin.dart';
+import 'summary/summarizer.dart';
+import 'summary/summary_cache.dart';
 
 /// Clé de l'état du job dans le bucket : le `Last-Modified` du dernier jeu de
 /// données traité.
@@ -32,17 +34,26 @@ sealed class JobOutcome {
 
 /// Les jeux de données n'ont pas changé : rien n'a été retraité ni republié.
 class JobSkipped extends JobOutcome {
-  const JobSkipped({this.warnings = const []});
+  const JobSkipped({this.warnings = const [], this.summaries});
 
   /// Problèmes non bloquants (jeu de données des dossiers indisponible…).
   final List<String> warnings;
 
+  /// Bilan du résumeur ; `null` sans clé d'API.
+  final SummaryReport? summaries;
+
   @override
   String toString() => [
-    'Jeux de données inchangés : rien à publier.',
+    'Jeux de données inchangés : rien à retraiter.',
     ...warnings.map((w) => 'Attention : $w'),
+    _summaryLine(summaries),
   ].join('\n');
 }
+
+String _summaryLine(SummaryReport? summaries) =>
+    summaries?.toString() ??
+    'Résumés désactivés (pas de clé ANTHROPIC_API_KEY) : résumés existants '
+        'conservés.';
 
 /// Un nouvel index a été publié.
 class JobPublished extends JobOutcome {
@@ -52,7 +63,11 @@ class JobPublished extends JobOutcome {
     required this.unrecognized,
     this.warnings = const [],
     this.detailsWritten = 0,
+    this.summaries,
   });
+
+  /// Bilan du résumeur ; `null` sans clé d'API.
+  final SummaryReport? summaries;
 
   /// Nombre de scrutins lus dans le jeu de données.
   final int scrutins;
@@ -82,6 +97,7 @@ class JobPublished extends JobOutcome {
       '${unrecognized.length} intitulés non reconnus, écartés (à relire) :',
     for (final s in unrecognized)
       '  ${s.numero} (${s.codeTypeVote}) ${s.titre}',
+    _summaryLine(summaries),
   ].join('\n');
 }
 
@@ -105,12 +121,19 @@ class JobPublished extends JobOutcome {
 /// besoin ([ConfirmedSnapshot]) ; s'il manque, le jeu de données est
 /// retraité.
 ///
-/// [force] ignore l'état et retraite les jeux de données.
+/// Les résumés déjà obtenus ([SummaryCache]) sont appliqués à chaque index
+/// publié. Puis, avec [summaries] (clé d'API présente), qu'un jeu de données
+/// ait changé ou non, un passage du résumeur ([runSummaryPass]) résume les
+/// nouvelles décisions et retente celles « à régénérer ».
+///
+/// [force] ignore l'état et retraite les jeux de données (sans régénérer
+/// les résumés).
 Future<JobOutcome> runJob({
   required DumpSource source,
   required ObjectStore store,
   DumpSource? dossiers,
   DumpSource? organes,
+  SummaryService? summaries,
   DateTime Function() clock = DateTime.now,
   bool force = false,
 }) async {
@@ -142,9 +165,17 @@ Future<JobOutcome> runJob({
     // les fichiers de détail : on retraite les scrutins.
     ifModifiedSince: dossierUpdate != null || groups.changed ? null : previous,
   );
+  Future<SummaryReport?> summarize() async => summaries == null
+      ? null
+      : await runSummaryPass(
+          store: store,
+          service: summaries,
+          dossiers: dossierIndex,
+          clock: clock,
+        );
   switch (fetch) {
     case DumpNotModified():
-      return JobSkipped(warnings: warnings);
+      return JobSkipped(warnings: warnings, summaries: await summarize());
     case DumpDownloaded(:final bytes, :final lastModified):
       final scrutins = readScrutinsArchive(bytes);
       final now = clock().toUtc();
@@ -157,7 +188,16 @@ Future<JobOutcome> runJob({
         generatedAt: now,
         dossiers: dossierIndex,
       );
-      final index = reconciled.index;
+      // Les décisions déjà résumées gardent leur résumé ; un cache perdu
+      // les reprend de l'index encore publié.
+      final summaryCache = await SummaryCache.read(store, warnings);
+      if (summaryCache.adoptPublished(
+        await _readPublishedIndex(store),
+        now: now,
+      )) {
+        await summaryCache.write(store);
+      }
+      final index = summaryCache.applyTo(reconciled.index);
       // Les détails avant l'index, qui renvoie vers eux. Les décisions
       // encore provisoires ont le décompte du site, sans vote par groupe.
       final detailsWritten = await publishDecisionDetails(
@@ -206,7 +246,19 @@ Future<JobOutcome> runJob({
         unrecognized: unrecognizedScrutins(scrutins),
         warnings: warnings,
         detailsWritten: detailsWritten,
+        summaries: await summarize(),
       );
+  }
+}
+
+/// Index publié, ou `null` s'il est absent ou illisible.
+Future<DecisionIndex?> _readPublishedIndex(ObjectStore store) async {
+  final raw = await store.read(indexPath);
+  if (raw == null) return null;
+  try {
+    return DecisionIndex.fromJson(jsonDecode(raw));
+  } on Object {
+    return null;
   }
 }
 

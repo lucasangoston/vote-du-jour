@@ -59,8 +59,9 @@ enum DecisionFetcher {
 
 /// Conversion fidèle de l'index publié (contrat `vote_contract`, version 1) vers
 /// l'instantané du widget, comme `WidgetSnapshot.fromIndex` côté Dart : les trois
-/// décisions lisibles les plus récentes, titre = `shortTitle` sinon
-/// `officialTitle` (avec majuscule initiale), étape = `stage`.
+/// décisions lisibles les plus récentes, titre = titre du résumé, sinon
+/// `shortTitle`, sinon `officialTitle` (avec majuscule initiale), étape =
+/// `stage`, explication = phrase du résumé (#9).
 enum SnapshotConverter {
   private static let types: Set<String> = [
     "ensemble", "motion_de_censure", "declaration_gouvernement", "rejet_prealable",
@@ -116,7 +117,8 @@ enum SnapshotConverter {
       let officialTitle = d["officialTitle"] as? String,
       d["sourceUrl"] is String
     else { return nil }
-    let title = (optionalString(d["shortTitle"]) ?? officialTitle)
+    let summary = plainSummary(d["summary"])
+    let title = (summary?.title ?? optionalString(d["shortTitle"]) ?? officialTitle)
       .trimmingCharacters(in: .whitespacesAndNewlines)
     var out: [String: Any] = [
       "id": id,
@@ -124,6 +126,10 @@ enum SnapshotConverter {
       "date": date,
       "title": title.prefix(1).uppercased() + title.dropFirst(),
     ]
+    // Phrase du résumé, affichée par le widget moyen.
+    if let explanation = summary?.explanation {
+      out["explanation"] = explanation.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
     // Même règle que `WidgetDecision.fromSummary` : les mentions « à main
     // levée » et « provisoire » s'ajoutent à l'étape, que le widget affiche déjà.
     let stage = optionalString(d["stage"])
@@ -138,6 +144,17 @@ enum SnapshotConverter {
         ?? mentions.prefix(1).uppercased() + mentions.dropFirst()
     }
     return out
+  }
+
+  /// Mêmes règles que `PlainSummary.tryFromJson` : un résumé malformé est
+  /// ignoré (la décision reste lisible).
+  private static func plainSummary(_ value: Any?) -> (title: String, explanation: String)? {
+    guard let s = value as? [String: Any],
+      let title = optionalString(s["title"]),
+      let explanation = optionalString(s["explanation"]),
+      s["promptVersion"] is Int
+    else { return nil }
+    return (title, explanation)
   }
 
   private static func optionalString(_ value: Any?) -> String? {

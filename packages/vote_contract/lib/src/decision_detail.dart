@@ -196,6 +196,14 @@ class DecisionDetail {
 
   final SourceAttribution source;
 
+  /// Le même détail pour [decision] (par exemple, la décision résumée).
+  DecisionDetail withDecision(DecisionSummary decision) => DecisionDetail(
+    decision: decision,
+    count: count,
+    groups: groups,
+    source: source,
+  );
+
   /// Lit un fichier de détail publié.
   ///
   /// Lève [UnsupportedSchemaException] si le fichier n'est pas en version
@@ -231,7 +239,7 @@ class DecisionDetail {
   Map<String, Object?> toJson() => {
     'schemaVersion': schemaVersion,
     'source': source.toJson(),
-    'decision': decision.toJson(),
+    'decision': decision.toJson(summaryPoints: true),
     'count': ?count?.toJson(),
     'groups': [for (final g in groups) g.toJson()],
   };
