@@ -83,3 +83,15 @@ private struct FailableDecision: Decodable {
     value = try? WidgetDecision(from: decoder)
   }
 }
+
+extension DecisionSnapshot {
+  /// Nombre de décisions affichées par le grand widget.
+  static let largeWidgetCount = 3
+
+  /// Les `count` décisions les plus récentes, de la plus récente à la plus
+  /// ancienne (l'instantané est déjà dans cet ordre). Moins s'il en contient
+  /// moins ; aucune pour un `count` négatif ou nul.
+  func latest(_ count: Int) -> [WidgetDecision] {
+    Array(decisions.prefix(max(0, count)))
+  }
+}

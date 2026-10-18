@@ -13,12 +13,17 @@ import 'widget_snapshot.dart';
 /// Groupe d'apps partagé entre l'app iOS et l'extension WidgetKit.
 const appGroupId = 'group.com.lucasangoston.votedujour';
 
-/// `kind` du widget WidgetKit (voir `ios/DecisionWidget`).
+/// `kind` du widget WidgetKit (voir `ios/DecisionWidget`), commun aux trois
+/// tailles.
 const _iOSWidgetKind = 'DecisionWidget';
 
-/// Récepteur Glance du widget Android.
-const _androidWidgetReceiver =
-    'com.lucasangoston.votedujour.widget.DecisionWidgetReceiver';
+/// Récepteurs Glance des widgets Android : un par taille (petit, moyen,
+/// grand ; voir `DecisionWidget.kt`).
+const _androidWidgetReceivers = [
+  'com.lucasangoston.votedujour.widget.SmallDecisionWidgetReceiver',
+  'com.lucasangoston.votedujour.widget.DecisionWidgetReceiver',
+  'com.lucasangoston.votedujour.widget.LargeDecisionWidgetReceiver',
+];
 
 /// Navigateur de l'app, pour ouvrir le détail d'une décision (ou revenir à la
 /// liste) quand on tape sur le widget.
@@ -70,10 +75,13 @@ class HomeWidgetSync {
         WidgetSnapshot.storageKey,
         jsonEncode(snapshot.toJson()),
       );
-      await HomeWidget.updateWidget(
-        iOSName: _iOSWidgetKind,
-        qualifiedAndroidName: _androidWidgetReceiver,
-      );
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        await HomeWidget.updateWidget(iOSName: _iOSWidgetKind);
+      } else {
+        for (final receiver in _androidWidgetReceivers) {
+          await HomeWidget.updateWidget(qualifiedAndroidName: receiver);
+        }
+      }
     } catch (e) {
       debugPrint('HomeWidgetSync.publish : $e');
     }
