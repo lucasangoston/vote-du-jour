@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:vote_contract/vote_contract.dart';
 
 import 'group_directory.dart';
+import 'index_builder.dart';
 import 'object_store.dart';
 import 'scrutin.dart';
 
@@ -56,7 +57,7 @@ DecisionDetail buildDecisionDetail(
   if (scrutin == null) return DecisionDetail(decision: decision);
   return DecisionDetail(
     decision: decision,
-    count: _count(scrutin.decompte),
+    count: voteCountOf(scrutin.decompte),
     groups: [
       for (final g in scrutin.groupVotes)
         GroupVoteDetail(
@@ -65,19 +66,13 @@ DecisionDetail buildDecisionDetail(
           abbreviation: groups?[g.organeRef]?.abbreviation,
           // Calculée sur le décompte : `positionMajoritaire` vaut « pour »
           // quand aucun membre n'a voté.
-          position: GroupPosition.fromCount(_count(g.decompte)),
-          count: _count(g.decompte),
+          position: GroupPosition.fromCount(voteCountOf(g.decompte)),
+          count: voteCountOf(g.decompte),
         ),
     ],
   );
 }
 
-VoteCount _count(Decompte d) => VoteCount(
-  pour: d.pour,
-  contre: d.contre,
-  abstentions: d.abstentions,
-  nonVotants: d.nonVotants,
-);
 
 /// Contenu publié d'un fichier de détail.
 String encodeDecisionDetail(DecisionDetail detail) =>

@@ -95,6 +95,31 @@ void main() {
     );
   });
 
+  test(
+    'chaque scrutin public porte son décompte dans l\'index (#29)',
+    () async {
+      await runJob(
+        source: FakeDumpSource('Sat, 17 Oct 2026 10:30:00 GMT'),
+        store: store,
+        clock: () => clock,
+      );
+      final json = jsonDecode((await store.read(indexPath))!) as Map;
+      final decisions = (json['decisions'] as List).cast<Map>();
+      expect(decisions, everyElement(containsPair('count', isA<Map>())));
+      final index = await readIndex();
+      final narcotrafic = index.decisions.firstWhere((d) => d.numero == 1194);
+      expect(
+        narcotrafic.count,
+        const VoteTally(pour: 436, contre: 75, abstentions: 39),
+      );
+      // Même décompte que le fichier de détail, sans les non-votants.
+      final detail = DecisionDetail.fromJson(
+        jsonDecode((await store.read(decisionDetailPath(narcotrafic.id)))!),
+      );
+      expect(detail.count!.tally, narcotrafic.count);
+    },
+  );
+
   test('le fichier publié porte la version du schéma', () async {
     await runJob(
       source: FakeDumpSource('Sat, 17 Oct 2026 10:30:00 GMT'),
@@ -188,6 +213,11 @@ void main() {
       expect(convention['voteMode'], 'main_levee');
       expect(convention.containsKey('numero'), isFalse);
       expect(convention['result'], 'adopte');
+      expect(
+        convention.containsKey('count'),
+        isFalse,
+        reason: 'pas de décompte',
+      );
       expect(
         (await readIndex()).decisions
             .where((d) => d.voteMode == VoteMode.mainLevee)
