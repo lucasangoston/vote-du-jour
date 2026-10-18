@@ -56,8 +56,10 @@ struct DecisionWidgetView: View {
 
   var body: some View {
     content
+      .padding(padding)
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .widgetURL(url)
-      .containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+      .containerBackground(for: .widget) { Palette.surface }
   }
 
   @ViewBuilder
@@ -74,6 +76,15 @@ struct DecisionWidgetView: View {
     }
   }
 
+  /// Marges des maquettes (les marges système sont désactivées).
+  private var padding: EdgeInsets {
+    switch family {
+    case .systemSmall: EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14)
+    case .systemLarge: EdgeInsets(top: 16, leading: 16, bottom: 12, trailing: 16)
+    default: EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16)
+    }
+  }
+
   /// Tap hors d'une ligne : le grand widget ouvre la liste (chaque ligne a
   /// son propre lien), les autres le détail de leur décision.
   private var url: URL {
@@ -81,44 +92,46 @@ struct DecisionWidgetView: View {
   }
 }
 
-/// Widget moyen : la dernière décision, avec son explication si elle existe.
-private struct DecisionView: View {
-  let decision: WidgetDecision
-  /// Instant d'affichage de l'entrée, pour la date relative.
-  let now: Date
+/// Parties d'une ligne d'informations jointes par « · », initiale en majuscule.
+private func metaLine(_ parts: [String?]) -> String {
+  let line = parts.compactMap { $0 }.joined(separator: " · ")
+  return line.prefix(1).uppercased() + line.dropFirst()
+}
+
+/// Titre de décision : Geist semibold, interlettrage serré.
+private struct DecisionTitle: View {
+  let text: String
+  var size: CGFloat = 14
+  var lineLimit: Int
+  var lineSpacing: CGFloat = 1.5
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 6) {
-      HStack(spacing: 8) {
-        ResultBadge(result: decision.result)
-        if let stage = decision.stage {
-          Text(stage)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-        }
-        Spacer(minLength: 4)
-        RelativeDateText(decision: decision, now: now)
-      }
-      Text(decision.title)
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(.primary)
-        .lineLimit(decision.explanation == nil ? 4 : 2)
-        .frame(maxWidth: .infinity, alignment: .leading)
-      if let explanation = decision.explanation {
-        Text(explanation)
-          .font(.caption)
-          .foregroundStyle(.secondary)
-          .lineLimit(2)
-      }
-      Spacer(minLength: 0)
-    }
+    Text(text)
+      .font(.geist(size, semibold: true, relativeTo: .subheadline))
+      .tracking(-0.01 * size)
+      .lineSpacing(lineSpacing)
+      .foregroundStyle(Palette.ink)
+      .lineLimit(lineLimit)
+      .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 
-/// Petit widget : badge, titre court (4 lignes au plus) et étape, puis la date
-/// relative si la place le permet : le titre passe avant (un titre de 4
-/// lignes ne laisse pas la place à la date sur un iPhone). Pas d'explication.
+/// Ligne secondaire (étape, mentions, date relative).
+private struct MetaText: View {
+  let text: String
+  var lineLimit = 1
+
+  var body: some View {
+    Text(text)
+      .font(.geist(11.5, relativeTo: .caption))
+      .foregroundStyle(Palette.ink2)
+      .lineLimit(lineLimit)
+  }
+}
+
+/// Petit widget : arc en haut à gauche, résultat coloré à droite, titre (4
+/// lignes au plus), puis mentions et date relative si la place le permet : le
+/// titre passe avant.
 private struct SmallDecisionView: View {
   let decision: WidgetDecision
   let now: Date
@@ -131,48 +144,123 @@ private struct SmallDecisionView: View {
   }
 
   private func content(showsDate: Bool) -> some View {
-    VStack(alignment: .leading, spacing: 5) {
-      ResultBadge(result: decision.result, compact: true)
-      Text(decision.title)
-        .font(.footnote.weight(.semibold))
-        .foregroundStyle(.primary)
-        .lineLimit(4)
-        .frame(maxWidth: .infinity, alignment: .leading)
-      Spacer(minLength: 0)
-      VStack(alignment: .leading, spacing: 1) {
-        if let stage = decision.stage {
-          Text(stage)
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-            .lineLimit(2)
-        }
-        if showsDate {
-          RelativeDateText(decision: decision, now: now, font: .caption2)
-        }
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(alignment: .bottom) {
+        VoteArcView(decision: decision).frame(width: 58, height: 32)
+        Spacer(minLength: 4)
+        Text(decision.result.label)
+          .font(.geist(12, semibold: true, relativeTo: .caption))
+          .foregroundStyle(Palette.color(decision.result))
+          .fixedSize()
+      }
+      Spacer(minLength: 4)
+      DecisionTitle(text: decision.title, lineLimit: 4, lineSpacing: 0)
+      Spacer(minLength: 4)
+      let date = RelativeDate.inlineLabel(day: decision.date, now: now)
+      let parts = decision.mentions + (showsDate ? [date] : [])
+      if !parts.isEmpty {
+        MetaText(text: metaLine(parts), lineLimit: 2)
       }
     }
   }
 }
 
-/// Grand widget : les trois dernières décisions. Chaque ligne ouvre le détail
-/// de sa décision ; le reste du widget (titre, marges) ouvre la liste.
+/// Widget moyen : colonne arc, résultat et chiffres, puis étape et date,
+/// titre et explication sur deux lignes.
+private struct DecisionView: View {
+  let decision: WidgetDecision
+  /// Instant d'affichage de l'entrée, pour la date relative.
+  let now: Date
+
+  var body: some View {
+    HStack(spacing: 14) {
+      VStack(spacing: 6) {
+        VoteArcView(decision: decision, lineWidth: 14).frame(width: 92, height: 51)
+        Text(decision.result.label)
+          .font(.geist(13, semibold: true, relativeTo: .footnote))
+          .foregroundStyle(Palette.color(decision.result))
+        if let count = decision.count, !decision.isMainLevee {
+          Text("\(count.pour) · \(count.contre) · \(count.abstentions)")
+            .font(.geistMono(10.5))
+            .foregroundStyle(Palette.ink2)
+            .accessibilityLabel(VoteArcView.accessibilityLabel(decision))
+        } else if decision.isMainLevee {
+          Text("À main levée")
+            .font(.geist(10.5, relativeTo: .caption2))
+            .foregroundStyle(Palette.ink2)
+        }
+      }
+      .lineLimit(1)
+      .frame(width: 92)
+      ViewThatFits(in: .vertical) {
+        details(explanationLines: 2)
+        details(explanationLines: 1)
+        details(explanationLines: 0)
+      }
+    }
+    .frame(maxHeight: .infinity)
+  }
+
+  private func details(explanationLines: Int) -> some View {
+    VStack(alignment: .leading, spacing: 5) {
+      // La mention « à main levée » est déjà sous l'arc.
+      MetaText(
+        text: metaLine([
+          decision.stageWithoutMentions,
+          decision.isProvisional ? WidgetDecision.provisionalMention : nil,
+          RelativeDate.inlineLabel(day: decision.date, now: now),
+        ]))
+      DecisionTitle(
+        text: decision.title, size: 14.5,
+        lineLimit: decision.explanation == nil || explanationLines == 0 ? 4 : 2)
+      if let explanation = decision.explanation, explanationLines > 0 {
+        Text(explanation)
+          .font(.geist(12, relativeTo: .caption))
+          .lineSpacing(2.5)
+          .foregroundStyle(Palette.ink2)
+          .lineLimit(explanationLines)
+          .frame(maxWidth: .infinity, alignment: .leading)
+      }
+    }
+    .frame(maxHeight: .infinity)
+  }
+}
+
+/// Grand widget : en-tête (logo, « Dernières décisions ») puis les trois
+/// dernières décisions. Chaque ligne ouvre le détail de sa décision ; le reste
+/// du widget (en-tête, marges) ouvre la liste.
 private struct LargeDecisionsView: View {
   let decisions: [WidgetDecision]
   let now: Date
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Text("Dernières décisions")
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(.secondary)
-        .textCase(.uppercase)
-      ForEach(Array(decisions.enumerated()), id: \.element.id) { index, decision in
-        if index > 0 { Divider() }
-        Link(destination: decision.detailURL) {
-          DecisionRow(decision: decision, now: now)
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(spacing: 8) {
+        HemicycleLogo().frame(width: 22, height: 12)
+        Text("Dernières décisions")
+          .font(.geist(12, semibold: true, relativeTo: .caption))
+          .foregroundStyle(Palette.ink2)
+      }
+      .padding(.bottom, 6)
+      .accessibilityElement(children: .combine)
+      // Trois emplacements de même hauteur, même s'il y a moins de décisions.
+      ForEach(0..<DecisionSnapshot.largeWidgetCount, id: \.self) { index in
+        Group {
+          if index < decisions.count {
+            Link(destination: decisions[index].detailURL) {
+              DecisionRow(decision: decisions[index], now: now)
+            }
+          } else {
+            Color.clear
+          }
+        }
+        .frame(maxHeight: .infinity)
+        .overlay(alignment: .bottom) {
+          if index + 1 < min(decisions.count, DecisionSnapshot.largeWidgetCount) {
+            Rectangle().fill(Palette.rule).frame(height: 1)
+          }
         }
       }
-      Spacer(minLength: 0)
     }
   }
 }
@@ -182,98 +270,44 @@ private struct DecisionRow: View {
   let now: Date
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      HStack(spacing: 8) {
-        ResultBadge(result: decision.result)
-        Spacer(minLength: 4)
-        RelativeDateText(decision: decision, now: now)
-      }
-      Text(decision.title)
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(.primary)
-        .lineLimit(2)
-        .frame(maxWidth: .infinity, alignment: .leading)
-      // Sur sa propre ligne : « provisoire » ou « à main levée » restent visibles.
-      if let stage = decision.stage {
-        Text(stage)
-          .font(.caption)
-          .foregroundStyle(.secondary)
+    HStack(spacing: 12) {
+      VoteArcView(decision: decision).frame(width: 48, height: 27)
+      VStack(alignment: .leading, spacing: 3) {
+        DecisionTitle(text: decision.title, lineLimit: 2)
+        // « provisoire » et « à main levée » restent visibles.
+        let rest = (decision.mentions + [RelativeDate.inlineLabel(day: decision.date, now: now)])
+          .joined(separator: " · ")
+        let result = Text(decision.result.label)
+          .font(.geist(11.5, semibold: true, relativeTo: .caption))
+          .foregroundColor(Palette.color(decision.result))
+        Text("\(result) · \(rest)")
+          .font(.geist(11.5, relativeTo: .caption))
+          .foregroundStyle(Palette.ink2)
           .lineLimit(1)
       }
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     .contentShape(Rectangle())
     .accessibilityElement(children: .combine)
-  }
-}
-
-/// Date relative de la décision (« Aujourd'hui », « Il y a 3 jours »).
-private struct RelativeDateText: View {
-  let decision: WidgetDecision
-  let now: Date
-  var font: Font = .caption
-
-  var body: some View {
-    Text(RelativeDate.label(day: decision.date, now: now))
-      .font(font)
-      .foregroundStyle(.secondary)
-      .lineLimit(1)
-  }
-}
-
-private struct ResultBadge: View {
-  let result: WidgetDecision.Result
-  /// Petit widget : texte et marges réduits.
-  var compact = false
-
-  var body: some View {
-    let (label, icon, color): (String, String, Color) =
-      switch result {
-      case .adopte: ("Adopté", "checkmark", .adopted)
-      case .rejete: ("Rejeté", "xmark", .rejected)
-      }
-    Label {
-      Text(label).font((compact ? Font.caption2 : .caption).weight(.semibold))
-    } icon: {
-      Image(systemName: icon).font(.caption2.weight(.bold))
-    }
-    .labelStyle(BadgeLabelStyle())
-    .foregroundStyle(.white)
-    .padding(.horizontal, compact ? 5 : 7)
-    .padding(.vertical, 3)
-    .background(color, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-    .fixedSize()
-    .accessibilityElement(children: .combine)
-    .accessibilityLabel(label)
-  }
-}
-
-private struct BadgeLabelStyle: LabelStyle {
-  func makeBody(configuration: Configuration) -> some View {
-    HStack(spacing: 3) {
-      configuration.icon
-      configuration.title
-    }
   }
 }
 
 private struct EmptyDecisionView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
+      HemicycleLogo().frame(width: 36, height: 20)
+        .padding(.bottom, 4)
       Text("Décisions de l'Assemblée")
-        .font(.subheadline.weight(.semibold))
+        .font(.geist(14, semibold: true, relativeTo: .subheadline))
+        .tracking(-0.14)
+        .foregroundStyle(Palette.ink)
       Text("Ouvrez l'app pour charger la dernière décision.")
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .font(.geist(11.5, relativeTo: .caption))
+        .foregroundStyle(Palette.ink2)
       Spacer(minLength: 0)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
-}
-
-extension Color {
-  /// Mêmes teintes que les badges de l'app (`ResultColors` dans `theme.dart`).
-  static let adopted = Color(red: 0x2E / 255, green: 0x7D / 255, blue: 0x32 / 255)
-  static let rejected = Color(red: 0xB2 / 255, green: 0x3B / 255, blue: 0x1E / 255)
 }
 
 extension WidgetDecision {
@@ -281,9 +315,12 @@ extension WidgetDecision {
     id: "exemple",
     result: .adopte,
     date: "2026-10-13",
-    title: "L'ensemble du projet de loi relatif à la simplification de la vie économique.",
-    stage: nil,
-    explanation: nil
+    title: "Juges spécialisés pour les violences sexuelles et intrafamiliales",
+    stage: "1re lecture",
+    explanation:
+      "Le texte prévoit une formation obligatoire pour les magistrats chargés des violences sexuelles et intrafamiliales.",
+    count: VoteCount(pour: 503, contre: 0, abstentions: 67),
+    voteMode: .scrutinPublic
   )
 
   /// Exemples de la galerie et de l'aperçu (le grand widget en montre trois).
@@ -291,12 +328,13 @@ extension WidgetDecision {
     sample,
     WidgetDecision(
       id: "exemple-rejet", result: .rejete, date: "2026-10-08",
-      title: "Refonder l'espace Schengen", stage: "Résolution (sans valeur de loi)",
-      explanation: nil),
+      title: "Réforme de l'espace Schengen et contrôles aux frontières",
+      stage: "Résolution (sans valeur de loi)", explanation: nil,
+      count: VoteCount(pour: 144, contre: 199, abstentions: 5), voteMode: .scrutinPublic),
     WidgetDecision(
       id: "exemple-main-levee", result: .adopte, date: "2026-10-07",
-      title: "Approbation de l'accord sur l'échange des informations GloBE",
-      stage: "1re lecture à l'AN · à main levée", explanation: nil),
+      title: "Approbation d'un accord d'échange d'informations fiscales",
+      stage: "1re lecture à l'AN · à main levée", explanation: nil, voteMode: .mainLevee),
   ]
 }
 
@@ -310,6 +348,7 @@ struct DecisionWidget: Widget {
     .configurationDisplayName("Dernières décisions")
     .description("Les dernières décisions de l'Assemblée nationale et leur résultat.")
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    .contentMarginsDisabled()
   }
 }
 
