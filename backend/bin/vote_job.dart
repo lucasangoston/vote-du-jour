@@ -132,8 +132,46 @@ Future<void> main(List<String> arguments) async {
     force: args.flag('force'),
   );
   stdout.writeln(outcome);
+  await _notify(store);
   // Le client HTTP par défaut garde des connexions ouvertes.
   exit(0);
+}
+
+/// Notifications push des votes importants (#34), après la publication et
+/// les résumés. Sans le secret `FCM_SERVICE_ACCOUNT` (clé JSON du compte de
+/// service Firebase), la fonction est désactivée. Un échec d'envoi est
+/// journalisé sans faire échouer l'exécution.
+Future<void> _notify(ObjectStore store) async {
+  final raw = Platform.environment['FCM_SERVICE_ACCOUNT'] ?? '';
+  if (raw.trim().isEmpty) {
+    stdout.writeln(
+      'Notifications désactivées (pas de secret FCM_SERVICE_ACCOUNT).',
+    );
+    return;
+  }
+  final ServiceAccount account;
+  try {
+    account = ServiceAccount.fromJson(raw);
+  } on FormatException catch (e) {
+    final warning =
+        'FCM_SERVICE_ACCOUNT illisible, aucune notification (${e.message})';
+    stdout.writeln('Attention : $warning');
+    if (Platform.environment['GITHUB_ACTIONS'] == 'true') {
+      stdout.writeln('::warning title=Notifications::$warning');
+    }
+    return;
+  }
+  final report = await runNotificationPass(
+    store: store,
+    sender: FcmClient(account: account),
+  );
+  stdout.writeln(report);
+  final warnings = report.warnings;
+  if (Platform.environment['GITHUB_ACTIONS'] == 'true') {
+    for (final w in warnings) {
+      stdout.writeln('::warning title=Notifications::$w');
+    }
+  }
 }
 
 /// Détection en direct. Une erreur de lecture du site est journalisée (en

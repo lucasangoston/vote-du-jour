@@ -43,6 +43,11 @@ jobs:
           # nouveau résumé, sans échouer. Le passage en direct (live.yml)
           # n'en rédige pas : il applique ceux du cache.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Notifications push des votes importants (#34) : clé JSON du
+          # compte de service Firebase. Sans secret, aucune notification.
+          # Le passage en direct (live.yml) n'en envoie jamais : seules les
+          # décisions confirmées sont notifiées.
+          FCM_SERVICE_ACCOUNT: ${{ secrets.FCM_SERVICE_ACCOUNT }}
         run: dart run bin/vote_job.dart --store=r2 ${{ inputs.force && '--force' || '' }}
       - name: Vérification de la lecture publique
         env:
