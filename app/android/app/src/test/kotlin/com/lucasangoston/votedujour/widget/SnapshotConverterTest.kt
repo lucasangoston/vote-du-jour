@@ -90,6 +90,28 @@ class SnapshotConverterTest {
   }
 
   @Test
+  fun lit_le_titre_et_la_phrase_du_resume() {
+    val summary =
+        ""","summary":{"title":"retraite à 62 ans","explanation":" Le texte prévoit… ","promptVersion":1}"""
+    val malformed = ""","shortTitle":"budget","summary":{"title":"x","explanation":"y"}"""
+    val index =
+        """{"schemaVersion":1,"decisions":[
+        ${decision(8724, ""","shortTitle":"budget"""" + summary)},
+        ${decision(8723, malformed)},
+        ${decision(8722)}]}"""
+
+    val decisions = JSONObject(SnapshotConverter.fromIndex(index, savedAt)!!).getJSONArray("decisions")
+
+    assertEquals(3, decisions.length())
+    assertEquals("Retraite à 62 ans", decisions.getJSONObject(0).getString("title"))
+    assertEquals("Le texte prévoit…", decisions.getJSONObject(0).getString("explanation"))
+    // Résumé malformé (pas de version) : ignoré, la décision reste lisible.
+    assertEquals("Budget", decisions.getJSONObject(1).getString("title"))
+    assertEquals(false, decisions.getJSONObject(1).has("explanation"))
+    assertEquals(false, decisions.getJSONObject(2).has("explanation"))
+  }
+
+  @Test
   fun refuse_une_autre_version_ou_un_index_illisible() {
     assertNull(SnapshotConverter.fromIndex("""{"schemaVersion":2,"decisions":[]}""", savedAt))
     assertNull(SnapshotConverter.fromIndex("pas du json", savedAt))

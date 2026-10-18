@@ -22,7 +22,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Résumés compris : au plus 15 appels au modèle par passage (#9).
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: backend
@@ -38,6 +39,10 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          # Résumés par Claude Haiku (#9). Sans clé, le job publie sans
+          # nouveau résumé, sans échouer. Le passage en direct (live.yml)
+          # n'en rédige pas : il applique ceux du cache.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: dart run bin/vote_job.dart --store=r2 ${{ inputs.force && '--force' || '' }}
       - name: Vérification de la lecture publique
         env:

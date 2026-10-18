@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr-FR">
+	<head>
+		<meta charset="utf-8" />
+		
+		<style type="text/css">
+            body { width: 600pt; margin:0 auto }
+            .leaderZone { display: block;position:relative }
+            .leaderZone::before { position:absolute; bottom:6px; display:block; flex-grow: 1; border-bottom: 3px dotted black; width: 100%; content: '' }
+            .leaderText { position:relative; background-color: white; padding-right:2px }
+			@page assnatSection1 { size:595.3pt 841.9pt; margin:79.4pt 85.05pt 56.7pt}
+			@page assnatSection2 { size:595pt 842pt; margin:79.35pt 85pt 85pt}
+			div.assnatSection1 { margin:79.4pt 85.05pt 56.7pt; page:assnatSection1 }
+			div.assnatSection2 { margin:79.35pt 85pt 85pt; page:assnatSection2 }
+			body { text-align:justify; font-family:'Times New Roman'; font-size:14pt }
+			h1, h2, h3, h4, h5, h6, p { margin:0pt }
+			li { margin-top:0pt; margin-bottom:0pt }
+			h1 { margin-top:12pt; text-align:center; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:bold; text-transform:uppercase; color:#ff00ff }
+			h2 { text-align:center; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:bold; text-transform:uppercase; color:#ff00ff }
+			h3 { margin-left:28.35pt; text-indent:-28.35pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:bold; text-transform:uppercase; color:#008000 }
+			h4 { margin-left:85.05pt; text-indent:-21.3pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:10pt; font-weight:bold; font-style:normal; text-transform:uppercase; color:#000000 }
+			h5 { margin-left:85.05pt; text-indent:-21.3pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:bold; color:#000000 }
+			h6 { margin-left:85.05pt; text-indent:-21.3pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:normal; font-style:italic; color:#000000 }
+			.assnatHeading7 { margin-left:85.05pt; text-indent:-21.3pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:bold; font-style:italic; color:#000000 }
+			.assnatHeading8 { margin-left:85.05pt; text-indent:21.3pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:14pt; font-weight:bold; color:#000000 }
+			.assnatHeading9 { margin-left:85.05pt; text-indent:21.3pt; text-align:justify; page-break-inside:auto; page-break-after:auto; font-family:'Times New Roman'; font-size:10pt; font-weight:normal; font-style:italic; color:#000000 }
+			.assnat1TomeIntit0 { text-align:center; page-break-after:avoid; font-family:Arial; font-size:13pt; font-weight:bold; font-style:italic}
+			.assnat1TomeNum0 { margin-top:12pt; text-align:center; page-break-after:avoid; font-family:Arial; font-size:13pt; font-style:italic}
+			.assnat2PartieIntit0 { text-align:center; page-break-after:avoid; font-family:'Arial Narrow'; font-size:13pt; font-weight:bold; font-style:italic}
+			.assnat2PartieNum0 { margin-top:12pt; text-align:center; page-break-after:avoid; font-family:Arial; font-size:13pt}
+			.assnat3LivreIntit0 { margin-top:6pt; margin-bottom:6pt; text-align:center; page-break-after:avoid; font-family:'Arial Narrow'; font-size:13pt; font-weight:bold; font-style:italic}
+			.assnat3LivreNum { margin-bottom:12pt; text-indent:0pt; text-align:center; font-size:13pt; font-style:italic }
+			.assnat4TitreIntit0 { margin-top:0pt; margin-bottom:30pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold; font-style:italic; text-transform:uppercase }
+			.assnat4TitreNum0 { margin-top:12pt; text-align:center; font-size:14pt; font-style:italic; text-transform:uppercase; color:#000000}
+			.assnat5ChapitreIntit0 { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold; font-style:italic }
+			.assnat5ChapitreNum { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-style:italic; font-variant:small-caps }
+			.assnat6SectionIntit0 { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold; font-style:italic }
+			.assnat6SectionNum0 { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-style:italic; font-variant:normal }
+			.assnat7Sous-sectionIntit0 { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-style:italic }
+			.assnat7Sous-sectionNum { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-style:italic; font-variant:normal }
+			.assnat8ParagrapheIntit { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-style:italic }
+			.assnat8ParagrapheNum { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-style:italic; font-variant:normal}
+			.assnat9ArticleNum0 { margin-top:15pt; margin-bottom:2pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold; font-style:italic }
+			.assnatAmendementAuteurs { margin-top:12pt; text-indent:28.35pt; text-align:justify; font-size:12pt }
+			.assnatAmendementTexte { margin-top:3pt; margin-left:11.35pt; text-indent:14.2pt; text-align:justify; font-size:12pt }
+			.assnatAnnConfRsultdate { margin-top:6pt; margin-left:11.35pt; text-indent:14.2pt; text-align:justify; font-size:12pt; font-weight:bold }
+			.assnatAnnDocE { margin-top:3pt; margin-left:42.55pt; text-indent:-42.55pt; text-align:justify; font-size:12pt }
+			.assnatAnnRubriqueSous-titre1 { margin-top:3pt; margin-bottom:0pt; text-align:center; font-size:12pt; font-weight:normal; text-transform:uppercase }
+			.assnatAnnRubriqueSous-titre2 { margin-top:24pt; margin-bottom:0pt; text-align:center; font-size:12pt; font-weight:normal; text-transform:uppercase }
+			.assnatAnnRubriqueTitre { margin-top:18pt; margin-bottom:6pt; text-align:center; font-size:12pt; font-weight:bold; text-transform:uppercase }
+			.assnatAnnRubriqueTitre2 { margin-top:6pt; margin-bottom:6pt; text-indent:0pt; text-align:center; font-size:12pt; font-style:italic }
+			.assnatAnnRubriqueTitre3 { margin-top:0pt; margin-bottom:10pt; text-indent:0pt; text-align:center; font-size:12pt; font-style:normal }
+			.assnatAnnRubriqueTitre4 { margin-top:6pt; margin-bottom:3pt; text-align:center; font-size:12pt; font-style:italic }
+			.assnatAnnTexte { margin-top:6pt; text-indent:28.35pt; text-align:justify; font-size:12pt }
+			.assnatAnnTitre { margin-top:36pt; text-align:center; font-size:18pt; font-weight:bold; font-style:italic }
+			.assnatAnnconf107 { margin-top:6pt; margin-bottom:3pt; text-align:justify; font-size:12pt; font-style:italic }
+			.assnatAnnconfhoraire { margin-top:6pt; margin-left:209.8pt; text-align:justify; font-size:12pt; font-style:italic }
+			.assnatAnnconfinitiativeparl { margin-top:6pt; margin-bottom:6pt; text-align:center; font-size:10pt; font-style:italic }
+			.assnatCode { margin-top:12pt; margin-bottom:12pt; text-align:center; font-size:12pt; font-style:italic }
+			.assnatDlibren { margin-top:42pt; text-align:right; line-height:13pt; font-size:14pt; font-style:italic }
+			.assnatLoiTexte { margin-bottom:12pt; text-indent:25.5pt; text-align:justify; font-size:14pt }
+			.assnatMentionItal { margin-top:12pt; text-indent:28.35pt; text-align:justify; font-size:12pt; font-style:italic }
+			.assnat1TomeIntit { text-align:center; page-break-after:avoid; font-family:Arial; font-size:13pt; font-weight:bold}
+			.assnat1TomeNum { margin-top:12pt; text-align:center; page-break-after:avoid; font-family:Arial; font-size:13pt}
+			.assnat2PartieIntit { text-align:center; page-break-after:avoid; font-family:'Arial Narrow'; font-size:13pt; font-weight:bold}
+			.assnat2PartieNum { margin-top:12pt; text-align:center; page-break-after:avoid; font-family:Arial; font-size:13pt}
+			.assnat3LivreIntit { text-align:center; page-break-after:avoid; font-family:'Arial Narrow'; font-size:13pt; font-weight:bold}
+			.assnat3LivreNum0 { margin-top:12pt; text-align:center; page-break-after:avoid; font-family:'Times New Roman'; font-size:13pt}
+			.assnat4TitreIntit { margin-top:0pt; margin-bottom:30pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold; text-transform:uppercase }
+			.assnat4TitreNum { margin-top:24pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; text-transform:uppercase }
+			.assnat4titreintit1 { margin-top:3pt; margin-bottom:12pt; text-align:center; font-family:'CG TIMES (WN)'; font-size:14pt; font-weight:bold; text-transform:uppercase}
+			.assnat5ChapitreIntit { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold }
+			.assnat5ChapitreNum0 { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-variant:small-caps }
+			.assnat6SectionIntit { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold }
+			.assnat6SectionNum { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-variant:normal }
+			.assnat7Sous-sectionIntit { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal }
+			.assnat7Sous-sectionNum0 { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-variant:normal }
+			.assnat8ParagrapheIntit0 { margin-top:6pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal }
+			.assnat8ParagrapheNum0 { margin-top:18pt; margin-bottom:6pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:normal; font-variant:normal}
+			.assnat9ArticleNum { margin-top:24pt; margin-bottom:12pt; text-indent:0pt; text-align:center; page-break-after:avoid; font-size:14pt; font-weight:bold }
+			.assnatPointSous-titre { margin-top:6pt; text-align:center; font-size:12pt; font-weight:bold }
+			.assnatPointTitre { margin-top:6pt; text-align:center; font-size:12pt; font-weight:bold; text-transform:uppercase }
+			.assnatSommairemaigrecaractre { margin-top:6pt; text-align:center; font-family:Arial; font-size:12pt; font-weight:bold }
+			.assnatSommairetitre { margin-top:6pt; text-align:center; font-family:Arial; font-size:12pt; font-weight:bold }
+			.assnatSanceTitre { margin-top:6pt; text-align:center; font-size:18pt; font-weight:bold }
+			.assnatTabNombre { margin-top:6pt; text-align:right; font-size:12pt }
+			.assnatTabTexte { margin-top:6pt; text-align:justify; font-size:12pt }
+			.assnatTabTitre { margin-top:6pt; text-align:center; font-size:12pt; font-weight:bold }
+			.assnatTexteArticle { margin-top:12pt; text-indent:28.35pt; text-align:justify; line-height:150%; font-family:Garamond; font-size:11pt; color:#339966 }
+			.assnatTextenonpastill { margin-bottom:12pt; text-indent:25.5pt; text-align:justify; font-size:14pt }
+			.assnatTitrePG { margin-top:6pt; margin-bottom:6pt; text-align:center; font-family:'Times New Roman Italique'; font-size:14pt; letter-spacing:0.75pt }
+			.assnatACorpsdetexte { margin-top:6pt; text-indent:19.85pt; text-align:justify; line-height:13pt; font-size:12pt; letter-spacing:0.75pt }
+			.assnatAaucunstyle { font-size:12pt; letter-spacing:0.75pt }
+			.assnatAm { text-align:center; font-size:12pt }
+			.assnatAmdAuteurs { margin-top:6pt; text-align:center; font-size:12pt }
+			.assnatAmdCode { margin-top:6pt; text-align:center; font-size:12pt; font-style:italic }
+			.assnatAmdDispositifTexte { margin-top:12pt; text-indent:42.55pt; text-align:justify; font-size:12pt }
+			.assnatAmdDispositifTitre { margin-top:6pt; text-align:center; font-size:12pt; font-weight:bold }
+			.assnatAmdDlibration { text-align:center; font-size:12pt }
+			.assnatAmdExposTexte { margin-top:12pt; text-indent:42.55pt; text-align:justify; font-size:12pt }
+			.assnatAmdExposTitre { margin-top:6pt; text-align:center; font-size:12pt; font-weight:bold }
+			.assnatAmdIrrecevable { text-indent:34pt; font-size:12pt }
+			.assnatAmdTitreAmendement { margin-top:6pt; text-align:center; font-size:18pt; font-weight:bold }
+			.assnatAmdTitreInitiative { margin-top:6pt; text-align:center; font-size:12pt }
+			.assnatArticle { margin-top:12pt; margin-bottom:12pt; text-align:center; font-size:14pt; font-weight:bold }
+			.assnatBalloonText { text-align:justify; line-height:normal; font-family:Tahoma; font-size:8pt }
+			.assnatBodyText { margin-bottom:6pt; text-align:center; font-size:12pt }
+			.assnatBodyTextIndent { text-indent:27pt; text-align:justify; font-size:14pt }
+			.assnatCaption { margin-top:126pt; text-align:center; line-height:normal; font-size:24pt; font-weight:bold; font-style:normal; text-transform:uppercase; color:#000000 }
+			.assnatChapitre { margin-top:6pt; margin-bottom:6pt; text-align:center; font-size:14pt; font-weight:normal; font-variant:small-caps }
+			.assnatDate { text-align:justify; font-size:14pt }
+			.assnatDocumentMap { text-align:left; line-height:normal; font-family:Tahoma; font-size:12pt; background-color:#000080 }
+			.assnatDlibr { margin-top:24pt; margin-bottom:12pt; text-indent:25.5pt; text-align:justify; font-size:14pt; font-style:italic }
+			.assnatFooter { text-align:justify; line-height:normal; font-size:14pt }
+			.assnatFootnoteText { text-indent:25.5pt; text-align:justify; line-height:normal; font-size:14pt }
+			.assnatHeader { margin-bottom:12pt; text-align:center; line-height:normal; font-size:11pt }
+			.assnatINTITULETITRE { margin-top:0pt; margin-bottom:30pt; text-align:center; font-size:14pt; font-weight:bold; text-transform:uppercase }
+			.assnatIntitulChapitre { margin-top:6pt; margin-bottom:12pt; text-align:center; font-size:14pt; font-weight:bold }
+			.assnatIntitulSection { margin-top:6pt; margin-bottom:12pt; text-align:center; font-size:14pt; font-weight:bold }
+			.assnatIntitulSous-section { margin-top:6pt; margin-bottom:12pt; text-align:center; font-size:14pt; font-weight:normal }
+			.assnatMentionsousarticle { margin-top:12pt; margin-bottom:12pt; text-align:center; font-size:14pt; font-style:italic }
+			.assnatNormalWeb { margin-top:5pt; margin-bottom:5pt; text-align:left; font-family:'Times New Roman'; font-size:14pt }
+			.assnatPastille0 { margin-top:6pt; text-align:justify; font-family:Numero; font-size:14pt }
+			.assnatPastillecercl { margin-bottom:0pt; text-indent:8.5pt; text-align:left; page-break-after:avoid; font-family:Numero; font-size:17pt; font-weight:bold }
+			.assnatProjet { margin-right:-26.7pt; margin-left:-7.1pt; margin-bottom:0pt; text-align:center; font-size:14pt; font-style:italic }
+			.assnatPrsident { margin-top:18pt; text-align:justify; font-size:14pt; font-style:italic }
+			.assnatQuestion { margin-top:6pt; margin-bottom:6pt; text-align:justify; font-family:'CG Times (W1)'; font-size:18pt; letter-spacing:0.75pt }
+			.assnatSection { margin-top:6pt; margin-bottom:6pt; text-align:center; font-size:14pt; font-weight:normal; font-variant:normal }
+			.assnatSignaturePrsident { margin-top:6pt; text-align:justify; font-size:14pt; font-style:italic }
+			.assnatSous-section { margin-top:6pt; margin-bottom:6pt; text-align:center; font-size:14pt; font-weight:normal; font-variant:normal }
+			.assnatStyle1 { margin-top:6pt; margin-bottom:6pt; text-align:center; font-family:'CG Times (W1)'; font-size:12pt; letter-spacing:0.75pt }
+			.assnatTITRE { margin-top:24pt; margin-bottom:12pt; text-align:center; font-size:14pt; text-transform:uppercase }
+			.assnatTITRE4 { margin-right:-26.7pt; margin-left:-7.1pt; margin-bottom:12pt; text-indent:-21.3pt; text-align:justify; font-family:'CG TIMES (WN)'; font-size:12pt; font-weight:normal; text-transform:uppercase }
+			.assnatTexte { margin-bottom:12pt; text-indent:25.5pt; text-align:justify; font-size:14pt }
+			.assnatTitle { margin-right:-26.7pt; margin-left:-7.1pt; margin-bottom:12pt; text-align:center; line-height:normal; font-family:'Times New Roman'; font-size:14pt; letter-spacing:0pt }
+			.assnatTitre1 { margin:24pt -26.7pt 24pt -7.1pt; text-align:center; font-size:18pt; font-weight:bold }
+			.assnatTitre7 { margin:24pt -26.7pt 24pt -7.1pt; text-align:justify; font-size:18pt; font-weight:bold }
+			.assnatTitre8 { margin-right:93.75pt; margin-left:106.35pt; margin-bottom:12pt; text-align:center; font-size:14pt }
+			.assnatTitre0 { margin-right:-26.7pt; margin-left:-7.1pt; margin-bottom:12pt; text-align:center; font-size:14pt; text-decoration:underline }
+			.assnatTrait { margin-right:-26.7pt; margin-left:-7.1pt; text-align:center; border-bottom:1.5pt solid #000000; padding-bottom:1pt; font-size:14pt }
+			.assnatconstitution { margin-top:6pt; text-align:center; font-size:14pt; letter-spacing:0.75pt }
+			.assnatdroite { text-align:right; font-size:14pt }
+			.assnatenregistr { margin-top:6pt; margin-right:-21.3pt; margin-left:-21.3pt; text-align:center; border-top:1.5pt double #000000; padding-top:5pt; font-size:11pt }
+			.assnattreizieme { margin-top:6pt; text-align:center; font-size:10pt; letter-spacing:0.75pt }
+			span.assnatAmendementnumro { font-family:Arial; font-size:11pt; font-weight:bold }
+			span.assnatErreur { font-family:'Times New Roman'; font-size:12pt; font-weight:bold }
+			span.assnatLoiTexteCar { font-size:14pt }
+			span.assnat9ArticleNumCar { font-size:14pt; font-weight:bold }
+			span.assnatBalisecaractre { color:#ff0000; display:none }
+			span.assnatEloiPastille { font-size:18pt; font-weight:bold }
+			span.assnatLnom { font-family:'Times New Roman'; font-size:13pt; text-decoration:none; text-transform:uppercase; vertical-align:baseline }
+			span.assnatLprnom { font-family:'Times New Roman'; font-size:13pt; text-decoration:none; vertical-align:baseline }
+			span.assnatPastille { font-size:12pt; font-weight:bold; text-decoration:none; vertical-align:baseline; color:#000000 }
+			span.assnatPastilleBis { font-size:12pt; font-weight:bold; color:#000000 }
+			span.assnatACorpsdetexteCar { font-size:12pt; letter-spacing:0.75pt }
+			span.assnatAaucunstyleCar { font-size:12pt; letter-spacing:0.75pt }
+			span.assnatAmdDateEnregistrement {  }
+			span.assnatAmdDlib { font-family:'Times New Roman'; font-size:12pt; display:none }
+			span.assnatAmdEnteteDroit { font-family:'Times New Roman'; font-size:12pt; font-weight:bold }
+			span.assnatAmdEnteteGauche { font-family:'Times New Roman'; font-size:12pt }
+			span.assnatAmdNomAuteur {  }
+			span.assnatAmdNumroAmendement { font-size:12pt }
+			span.assnatAmdNumroArticle {  }
+			span.assnatAmdNumroInitiative { font-family:'Times New Roman'; font-size:12pt }
+			span.assnatAmdNumroPartie { font-family:'Times New Roman'; font-size:12pt; font-weight:bold }
+			span.assnatAmdTitreInitiativeBis {  }
+			span.assnatCorpsdetexteCar { font-size:12pt }
+			span.assnatDateCar { font-size:14pt }
+			span.assnatEmphasis { font-style:italic }
+			span.assnatEn-tteCar { font-size:11pt }
+			span.assnatExplorateurdedocumentsCar { font-family:Tahoma; font-size:12pt; background-color:#000080 }
+			span.assnatFootnoteReference { vertical-align:super }
+			span.assnatHyperlink { text-decoration:none; color:#000000 }
+			span.assnatNormalC { font-family:'Times New Roman'; font-size:12pt }
+			span.assnatNotedebasdepageCar { font-size:14pt }
+			span.assnatPageNumber { font-family:'Times New Roman' }
+			span.assnatPastillecerclCar { font-family:Numero; font-size:17pt; font-weight:bold }
+			span.assnatPieddepageCar { font-size:14pt }
+			span.assnatPlaceholderText { color:#808080 }
+			span.assnatRetraitcorpsdetexteCar { font-size:14pt }
+			span.assnatStrong { font-weight:bold }
+			span.assnatStyle24ptToutenmajuscule { font-family:'Times New Roman'; font-size:24pt; text-transform:uppercase }
+			span.assnatTextedebullesCar { font-family:Tahoma; font-size:8pt }
+			span.assnatTitre1Car { font-size:14pt; font-weight:bold; text-transform:uppercase; color:#ff00ff }
+			span.assnatTitre2Car { font-size:14pt; font-weight:bold; text-transform:uppercase; color:#ff00ff }
+			span.assnatTitre3Car { font-size:14pt; font-weight:bold; text-transform:uppercase; color:#008000 }
+			span.assnatTitre4Car { font-weight:bold; text-transform:uppercase }
+			span.assnatTitre5Car { font-size:14pt; font-weight:bold }
+			span.assnatTitre6Car { font-size:14pt; font-style:italic }
+			span.assnatTitre7Car { font-size:14pt; font-weight:bold; font-style:italic }
+			span.assnatTitre8Car { font-size:14pt; font-weight:bold }
+			span.assnatTitre9Car { font-style:italic }
+			span.assnatTitreCar { font-size:14pt }
+			.assnatAucuneliste1 {  }
+			.assnatTableGrid {  }
+		</style>
+	</head>
+	<body>
+		<div class="assnatSection1">
+			<p style="text-align:center; font-size:24pt">
+				<img src="data:image/png;base64,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" width="144" height="82" alt="Description : Description : LOGO" />
+			</p>
+			<p style="text-align:center; font-size:28pt">
+				N<span style="vertical-align:3pt">°</span>&#xa0;3060
+			</p>
+			<p style="text-align:center">
+				<span style="font-weight:bold; vertical-align:3pt">_____</span>
+			</p>
+			<p style="text-align:center; font-size:28pt">
+				<span class="assnatStyle24ptToutenmajuscule" style="font-size:28pt">ASSEMBLÉE</span><span class="assnatStyle24ptToutenmajuscule" style="font-size:28pt">&#xa0; </span><span class="assnatStyle24ptToutenmajuscule" style="font-size:28pt">NATIONALE</span>
+			</p>
+			<p class="assnatconstitution">
+				<span style="letter-spacing:normal">CONSTITUTION DU 4 OCTOBRE 1958</span>
+			</p>
+			<p class="assnattreizieme">
+				<span style="letter-spacing:normal">DIX-SEPTIÈME LÉGISLATURE</span>
+			</p>
+			<p class="assnatenregistr" style="margin-right:0pt; margin-left:0pt">
+				Enregistré à la Présidence de l’Assemblée nationale le 10 juillet 2026.
+			</p>
+			<p style="margin-top:30pt; margin-bottom:12pt; text-align:center; font-size:28pt">
+				<span style="font-weight:bold; letter-spacing:-0.2pt">PROJET</span><span style="font-weight:bold; letter-spacing:-0.2pt">&#xa0; </span><span style="font-weight:bold; letter-spacing:-0.2pt">DE</span><span style="font-weight:bold; letter-spacing:-0.2pt">&#xa0; </span><span style="font-weight:bold; letter-spacing:-0.2pt">LOI</span>
+			</p>
+			<p style="margin-top:18pt; margin-bottom:18pt; text-align:center; font-size:12pt">
+				ADOPTÉ PAR LE SÉNAT,
+			</p>
+			<p style="margin-bottom:10pt; text-align:center; page-break-inside:avoid; page-break-after:avoid">
+				<span style="font-style:italic">autorisant l’</span><span style="font-weight:bold">approbation</span><span style="font-style:italic"> de l’</span><span style="font-weight:bold">accord multilatéral</span><span style="font-style:italic"> entre</span><span style="font-weight:bold"> autorités compétentes</span><span style="font-style:italic"> portant sur l’</span><span style="font-weight:bold">échange</span><span style="font-style:italic"> des</span><span style="font-weight:bold"> informations GloBE</span><span style="font-family:'Times New Roman Italique'; font-style:italic">,</span>
+			</p>
+			<p class="assnatTitrePG" style="margin:18pt 14.2pt">
+				<span style="font-family:'Times New Roman'; font-weight:bold; letter-spacing:normal">(Procédure accélérée)</span>
+			</p>
+			<p style="margin-top:12pt; margin-bottom:12pt; text-align:center">
+				TRANSMIS PAR
+			</p>
+			<p style="margin-top:3pt; margin-bottom:3pt; text-align:center; font-size:15pt">
+				M. LE PREMIER MINISTRE
+			</p>
+			<p style="margin-top:6pt; margin-bottom:6pt; text-align:center; font-size:15pt">
+				À
+			</p>
+			<p style="margin-top:3pt; margin-bottom:12pt; text-align:center; font-size:15pt">
+				MME LA PRÉSIDENTE 
+			</p>
+			<p style="margin-top:3pt; margin-bottom:3pt; text-align:center; font-size:15pt">
+				DE L’ASSEMBLÉE NATIONALE
+			</p>
+			<p style="margin-top:18pt; margin-bottom:24pt; text-align:center; font-size:10pt">
+				(Renvoyé à la commission des affaires étrangères, à défaut de constitution<br />d’une commission spéciale dans les délais prévus par les articles 30 et 31 du Règlement.)
+			</p>
+			<p style="margin-top:6pt; text-indent:25.5pt">
+				<span style="font-style:italic">Le Sénat a adopté, en première lecture, après engagement de la procédure accélérée, le projet de loi dont la teneur suit</span><span style="font-style:italic">&#xa0;</span><span style="font-style:italic">:</span>
+			</p>
+			<p style="margin-top:8pt; margin-bottom:6pt; border-top:0.75pt solid #000000; padding-top:8pt; font-size:11pt">
+				<span style="width:0pt; display:inline-block">&#xa0;</span>Voir les numéros&#xa0;:
+			</p>
+			<p style="margin-top:3pt; font-size:11pt">
+				<span style="font-style:italic">Sénat</span><span style="font-style:italic">&#xa0;</span><span style="font-style:italic">: </span><span style="width:0pt; font-weight:bold; display:inline-block">&#xa0;</span><span style="font-weight:bold">670</span>,<span style="font-weight:bold"> 780</span>,<span style="font-weight:bold"> 781 </span>et T.A. <span style="font-weight:bold">158</span>&#xa0;(2025&#x2011;2026).
+			</p>
+			<p class="assnatLoiTexte">
+				&#xa0;
+			</p>
+		</div>
+		<br style="page-break-before:right; clear:both; mso-break-type:section-break" />
+		<div class="assnatSection2">
+			<div style="; clear:both">
+				<p style="text-align:center; font-size:11pt">
+					–&#xa0;1&#xa0;–
+				</p>
+			</div>
+			<p class="assnat9ArticleNum" style="page-break-inside:avoid">
+				Article unique
+			</p>
+			<p style="margin-bottom:12pt; text-indent:25.5pt; page-break-inside:avoid">
+				Est autorisée l’approbation de l’accord multilatéral entre autorités compétentes portant sur l’échange des informations GloBE, signé à Paris le&#xa0;9&#xa0;juillet&#xa0;2025, et dont le texte est annexé à la présente loi.
+			</p>
+			<p style="margin-bottom:12pt; text-indent:25.5pt; page-break-inside:avoid">
+				&#xa0;
+			</p>
+			<p style="margin-bottom:12pt; text-indent:25.5pt; page-break-inside:avoid">
+				&#xa0;
+			</p>
+			<p style="margin-top:24pt; margin-bottom:12pt; text-indent:28pt; page-break-inside:avoid; page-break-after:avoid">
+				<span style="font-style:italic">Délibéré en séance publique, à Paris, le 9 juillet 2026.</span>
+			</p>
+			<p style="margin-top:18pt; margin-bottom:6pt; text-align:right; page-break-inside:avoid; page-break-after:avoid">
+				<span style="font-style:italic">Le Président,</span>
+			</p>
+			<p style="margin-top:18pt; margin-bottom:6pt; text-align:right; page-break-inside:avoid; page-break-after:avoid">
+				<span style="font-style:italic">Signé</span><span style="font-style:italic">&#xa0;</span><span style="font-style:italic">: </span>Gérard LARCHER
+			</p>
+			<p style="margin-top:18pt; margin-bottom:6pt; page-break-inside:avoid; page-break-after:avoid; font-size:12pt">
+				&#xa0;
+			</p>
+		</div>
+	</body>
+</html>

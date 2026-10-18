@@ -214,4 +214,42 @@ void main() {
       );
     });
   });
+
+  group('texte déposé, source des résumés (#9)', () {
+    test('proposition déposée à l\'Assemblée : son texte de dépôt', () {
+      expect(index.depositText('DLR5L17N50453'), 'PIONANR5L17B0284');
+      expect(index.depositText('DLR5L17N51279'), 'PNREANR5L17B0783');
+    });
+
+    test('texte venu du Sénat : le texte transmis à l\'Assemblée', () {
+      expect(index.depositText('DLR5L17N50169'), 'PIONANR5L17B0907');
+      expect(index.depositText('DLR5L17N54379'), 'PRJLANR5L17B3060');
+    });
+
+    test('plusieurs dépôts : le premier à l\'Assemblée', () {
+      // AN1-DEPOT sous la 16e législature, puis deux AN2-DEPOT.
+      expect(index.depositText('DLR5L16N49258'), 'PIONANR5L16B2056');
+    });
+
+    test('gardé dans le cache de l\'index', () {
+      final again = DossierIndex.fromJson(
+        jsonDecode(jsonEncode(index.toJson())),
+      );
+      expect(again.depositText('DLR5L17N50453'), 'PIONANR5L17B0284');
+    });
+
+    test('identifiant du dossier tiré de son adresse', () {
+      expect(
+        dossierUidFromUrl(index.dossier('DLR5L17N50453')!.url),
+        'DLR5L17N50453',
+      );
+      expect(dossierUidFromUrl(null), isNull);
+      expect(
+        dossierUidFromUrl(
+          'https://www.assemblee-nationale.fr/dyn/17/scrutins/217',
+        ),
+        isNull,
+      );
+    });
+  });
 }

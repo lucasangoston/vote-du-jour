@@ -70,6 +70,16 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               children: [
                 _Header(decision),
+                // Résumé en points (#9) : dans le fichier de détail
+                // seulement.
+                if (_detail?.decision.summary?.points case final points?
+                    when points.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _Section(
+                    title: summaryPointsHeading,
+                    child: _SummaryPoints(points),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (_detail case final detail?)
                   ..._voteSections(detail)
@@ -122,6 +132,37 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       ),
     ],
   ];
+}
+
+/// Intertitre des points du résumé.
+const summaryPointsHeading = 'Ce que prévoit le texte';
+
+/// Points du résumé, en liste à puces.
+class _SummaryPoints extends StatelessWidget {
+  const _SummaryPoints(this.points);
+
+  final List<String> points;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodyMedium;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final point in points)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('•  ', style: style),
+                Expanded(child: Text(point, style: style)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 /// Mention d'une décision sans scrutin public (ticket #8) : ni barre ni vote
@@ -184,6 +225,10 @@ class _Header extends StatelessWidget {
             stage,
             style: theme.textTheme.bodyMedium?.copyWith(color: muted),
           ),
+        ],
+        if (decision.explanation case final explanation?) ...[
+          const SizedBox(height: 12),
+          Text(explanation, style: theme.textTheme.bodyLarge),
         ],
         const SizedBox(height: 16),
         _Field(label: 'Type de décision', value: decisionTypeLabel(decision)),

@@ -177,6 +177,7 @@ class DossierIndex {
     required List<_Adoption> adoptions,
     required Set<String> resolutions,
     required Map<String, String> textTitles,
+    required Map<String, String> depositTexts,
   }) : _titles = titles,
        _votes = votes,
        _decisions = decisions,
@@ -184,7 +185,8 @@ class DossierIndex {
        _nonTexts = nonTexts,
        _adoptions = adoptions,
        _resolutions = resolutions,
-       _textTitles = textTitles;
+       _textTitles = textTitles,
+       _depositTexts = depositTexts;
 
   /// Titre de chaque dossier, par identifiant.
   final Map<String, String> _titles;
@@ -214,6 +216,16 @@ class DossierIndex {
   /// Intitulé des textes adoptés cités par [_adoptions], par identifiant de
   /// document.
   final Map<String, String> _textTitles;
+
+  /// Texte déposé à l'Assemblée (premier acte `AN…-DEPOT`), par dossier.
+  final Map<String, String> _depositTexts;
+
+  /// Identifiant du texte déposé à l'Assemblée dans le dossier [dossierUid]
+  /// (`PIONANR5L17B0284`), source des résumés (#9) : une proposition déposée
+  /// à l'Assemblée a un exposé des motifs, un texte transmis par le Sénat
+  /// n'a que ses articles. `null` si le dossier n'a pas de dépôt à
+  /// l'Assemblée.
+  String? depositText(String dossierUid) => _depositTexts[dossierUid];
 
   /// Nombre de dossiers indexés.
   int get length => _titles.length;
@@ -275,15 +287,17 @@ class DossierIndex {
         ],
         resolutions: {...(json['resolutions'] as List).cast<String>()},
         textTitles: map(json['textTitles']).cast<String, String>(),
+        depositTexts: map(json['depositTexts']).cast<String, String>(),
       );
     } on TypeError {
       throw const FormatException('Index des dossiers : format inattendu');
     }
   }
 
-  /// Version 2 : ajout des adoptions à main levée (ticket #8). Un cache de
-  /// version 1 est refusé, donc reconstruit.
-  static const _cacheVersion = 2;
+  /// Version 2 : ajout des adoptions à main levée (ticket #8). Version 3 :
+  /// textes déposés, source des résumés (ticket #9). Un cache d'une version
+  /// antérieure est refusé, donc reconstruit.
+  static const _cacheVersion = 3;
 
   Map<String, Object?> toJson() {
     List<List<String>> pairs(List<(String, String)> l) => [
@@ -301,6 +315,7 @@ class DossierIndex {
       'adoptions': [for (final a in _adoptions) a.toJson()],
       'resolutions': _resolutions.toList()..sort(),
       'textTitles': _textTitles,
+      'depositTexts': _depositTexts,
     };
   }
 
@@ -394,6 +409,14 @@ class DossierIndex {
   static bool _isText(String code) => code != 'AN20' && code != 'AN21';
 }
 
+/// Identifiant du dossier dont [url] est la page officielle
+/// ([Dossier.url]), ou `null`.
+String? dossierUidFromUrl(String? url) {
+  if (url == null) return null;
+  final match = RegExp(r'/dossiers/([A-Za-z0-9]+)$').firstMatch(url);
+  return match?.group(1);
+}
+
 /// Clé de comparaison de l'intitulé du texte voté : à partir de « proposition
 /// de loi… », « projet de loi… » ou « proposition de résolution… », sans la
 /// parenthèse finale, la ponctuation ni la casse. `null` si l'intitulé ne
@@ -481,6 +504,7 @@ class _Builder {
   final adoptions = <_Adoption>[];
   final resolutions = <String>{};
   final documentTitles = <String, String>{};
+  final depositTexts = <String, String>{};
 
   void _addTitleKey(String title, String uid) {
     final key = _titleKey(title);
@@ -531,6 +555,16 @@ class _Builder {
     }
     final code = acte['codeActe'];
     final date = acte['dateActe'];
+    // Premier dépôt à l'Assemblée (`AN1-DEPOT`, `ANLUNI-DEPOT`, `AN2-DEPOT`
+    // d'un texte venu du Sénat…), dans l'ordre des actes.
+    final deposited = acte['texteAssocie'];
+    if (code is String &&
+        code.startsWith('AN') &&
+        code.endsWith('-DEPOT') &&
+        deposited is String &&
+        deposited.isNotEmpty) {
+      depositTexts.putIfAbsent(uid, () => deposited);
+    }
     if (code is String &&
         _isAssemblyDecision(code) &&
         date is String &&
@@ -623,6 +657,7 @@ class _Builder {
           if (a.text case final t? when documentTitles.containsKey(t))
             t: documentTitles[t]!,
       },
+      depositTexts: depositTexts,
     );
   }
 }

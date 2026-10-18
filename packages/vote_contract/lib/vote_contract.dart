@@ -10,3 +10,4 @@ export 'src/decision.dart';
 export 'src/decision_detail.dart';
 export 'src/decision_index.dart';
 export 'src/paths.dart';
+export 'src/plain_summary.dart';

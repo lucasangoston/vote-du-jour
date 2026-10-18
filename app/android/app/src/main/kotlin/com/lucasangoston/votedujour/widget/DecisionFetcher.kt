@@ -64,7 +64,8 @@ object DecisionFetcher {
 /**
  * Conversion fidèle de l'index publié (contrat `vote_contract`, version 1) vers l'instantané lu par
  * le widget, comme `WidgetSnapshot.fromIndex` côté Dart : les trois décisions lisibles les plus
- * récentes, titre = `shortTitle` sinon `officialTitle` (avec majuscule initiale), étape = `stage`.
+ * récentes, titre = titre du résumé, sinon `shortTitle`, sinon `officialTitle` (avec majuscule
+ * initiale), étape = `stage`, explication = phrase du résumé (#9).
  */
 object SnapshotConverter {
   private const val SCHEMA_VERSION = 1
@@ -141,6 +142,7 @@ object SnapshotConverter {
     val officialTitle = d.opt("officialTitle") as? String ?: return null
     if (d.opt("sourceUrl") !is String) return null
     val shortTitle = optionalString(d, "shortTitle")
+    val summary = plainSummary(d.optJSONObject("summary"))
     // Même règle que `WidgetDecision.fromSummary` : les mentions « à main levée »
     // et « provisoire » s'ajoutent à l'étape, que le widget affiche déjà.
     val mentions =
@@ -162,9 +164,29 @@ object SnapshotConverter {
             .put("id", id)
             .put("result", result)
             .put("date", date.toString())
-            .put("title", (shortTitle ?: officialTitle).trim().replaceFirstChar { it.uppercase() })
+            .put(
+                "title",
+                (summary?.first ?: shortTitle ?: officialTitle).trim().replaceFirstChar {
+                  it.uppercase()
+                },
+            )
     stage?.let { out.put("stage", it) }
+    // Phrase du résumé, affichée par le widget moyen.
+    summary?.second?.let { out.put("explanation", it.trim()) }
     return out
+  }
+
+  /**
+   * Titre et phrase du résumé, mêmes règles que `PlainSummary.tryFromJson` : un résumé malformé
+   * est ignoré (la décision reste lisible).
+   */
+  private fun plainSummary(s: JSONObject?): Pair<String, String>? {
+    if (s == null) return null
+    val title = optionalString(s, "title") ?: return null
+    val explanation = optionalString(s, "explanation") ?: return null
+    val version = s.opt("promptVersion")
+    if (version !is Int && version !is Long) return null
+    return title to explanation
   }
 
   private fun optionalString(d: JSONObject, key: String): String? =

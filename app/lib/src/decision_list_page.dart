@@ -165,6 +165,16 @@ class _DecisionTile extends StatelessWidget {
             capitalize(decision.displayTitle),
             style: theme.textTheme.bodyMedium,
           ),
+          // Phrase d'explication du résumé (#9), si la décision est résumée.
+          if (decision.explanation case final explanation?) ...[
+            const SizedBox(height: 4),
+            Text(
+              explanation,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
           // Étape de la procédure ou étiquette (« Résolution (sans valeur de
           // loi) ») : absente des index publiés avant le ticket #7.
           if (decision.stage case final stage?) ...[
