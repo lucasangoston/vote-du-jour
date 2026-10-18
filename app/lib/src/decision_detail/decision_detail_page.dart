@@ -13,11 +13,13 @@ import '../hemicycle/vote_arc.dart';
 import '../provisional_badge.dart';
 import '../theme.dart';
 import 'decision_detail_repository.dart';
-import 'vote_bar.dart';
+import 'vote_arguments.dart';
+import 'who_voted_what.dart';
 
 /// Écran de détail d'une décision : carte du vote (grand arc, résultat,
-/// décompte), méta, titre, explication, points du résumé, vote par groupe,
-/// liens vers les pages officielles et source.
+/// décompte), méta, titre, explication, points du résumé, « Qui a voté
+/// quoi » (groupes rangés par position), « Pourquoi ils ont voté ainsi »
+/// (arguments des groupes), liens vers les pages officielles et source.
 ///
 /// [summary] (la ligne de la liste) s'affiche tout de suite, arc compris ;
 /// le fichier de détail complète l'écran quand il arrive. Ouvert depuis un
@@ -165,13 +167,15 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
     if (detail.groups.isNotEmpty) ...[
       const SizedBox(height: 32),
       const _Heading(groupsHeading),
-      const SizedBox(height: 2),
-      for (final group in detail.groups) _GroupRow(group),
+      const SizedBox(height: 14),
+      WhoVotedWhat(detail.groups),
+    ],
+    // Arguments des groupes (#35) : absents sans explications de vote.
+    if (detail.arguments case final arguments?) ...[
+      const SizedBox(height: 32),
+      const _Heading(argumentsHeading),
       const SizedBox(height: 12),
-      Text(
-        'Pour · contre · abstentions',
-        style: TextStyle(fontSize: 12.5, color: context.colors.ink2),
-      ),
+      VoteArguments(arguments),
     ],
   ];
 }
@@ -179,12 +183,13 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
 /// Intertitre des points du résumé.
 const summaryPointsHeading = 'Ce que prévoit le texte';
 
-/// Intertitre du vote par groupe politique.
-const groupsHeading = 'Vote par groupe';
-
 /// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
 /// vote par groupe.
 const mainLeveeNotice = 'Adopté à main levée, sans décompte des voix.';
+
+/// « 570 députés ont voté » : pour, contre et abstentions.
+String votersLabel(int total) =>
+    total > 1 ? '$total députés ont voté' : '$total député a voté';
 
 /// Vote par groupe d'une décision provisoire, pas encore publié.
 const provisionalGroupsNotice =
@@ -284,15 +289,13 @@ class _VoteCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (count case final count? when count.nonVotants > 0)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text(
-                      '${count.votants} votants · ${count.nonVotants} '
-                      'non-votant${count.nonVotants > 1 ? 's' : ''}',
-                      style: TextStyle(fontSize: 12.5, color: colors.ink2),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: Text(
+                    votersLabel(tally.total),
+                    style: TextStyle(fontSize: 13, color: colors.ink2),
                   ),
+                ),
               ],
             ],
           );
@@ -461,83 +464,6 @@ class _Field extends StatelessWidget {
     );
   }
 }
-
-/// Un groupe : nom et sigle, décompte en Geist Mono, barre segmentée.
-class _GroupRow extends StatelessWidget {
-  const _GroupRow(this.group);
-
-  final GroupVoteDetail group;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final c = group.count;
-    return Semantics(
-      container: true,
-      label:
-          '${group.name} : ${groupPositionLabel(group.position)}, '
-          '${c.pour} pour, ${c.contre} contre, ${c.abstentions} abstentions',
-      excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: colors.rule)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      text: group.name,
-                      children: [
-                        if (group.abbreviation case final abbreviation?)
-                          TextSpan(
-                            text: ' $abbreviation',
-                            style: TextStyle(color: colors.ink2),
-                          ),
-                      ],
-                    ),
-                    style: TextStyle(fontSize: 14, color: colors.ink),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '${c.pour} · ${c.contre} · ${c.abstentions}',
-                  style: HemicycleText.mono.copyWith(
-                    fontSize: 13,
-                    color: colors.ink2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 7),
-            if (c.votants > 0)
-              VoteBar(c)
-            else
-              Text(
-                groupPositionLabel(GroupPosition.nonVotant),
-                style: TextStyle(fontSize: 12.5, color: colors.ink2),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Libellé de la position d'un groupe.
-String groupPositionLabel(GroupPosition position) => switch (position) {
-  GroupPosition.pour => 'Pour',
-  GroupPosition.contre => 'Contre',
-  GroupPosition.abstention => 'Abstention',
-  GroupPosition.partage => 'Partagé',
-  GroupPosition.nonVotant => 'N\'a pas voté',
-};
 
 /// Liens vers les pages officielles : le scrutin, puis le dossier
 /// législatif.

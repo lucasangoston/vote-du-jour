@@ -1,6 +1,11 @@
 /// Job de publication des décisions de l'Assemblée nationale.
 library;
 
+export 'src/arguments/arguments_matcher.dart';
+export 'src/arguments/arguments_pass.dart';
+export 'src/arguments/arguments_prompt.dart';
+export 'src/arguments/arguments_state.dart';
+export 'src/arguments/compte_rendu.dart';
 export 'src/decision_details.dart';
 export 'src/decision_labels.dart';
 export 'src/decision_selector.dart';
@@ -16,6 +21,9 @@ export 'src/live/paris_time.dart';
 export 'src/live/reconciler.dart';
 export 'src/live/site_reader.dart';
 export 'src/live/site_source.dart';
+export 'src/notifications/fcm_client.dart';
+export 'src/notifications/notification_pass.dart';
+export 'src/notifications/rs256.dart';
 export 'src/object_store.dart';
 export 'src/scrutin.dart';
 export 'src/summary/llm_client.dart';

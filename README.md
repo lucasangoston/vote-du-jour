@@ -11,7 +11,7 @@ Données : open data de l'Assemblée nationale (Licence Ouverte Etalab).
 - Données publiées : `https://pub-51ad28220f184398acec4e2b145afd20.r2.dev` (bucket R2 `vote-du-jour`, domaine r2.dev réservé au développement).
 - Identifiant de l'app (iOS et Android) : `com.lucasangoston.votedujour`.
 - Team ID Apple : `792WRWDFHZ`.
-- Secrets GitHub Actions : `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `ANTHROPIC_API_KEY`.
+- Secrets GitHub Actions : `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `ANTHROPIC_API_KEY`, `FCM_SERVICE_ACCOUNT` (clé JSON du compte de service Firebase, notifications push ; facultatif).
 - Variables GitHub Actions : `R2_PUBLIC_BASE_URL`, `APPLE_TEAM_ID`, `APP_ID`.
 
 ## Structure
@@ -35,6 +35,8 @@ Données publiées dans le bucket :
 - `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin, texte déposé de chaque dossier), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
 - `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
+- `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service).
+- `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
@@ -72,6 +74,18 @@ Le titre court et l'étape de la procédure viennent du jeu de données des doss
 - Le passage en direct (`live.yml`) n'appelle pas le modèle : il applique les résumés du cache. Une décision provisoire est résumée au passage horaire suivant.
 - Sans `ANTHROPIC_API_KEY`, le job publie sans nouveau résumé (les résumés existants restent publiés). La clé n'existe que dans les secrets GitHub : en local, le job ne résume rien.
 
+## Arguments pour et contre (#35)
+
+Après les résumés, le job tire des explications de vote des groupes les arguments pour, contre et d'abstention de chaque vote sur l'ensemble (ou sur l'article unique, ou sur une proposition de résolution), publiés dans le fichier de détail (`arguments`, format dans `packages/vote_contract/README.md`). Code : `backend/lib/src/arguments/`.
+
+- Source : comptes rendus de séance, open data AN (`syseron.xml.zip`, ~59 Mo, XML Syceron, publiés ~2 jours après la séance), téléchargés seulement s'ils ont changé (`If-Modified-Since`), et seulement si une décision attend des arguments. Seuls les comptes rendus des jours concernés sont analysés.
+- Rattachement prudent : une décision confirmée est rattachée à la section « Explications de vote » (ou « … communes ») suivie du « Vote sur l'ensemble » du même jour qui nomme le même texte (phrase « Je mets aux voix… », sinon titre du vote ou de la discussion), même nature (loi organique ou non, résolution ou non) et mêmes voix pour et contre quand le compte rendu les donne. Un rattachement qui n'est pas unique dans les deux sens est abandonné : en cas de doute, rien. Une section commune à deux textes vaut pour les deux. Des explications sur une motion de rejet, suivies de la discussion, ne sont jamais rattachées au vote final.
+- Chaque intervention est classée selon la position, dans le scrutin, du groupe de l'orateur (sigle écrit après son nom) ; interruptions, présidence, didascalies, non-inscrits et orateurs sans groupe sont ignorés.
+- Modèle : le même que les résumés, consigne dédiée versionnée dans `backend/lib/src/arguments/arguments_prompt.dart` (`argumentsPromptVersion`) : 2 à 3 arguments par camp présent, chacun attribué à un groupe de ce camp qui l'a réellement dit, rien d'ajouté, ton neutre, une phrase courte. Seules les explications de vote sont envoyées, entre balises `<explications_de_vote>`, au plus 6 000 caractères par groupe. Sortie structurée (schéma JSON limitant chaque camp à ses groupes) ; une réponse qui attribue un argument à un autre groupe, est vide, trop longue ou mal formée est rejetée en entier.
+- Coût borné : au plus 5 appels par passage ; une décision faite pour la version courante de la consigne n'est plus jamais redemandée (`state/arguments.json`) ; après 3 réponses rejetées, elle est abandonnée. Le passage en direct n'en rédige pas, et le job republie les arguments de l'état quand il reconstruit les fichiers de détail.
+- Votes sans explications de vote (main levée, petits textes, conventions) : pas de champ `arguments`.
+- Sans `ANTHROPIC_API_KEY`, aucun nouvel argument (ceux de l'état restent publiés).
+
 ## Détection en direct
 
 Pendant les séances, le job lit la liste des 50 derniers scrutins du site de l'Assemblée (`https://www.assemblee-nationale.fr/dyn/17/scrutins?limit=50`, un GET par passage, User-Agent `vote-du-jour/1.0`), plus la page d'un nouveau scrutin seulement si la liste n'en donne pas le sort. Les scrutins plus récents que le jeu de données passent par le même sélecteur et le même rattachement aux dossiers ; ceux qui sont retenus sont publiés avec `status: provisoire`. Le jeu de données du lendemain les confirme (`status: confirmee`, même `id`) ; un scrutin provisoire qu'il ne contient pas encore reste publié comme provisoire.
@@ -87,6 +101,17 @@ dart run bin/vote_job.dart --live --store=r2
 Le workflow `live.yml` lance un passage toutes les 10 minutes. Les plages se règlent en tête du fichier (`LIVE_DAYS`, `LIVE_HOURS`, en heure de Paris, vérifiées par le job) ; le cron, en UTC, doit les englober en heure d'été comme en heure d'hiver. Il partage le groupe de concurrence `publish` avec `publish.yml` : jamais deux publications simultanées.
 
 Si le site est illisible (panne, structure changée), le passage s'arrête sans rien écrire et l'erreur apparaît en avertissement dans GitHub Actions ; le jeu de données continue d'être publié par `publish.yml`. Le site ne donne ni le type de vote (le garde-fou des scrutins solennels ne s'applique qu'avec le jeu de données), ni le dossier, ni le vote par groupe.
+
+## Notifications push des votes importants
+
+Après la publication et les résumés, chaque exécution de `publish.yml` envoie une notification au sujet Firebase Cloud Messaging `votes-importants` pour chaque nouvelle décision importante (`backend/lib/src/notifications/`) :
+
+- vote important : scrutin public solennel (`typeVote` `SPS`, lu dans `state/scrutins-confirmes.json`), motion de censure, ou texte en lecture définitive ou texte de compromis (CMP), adopté ou rejeté ;
+- jamais : vote à main levée, proposition de résolution, décision provisoire (notifiée à sa confirmation par le jeu de données, pour ne jamais annoncer un résultat faux), décision de plus de 7 jours ;
+- message : titre « Adopté : <titre> » ou « Rejeté : <titre> » (titre du résumé, sinon titre court), corps = phrase d'explication (sinon l'étape), données `decisionId` et `link` (`votedujour://decisions/<id>`), son par défaut sur Android et iOS ;
+- au plus 3 envois par passage, les plus anciennes d'abord ; les suivantes partent au passage suivant (une heure plus tard) ;
+- mémoire `state/notifications.json`, écrite après chaque envoi réussi : une décision n'est jamais notifiée deux fois ; un envoi en échec est retenté au passage suivant. Au premier passage, les décisions déjà publiées sont marquées sans envoi.
+- Envoi par l'API FCM HTTP v1 : jeton OAuth2 obtenu avec un JWT RS256 signé par la clé du compte de service. Sans le secret `FCM_SERVICE_ACCOUNT`, la fonction est désactivée (une ligne dans le journal) ; un échec d'envoi est journalisé en avertissement sans faire échouer l'exécution. Le passage en direct (`live.yml`) n'envoie jamais de notification.
 
 ## App
 

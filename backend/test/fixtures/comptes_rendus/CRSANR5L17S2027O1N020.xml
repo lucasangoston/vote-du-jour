@@ -1,0 +1,986 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<compteRendu xmlns="http://schemas.assemblee-nationale.fr/referentiel">
+  <uid>CRSANR5L17S2027O1N020</uid>
+  <seanceRef>RUANR5L17S2027IDS30940</seanceRef>
+  <sessionRef>SCR5A2027O1</sessionRef>
+  <metadonnees>
+    <dateSeance>20261013150000000</dateSeance>
+    <dateSeanceJour>mardi 13 octobre 2026</dateSeanceJour>
+    <numSeanceJour>1</numSeanceJour>
+    <numSeance>20</numSeance>
+    <typeAssemblee>AN</typeAssemblee>
+    <legislature>17</legislature>
+    <session>Session ordinaire 2026-2027</session>
+    <nomFichierJo>20260020</nomFichierJo>
+    <validite>valide</validite>
+    <etat>complet</etat>
+    <diffusion>public</diffusion>
+    <version>avant_JO</version>
+    <environnement>PROD</environnement>
+    <heureGeneration>2026-10-16T23:24:10.000+02:00</heureGeneration>
+  </metadonnees>
+  <contenu>
+    <point nivpoint="1" valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027011" ordre_absolu_seance="474" code_grammaire="TITRE_TEXTE_DISCUSSION" code_style="Titre" code_parole="" sommaire="1" id_syceron="4184142" valeur=" (n[[os]] 3190 rectifié et 3191)">
+      <orateurs />
+      <texte>Réponse intégrale aux violences sexuelles et sexistes contre les femmes et les enfants - Adapter l’autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales</texte>
+    </point>
+    <point nivpoint="2" valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027012" ordre_absolu_seance="475" code_grammaire="SOUS_TITRE_TEXTE_DISCUSSION" code_style="Sous-tit_info" code_parole="" sommaire="1" id_syceron="4184143" valeur=" ">
+      <orateurs />
+      <texte>Votes solennels</texte>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027013" ordre_absolu_seance="476" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="ODJ_APPEL_DISCUSSION" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184144" valeur=" (n[[os]] 3190 rectifié, 3106 et 3191, 3107)" roledebat="president">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="8416.31">L’ordre du jour appelle les votes solennels sur la proposition de loi apportant une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants (n<exposant>os</exposant> 3106, 3190 rectifié) et sur la proposition de loi organique visant à adapter l’autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales (n<exposant>os</exposant> 3107, 3191).<br />Je rappelle que la conférence des présidents a décidé que ces deux votes, par scrutin public, seraient précédés d’explications de vote communes. Chaque groupe dispose pour cela d’une durée de cinq minutes.<br />Je vous remercie de quitter l’hémicycle rapidement, le cas échéant, afin que les orateurs puissent s’exprimer dans le calme.</texte>
+      </paragraphe>
+    </point>
+    <point nivpoint="2" valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027016" ordre_absolu_seance="479" code_grammaire="DISC_ARTICLES_1_2" code_style="Sous-tit_p_cap" code_parole="" sommaire="1" id_syceron="4184147" valeur="">
+      <orateurs />
+      <texte>Explications de vote communes</texte>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027017" ordre_absolu_seance="480" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184148" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="8424.96">La parole est à Mme Clémentine Autain.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027018" ordre_absolu_seance="481" id_acteur="PA588884" id_mandat="PM840450" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184149" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Clémentine Autain (EcoS)</nom>
+            <id>588884</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="8523.64">À tous les enfants victimes d’inceste, dont le nombre est insoutenable, et qui se sont enfermés dans le silence ; à toutes celles qui ne sont plus là parce qu’assassinées par un mari violent ou à qui le suicide est apparu comme la seule solution pour faire cesser d’insoutenables souffrances ; à toutes les femmes et à tous les enfants qui, par millions, n’ont pas été crus, n’ont pas pu déposer plainte, se sont retrouvés face à ce satané classement sans suite ; à toutes celles, parfois les mêmes, traitées d’hystériques, prises pour des folles, à qui on a demandé comment elles étaient habillées…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027022" ordre_absolu_seance="485" id_acteur="PA719558" id_mandat="PM842663" id_nomination_oe="-1" id_nomination_op="-10111956" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184153" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Erwan Balanant</nom>
+            <id>719558</id>
+            <qualite>rapporteur</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="8642.38">Ce que vous dites est d’une violence !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027023" ordre_absolu_seance="486" id_acteur="PA588884" id_mandat="PM840450" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184154" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Clémentine Autain</nom>
+            <id>588884</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="8789.51">Honte aussi à vous, collègues macronistes, pour votre vote qui a conduit à supprimer l’article 62 !<italique> (Applaudissements sur les bancs des groupes EcoS, LFI-NFP et GDR ainsi que sur plusieurs bancs du groupe SOC.</italique>
+          <italique>– Mme Stella</italique>
+          <italique> Dupont</italique>
+          <italique> applaudit</italique>
+          <italique>également.)</italique> Honte à vous de regarder dans la même direction que l’extrême droite : pour vous, une femme étrangère victime de violences est une étrangère avant d’être une victime. C’est ainsi que vous avez prêté main-forte au Rassemblement national pour empêcher que les femmes étrangères puissent déposer plainte sans encourir le risque de se voir signifier…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027025" ordre_absolu_seance="488" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184156" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="8858.88">La parole est à Mme Sandrine Josso.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="9" id_preparation="3027026" ordre_absolu_seance="489" id_acteur="PA720038" id_mandat="PM842921" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184157" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sandrine Josso (Dem)</nom>
+            <id>720038</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="8880.77">« Elles sont ma famille. Elles sont mon combat. Elles sont ma pratique quotidienne. » Ces mots de Gisèle Halimi résonnent profondément en moi. Je pense à toutes ces victimes de violences sexistes et sexuelles (VSS) dont je connais les combats, pour les vivre personnellement et pour les entendre chaque jour. Si ce texte est devant notre assemblée, nous le devons d’abord à leur mobilisation. Merci à elles !<italique> (Applaudissements sur les bancs des groupes Dem et SOC ainsi que sur quelques bancs des groupes DR et</italique>
+          <italique> EcoS.)</italique>
+          <br />Merci à celles et ceux qui ont brisé le silence. Toute victime doit se sentir…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026571" ordre_absolu_seance="498" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183847" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9053.18">La parole est à Mme Isabelle Rauch.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026572" ordre_absolu_seance="499" id_acteur="PA720552" id_mandat="PM843029" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4183848" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Isabelle Rauch (HOR)</nom>
+            <id>720552</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9212.25">À peine 6 % des victimes de violences sexuelles hors du cadre familial portent plainte. Et lorsque la plainte est déposée, plus de huit affaires sur dix s’arrêtent là, sans poursuites. Derrière ces chiffres, il est une vérité plus dure encore : la plupart des victimes ne seront jamais comptées, parce qu’elles n’auront jamais pu parler.<br />Les violences sexuelles et sexistes ne sont pas des faits divers : elles sont un fait politique. Elles disent ce que notre société tolère, ce qu’elle préfère ne pas voir, et la place réellement accordée aux femmes et aux enfants. Une République qui ne protège…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026582" ordre_absolu_seance="509" id_acteur="PA721410" id_mandat="PM843350" id_nomination_oe="-1" id_nomination_op="-5903450" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183858" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Émilie Bonnivard</nom>
+            <id>721410</id>
+            <qualite>rapporteure</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="9347.89">Il faut le dire au Conseil constitutionnel !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026583" ordre_absolu_seance="510" id_acteur="PA720552" id_mandat="PM843029" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183859" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Isabelle Rauch</nom>
+            <id>720552</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9445.42">…sur le terrain, enfin, auprès de celles et ceux chargés de l’appliquer.<br />Reste la question décisive des moyens. Ce texte programme 3 milliards d’euros par an de 2027 à 2032. Une loi de programmation n’ouvre cependant pas les crédits ; il revient à une loi de finances de le faire ou de ne pas le faire. Nous connaissons l’état de nos comptes publics, et notre groupe n’a jamais transigé avec le sérieux budgétaire. Aussi affirmons-nous que la protection des victimes relève des missions premières de l’État et qu’elle doit être financée comme telle. Une loi votée sans les moyens de l’appliquer…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026586" ordre_absolu_seance="513" id_acteur="PA721410" id_mandat="PM843350" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183862" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Émilie Bonnivard,</nom>
+            <id>721410</id>
+            <qualite>rapporteure</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="9477.89">Très bien !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026587" ordre_absolu_seance="514" id_acteur="PA720552" id_mandat="PM843029" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183863" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Isabelle Rauch</nom>
+            <id>720552</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9497.52">Le groupe Horizons &amp; indépendants votera en faveur du texte, avec la conviction que la protection des victimes ne peut être ni un combat partisan ni un combat solitaire ; qu’elle est l’affaire de la société tout entière et de tous nos bancs.<italique> (Applaudissements sur les bancs du groupe HOR et sur quelques bancs des groupes SOC, DR et EcoS.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026588" ordre_absolu_seance="515" id_acteur="PA841893" id_mandat="PM843449" id_nomination_oe="-1" id_nomination_op="PM885122" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183864" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Céline Thiébault-Martinez</nom>
+            <id>841893</id>
+            <qualite>rapporteure générale de la commission spéciale</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="9513.40">Très bien !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026589" ordre_absolu_seance="516" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4183865" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9515.74">La parole est à Mme Sylvie Bonnet.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="10" id_preparation="3026590" ordre_absolu_seance="517" id_acteur="PA719968" id_mandat="PM842891" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4183866" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sylvie Bonnet (DR)</nom>
+            <id>719968</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9543.37">Derrière les chiffres, il y a des vies brisées, des femmes qui ont peur de parler, des enfants qui grandissent dans le silence et la violence, des victimes qui mettent parfois des années avant de trouver la force de dénoncer ce qu’elles ont subi.<br />L’ambition de la proposition de loi que nous nous apprêtons à voter est claire : apporter une réponse globale, cohérente et durable aux violences, de la prévention à la sanction, en passant par la protection et l’accompagnement des victimes.<br />Ce texte est le fruit de plusieurs années de mobilisation citoyenne, associative et parlementaire. La Coalition…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026602" ordre_absolu_seance="529" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184162" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9910.34">La parole est à Mme Elsa Faucillon.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026603" ordre_absolu_seance="530" id_acteur="PA721896" id_mandat="PM840405" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184163" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Elsa Faucillon (GDR)</nom>
+            <id>721896</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9924.05">Chers collègues, chère coalition, au cours de l’examen de cette proposition de loi intégrale, nous avons entendu ici des mots qui n’avaient jamais été prononcés, des récits qui n’avaient jamais pu trouver leur place. Si nous avons débattu de ce texte, c’est parce que des décennies de luttes féministes et enfantistes nous ont précédés, c’est parce que MeToo, parce que Gisèle, parce que Lyhanna.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026604" ordre_absolu_seance="531" id_acteur="PA793174" id_mandat="PM842384" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184164" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Yannick Monnet</nom>
+            <id>793174</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9945.89">Absolument !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026605" ordre_absolu_seance="532" id_acteur="PA721896" id_mandat="PM840405" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184165" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Elsa Faucillon</nom>
+            <id>721896</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9946.31">Ces luttes et ces drames ont contraint le gouvernement à inscrire ce texte à l’ordre du jour. C’est aussi ce qui nous a obligés à traiter les violences sexistes et sexuelles non pas comme une succession de tragédies isolées, mais bien comme un système de domination. L’impunité que permet le patriarcat rend ces violences possibles, les banalise et protège ceux qui les commettent. Que ces violences soient enfin pensées comme un système et non comme une addition de faits divers est une réelle victoire. Mais, disons-le, elle est loin d’être acquise, ou du moins, elle en appelle beaucoup d’autres.<br />Le travail parlementaire a permis de…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026609" ordre_absolu_seance="536" id_acteur="PA795820" id_mandat="PM843713" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184169" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Marcellin Nadeau</nom>
+            <id>795820</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="9979.72">C’est vrai !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026610" ordre_absolu_seance="537" id_acteur="PA721896" id_mandat="PM840405" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184170" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Elsa Faucillon</nom>
+            <id>721896</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10046.48">Prévenir la récidive, travailler sur les comportements violents, organiser un suivi adapté, c’est essentiel et ce texte passe à côté.<italique> (Applaudissements sur plusieurs bancs des groupes GDR et LFI-NFP.)</italique>
+          <br />Surtout, il y a celles que cette loi laisse de côté. Ce recul n’est pas anodin, il révèle une contradiction profonde dans notre combat contre les violences. Nous sommes en train de faire évoluer notre droit et notre regard sur les victimes. Nous commençons enfin à comprendre combien le soupçon a longtemps pesé sur la parole des femmes ; combien les victimes de viol ont dû justifier leur…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026617" ordre_absolu_seance="544" id_acteur="PA795820" id_mandat="PM843713" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184177" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Marcellin Nadeau</nom>
+            <id>795820</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10216.05">Excellent !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026618" ordre_absolu_seance="545" id_acteur="PA721896" id_mandat="PM840405" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184178" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Elsa Faucillon</nom>
+            <id>721896</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10256.42">Un tout dernier mot, madame la présidente : je tiens à saluer l’engagement de collègues issues de plusieurs bancs – exceptés ceux situés tout à la droite de l’hémicycle<italique> (Mme Michèle Martinez s’exclame)</italique> –, car ces débats ont aussi été un moment de grande sororité entre députées. Merci à vous !<italique> (Applaudissements sur plusieurs bancs des groupes GDR, LFI-NFP, SOC, EcoS et Dem. – Mme la rapporteure générale applaudit également.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026619" ordre_absolu_seance="546" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184179" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10267.74">La parole est à Mme Sophie Ricourt Vaginay.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026620" ordre_absolu_seance="547" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184180" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay (UDR)</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10297.78">Nul dans cet hémicycle ne conteste la gravité des violences sexuelles, qui touchent toutes les victimes, que ce soient des enfants, des femmes ou des hommes. Ce que subissent ces victimes est indicible et, à l’Union des droites pour la République, nous nous tiendrons toujours à leurs côtés.<br />Notre volonté à l’égard de ce texte était de siéger sans esprit partisan ; nous aurions apprécié que tous ici s’appliquent cette doctrine. Car à l’UDR, avec nos alliés du Rassemblement national, nous jugeons les textes, quand d’autres s’obstinent encore à juger les étiquettes comme lors du front…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026622" ordre_absolu_seance="549" id_acteur="PA795636" id_mandat="PM843476" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184182" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Benjamin Lucas-Lundy</nom>
+            <id>795636</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10337.03">Très bien, le barrage !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026623" ordre_absolu_seance="550" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184183" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10347.79">Sur un tel sujet, d’une telle gravité, nos concitoyens demandent une politique d’action et de résultat. C’est dans cet esprit que nous avons examiné ce texte.<br />Nous avons approuvé ce qui est utile : le délit d’envoi non sollicité d’images sexuelles, le délit de traque furtive, le maintien des cours criminelles départementales pour juger les viols. En revanche, nous avons refusé de nouvelles structures qui alourdiraient une justice déjà à bout de souffle. Nous avons voté en faveur de l’entretien obligatoire pour chaque enfant, mais sans illusion : son caractère annuel est renvoyé à 2032, faute…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026626" ordre_absolu_seance="553" id_acteur="PA719558" id_mandat="PM842663" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184186" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Erwan Balanant,</nom>
+            <id>719558</id>
+            <qualite>rapporteur</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="10412.21">Une victime est une victime !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026627" ordre_absolu_seance="554" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184187" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10432.89">Nous le disons avec gravité : nos votes sont l’expression régulière de la représentation nationale. Ils ont pourtant été accueillis aux cris de « scandale », d’« amendement Medef », d’« énorme recul »,…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026628" ordre_absolu_seance="555" id_acteur="PA795108" id_mandat="PM843338" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184188" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Élise Leboucher</nom>
+            <id>795108</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10445.77">Eh oui !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026629" ordre_absolu_seance="556" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184189" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10446.25">…comme si la loi devait être ratifiée plutôt que délibérée. La cause des femmes mérite mieux que l’invective, mieux que la haine et l’intolérance de ceux qui se croient supérieurs et nous abreuvent d’insultes.<italique> (Applaudissements sur quelques bancs du groupe RN.)</italique> Des insultes de carton, taillées dans le même matériau que leur barrage, qui se froissent et s’évaporent aussitôt dites : voilà longtemps qu’elles ne nous atteignent plus.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026630" ordre_absolu_seance="557" id_acteur="PA841553" id_mandat="PM843128" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184190" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thierry Tesson</nom>
+            <id>841553</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10460.32">Très bien !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026631" ordre_absolu_seance="558" id_acteur="PA795454" id_mandat="PM843821" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184191" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Karim Ben Cheikh</nom>
+            <id>795454</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10466.57">Vous méprisez la République !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026632" ordre_absolu_seance="559" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184192" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10472.76">Ce registre de la diabolisation ne fait plus peur à personne ; il est temps d’en changer, chers collègues. Car la cause des femmes mérite mieux que l’indignation sélective.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026633" ordre_absolu_seance="560" id_acteur="PA795844" id_mandat="PM843515" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184193" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Karen Erodi</nom>
+            <id>795844</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10483.14">C’est vous qui dites ça ?</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026634" ordre_absolu_seance="561" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184194" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10483.87">En Seine-Saint-Denis, l’un des départements les plus touchés par l’excision, le maire de Saint-Denis s’est abstenu sur un vœu de protection des filles contre ces mutilations.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026634" ordre_absolu_seance="562" id_acteur="PA791824" id_mandat="PM840375" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184216" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sarah Legrain</nom>
+            <id>791824</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10495.08">N’importe quoi ! C’est un mensonge !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026634" ordre_absolu_seance="563" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184215" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10496.05">Il essaie de se justifier aujourd’hui.<italique> (Exclamations sur plusieurs bancs du groupe LFI-NFP.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026635" ordre_absolu_seance="564" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184195" valeur="M. Marc Chavent;;Null;;840721 M. Théo Bernhardt;;Null;;841645">
+        <orateurs>
+          <orateur>
+            <nom>M. Marc Chavent</nom>
+            <id>840721</id>
+            <qualite />
+          </orateur>
+          <orateur>
+            <nom>M. Théo Bernhardt</nom>
+            <id>841645</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10498.41">La honte ! Ça en dit long !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026636" ordre_absolu_seance="565" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184196" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10499.13">Nous lui répondons qu’en matière de mutilation d’enfants, il n’y a pas d’excuse ou d’hésitation qui tiennent : il n’y a qu’un devoir impératif de protection. Un féminisme qui crie au scandale pour un amendement sur les négociations collectives, mais qui se tait devant l’excision ou qui invective dès que l’on évoque Claire Geronimi, violée par un homme sous OQTF, ce n’est plus un combat pour les femmes ; c’est un combat politique qui se sert des femmes.<italique> (Mêmes mouvements.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026637" ordre_absolu_seance="566" id_acteur="PA791824" id_mandat="PM840375" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184197" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sarah Legrain</nom>
+            <id>791824</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10531.61">C’est vous qui vous servez des étrangers !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026638" ordre_absolu_seance="567" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184198" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10534.60">Reste les grands oubliés de cette proposition de loi : les droits de la défense. L’article 11 interdit toujours, sans aucune exception, toute preuve établie sur les antécédents sexuels de la victime. Proscrire les questions humiliantes, oui ; mais interdire par principe, c’est retirer au juge le pouvoir d’apprécier la preuve. La ministre elle-même a évoqué un risque d’inconstitutionnalité, car une telle disposition risque de favoriser des erreurs judiciaires. Or chaque erreur judiciaire fait deux victimes, chers collègues. Tel est l’objet de la proposition de loi que j’ai déposée, visant à…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026640" ordre_absolu_seance="569" id_acteur="PA795108" id_mandat="PM843338" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184200" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Élise Leboucher</nom>
+            <id>795108</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10585.50">Bravo à elle !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026641" ordre_absolu_seance="570" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184201" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10597.88">Ce n’est pas notre conception du travail parlementaire. Néanmoins, notre groupe votera en faveur de ce texte, parce qu’il contient des avancées et que les victimes ne peuvent plus attendre.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026642" ordre_absolu_seance="571" id_acteur="PA795454" id_mandat="PM843821" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184202" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Karim Ben Cheikh</nom>
+            <id>795454</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10611.14">Vous détestez les étrangers !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026643" ordre_absolu_seance="572" id_acteur="PA840657" id_mandat="PM842333" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184203" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sophie Ricourt Vaginay</nom>
+            <id>840657</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10611.56">Mais que les choses soient claires : ce vote n’est pas un blanc-seing, car il n’est pas de protection durable des victimes sans justice équitable, et il n’est pas de justice équitable sans droits de la défense.<italique> (Applaudissements sur les bancs des groupes UDR et RN.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026644" ordre_absolu_seance="573" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184204" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10629.10">La parole est à M. Thomas Ménagé.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026645" ordre_absolu_seance="574" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184205" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé (RN)</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10653.16">Nous arrivons au terme de neuf jours d’examen d’un texte au titre ambitieux : apporter une réponse intégrale aux violences sexuelles et sexistes contre les femmes et les enfants. Le Rassemblement national a travaillé sur ce texte de façon constructive,…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026646" ordre_absolu_seance="575" id_acteur="PA588884" id_mandat="PM840450" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184206" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Clémentine Autain</nom>
+            <id>588884</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10666.43">Mais oui, bien sûr !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026647" ordre_absolu_seance="576" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184207" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10666.48">…parce que le sujet l’impose. Nous avons été le troisième groupe le plus actif dans les débats<italique> (Mme Élise Leboucher s’esclaffe)</italique>…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026648" ordre_absolu_seance="577" id_acteur="PA721896" id_mandat="PM840405" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184208" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Elsa Faucillon</nom>
+            <id>721896</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10671.25">Pour défaire le texte !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026649" ordre_absolu_seance="578" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184209" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10671.26">…et nous avons voté chaque article dès lors qu’il allait dans le bon sens.<italique> (Mme la rapporteure générale s’exclame.)</italique> Nous l’avons fait sans aucun sectarisme, contrairement aux autres groupes qui se sont vautrés dans l’indignité, avec des attaques très loin de répondre aux attentes des victimes et de leurs proches.<italique> (Applaudissements sur les bancs des groupes RN et UDR.)</italique>
+          <br />J’aimerais en cet instant avoir une pensée pour la petite Lyhanna, victime de l’incurie de l’État et du système judiciaire,…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026651" ordre_absolu_seance="580" id_acteur="PA588884" id_mandat="PM840450" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184211" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Clémentine Autain</nom>
+            <id>588884</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10675.67">Et du patriarcat aussi ! Ça vous parle ?</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026652" ordre_absolu_seance="581" id_acteur="PA840143" id_mandat="PM840336" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184212" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Guillaume Florquin</nom>
+            <id>840143</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10688.43">Tais-toi !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="11" id_preparation="3026653" ordre_absolu_seance="582" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184213" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10692.80">…système paupérisé par des années de mauvaise gestion. Je veux avoir une pensée pour sa famille, qui a vécu le pire drame qu’on puisse connaître en tant que parents.<br />Ce texte a été déposé pour répondre à ce drame que l’on voit malheureusement trop souvent se répéter dans notre pays. Le Rassemblement national en a approuvé les deux tiers : le socle minimal d’actes d’enquête, l’extension de l’ordonnance de protection, la lutte contre l’excision et les mariages forcés, la répression du<italique> cyberflashing</italique> et de l’exploitation sexuelle sur les plateformes en ligne, dès lors qu’elles visent les réseaux…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026892" ordre_absolu_seance="586" id_acteur="PA795108" id_mandat="PM843338" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184219" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Élise Leboucher</nom>
+            <id>795108</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10716.07">Et grâce à l’avis favorable de Mme la ministre Bergé !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026893" ordre_absolu_seance="587" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184220" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10767.02">…nous avons répondu présent pour dire non aux folies de la gauche et de l’extrême gauche !<br />Nous regrettons toutefois que la majorité de cet hémicycle, de Jean-Luc Mélenchon à Édouard Philippe en passant par Gabriel Attal, ait refusé toutes les mesures de fermeté que le Rassemblement national a proposées par voie d’amendement. Peines planchers, révocation du sursis, interdiction du territoire obligatoire pour les violeurs et pour les délinquants sexuels étrangers : tous, vous avez rejeté ce qui aurait permis de protéger les femmes et les enfants contre les délinquants sexuels.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026895" ordre_absolu_seance="589" id_acteur="PA791824" id_mandat="PM840375" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184222" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Sarah Legrain</nom>
+            <id>791824</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10800.28">Pour qu’ils aillent violer à l’étranger, c’est ça ?</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026896" ordre_absolu_seance="590" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184223" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10821.42">La réponse ne sera réellement intégrale que le jour où les peines seront réellement exécutées, les délinquants et les criminels étrangers réellement expulsés et les victimes réellement protégées.<br />Malheureusement, cette proposition de loi manque encore d’ambition. Je veux avoir un mot pour les enfants : ce texte est pour eux une promesse, mais pas encore une réponse. Nous avons souvent rappelé qu’un enfant est victime de violences sexuelles toutes les trois minutes dans notre pays. Nous voulons que chaque enfant soit protégé et que chaque agresseur soit poursuivi et condamné.<br />L’aide sociale à…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026901" ordre_absolu_seance="596" id_acteur="PA795636" id_mandat="PM843476" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184381" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Benjamin Lucas-Lundy</nom>
+            <id>795636</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10910.97">Vous êtes vous-mêmes le pire !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026902" ordre_absolu_seance="597" id_acteur="PA796018" id_mandat="PM843425" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184229" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Danielle Simonnet</nom>
+            <id>796018</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10955.85">Le pire, c’est votre politique !<italique> (M. Frédéric Weber s’exclame.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026903" ordre_absolu_seance="598" id_acteur="PA794322" id_mandat="PM842942" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184230" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Thomas Ménagé</nom>
+            <id>794322</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10957.93">Le groupe Rassemblement national votera donc en faveur du texte.<italique> (Applaudissements sur les bancs des groupes RN et UDR.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026904" ordre_absolu_seance="599" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184231" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10968.12">La parole est à Mme Alexandra Martin (Gironde).</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026905" ordre_absolu_seance="600" id_acteur="PA793944" id_mandat="PM881205" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184232" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Alexandra Martin (Gironde) (EPR)</nom>
+            <id>793944</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="10991.72">« Une femme, malgré les apparences, n’est vraiment libérée que dans un monde où toutes les femmes le sont. Il y a du chemin à faire. Mais ce chemin, toutes les femmes doivent le faire ensemble dans une parfaite solidarité. »<br />Ces mots sont ceux de Gisèle Halimi. Ils nous ont guidées, façonnées – nous, les femmes engagées de notre génération. Ces mots nous indiquaient le chemin et la destination. Nous n’avions plus qu’à être à la hauteur de cette ambition.<br />C’est précisément ce chemin que trace la proposition de loi que nous nous apprêtons à voter. Comme l’a rappelé notre président Gabriel Attal,…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026914" ordre_absolu_seance="609" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184241" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="11185.11">Je fais annoncer, dans l’enceinte de l’Assemblée nationale, les scrutins publics sur l’ensemble de la proposition de loi apportant une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants ainsi que sur l’ensemble de la proposition de loi organique visant à adapter l’autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales.<br />La parole est à Mme Élise Leboucher.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026916" ordre_absolu_seance="611" id_acteur="PA795108" id_mandat="PM843338" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184243" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Élise Leboucher (LFI-NFP)</nom>
+            <id>795108</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="11317.05">Nous sommes réunis pour voter la loi dite intégrale contre les violences sexistes et sexuelles – dite intégrale, seulement, car après les débats en séance, elle n’en a plus que le nom.<italique> (Applaudissements sur les bancs du groupe LFI-NFP.)</italique>
+          <br />Une « loi intégrale » – mais pas pour les personnes les plus vulnérables, avec la suppression de l’interdiction de prononcer une OQTF à l’encontre des femmes étrangères victimes de VSS et la suppression de la délivrance d’une carte de séjour temporaire après une plainte pour violences sexuelles. Aux bancs du Rassemblement national et jusqu’à la Macronie et à…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026921" ordre_absolu_seance="616" id_acteur="PA719558" id_mandat="PM842663" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184248" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Erwan Balanant,</nom>
+            <id>719558</id>
+            <qualite>rapporteur</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="11398.20">Et où étaient les députés de La France insoumise quand nous avons travaillé ?</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026922" ordre_absolu_seance="617" id_acteur="PA795108" id_mandat="PM843338" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184249" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Élise Leboucher</nom>
+            <id>795108</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="11443.11">La meilleure façon de lutter contre les VSS est pourtant d’enrayer la fabrique des agresseurs.<italique> (Mêmes mouvements.)</italique> Un quart des articles de ce texte créent de nouvelles infractions ou aggravent les peines, quand aucune étude n’a montré que la prison diminuait la récidive. Au contraire, ce qui dissuade les auteurs de passer à l’acte n’est pas la gravité de la peine mais la certitude d’être pris. Or qu’avez-vous fait ? Vous avez rétabli les cours criminelles départementales, qui font des viols un sous-crime et que dénoncent les associations féministes.<italique> (Mêmes mouvements.)</italique> Les VSS sont devenues le cheval de…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026928" ordre_absolu_seance="623" id_acteur="PA719558" id_mandat="PM842663" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184255" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Erwan Balanant,</nom>
+            <id>719558</id>
+            <qualite>rapporteur</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="11582.92">Vous n’allez pas voter ce texte ?</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026929" ordre_absolu_seance="624" id_acteur="PA795326" id_mandat="PM874928" id_nomination_oe="-1" id_nomination_op="PM885113" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184256" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Christopher Weissberg</nom>
+            <id>795326</id>
+            <qualite>président de la commission spéciale</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="11596.66">Ils ne votent rien !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026930" ordre_absolu_seance="625" id_acteur="PA719558" id_mandat="PM842663" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="INTERRUPTION_1_10" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184257" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>M. Erwan Balanant,</nom>
+            <id>719558</id>
+            <qualite>rapporteur</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="11602.35">Quelle honte !</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="12" id_preparation="3026931" ordre_absolu_seance="626" id_acteur="PA795108" id_mandat="PM843338" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184258" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Élise Leboucher</nom>
+            <id>795108</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="11611.66">Nous ne sommes pas dupes et nous ne faisons pas confiance au gouvernement. La bataille féministe continuera aussi longtemps qu’il y aura des violences à éradiquer. Cela passe par un féminisme populaire et interactionnel : rendez-vous en 2027 !<italique> (Les députés du groupe LFI-NFP se lèvent pour applaudir.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027027" ordre_absolu_seance="627" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184382" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="11633.02">La parole est à Mme Florence Herouin-Léautey.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027028" ordre_absolu_seance="628" id_acteur="PA841813" id_mandat="PM843377" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184383" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Florence Herouin-Léautey (SOC)</nom>
+            <id>841813</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="11668.62">« Rien ne justifie que la moitié de la population souffre et se soumette. Rien ne l’a jamais justifié. » Ces mots sont ceux d’Yvette Roudy, ancienne ministre des droits de la femme, récemment disparue – et elle avait raison.<italique> (Applaudissements sur les bancs du groupe SOC</italique>
+          <italique> et</italique>
+          <italique> sur</italique>
+          <italique> quelques</italique>
+          <italique> bancs</italique>
+          <italique> du</italique>
+          <italique> groupe</italique>
+          <italique> EPR.</italique>
+          <italique>– Mme la rapporteure générale et</italique>
+          <italique> M. le président de la commission spéciale applaudissent également.)</italique>
+          <br />Rien ne pourra jamais justifier le patriarcat. Rien ne pourra justifier que chaque année, 400 000 femmes soient victimes de violences psychologiques, physiques ou sexuelles, ni qu’une…</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027046" ordre_absolu_seance="646" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184401" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12027.36">La parole est à Mme Constance de Pélichy.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027047" ordre_absolu_seance="647" id_acteur="PA841359" id_mandat="PM842939" id_nomination_oe="-1" id_nomination_op="-1" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184402" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Constance de Pélichy (LIOT)</nom>
+            <id>841359</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12054.33">Je ne vais pas vous mentir, je suis très émue de prendre la parole ce soir, à l’issue de ces trois semaines si intenses.<br />Permettez-moi de commencer par quelques remerciements : à vous, madame la rapporteure générale, pour avoir initié et structuré cette démarche<italique> (Applaudissements sur les bancs des groupes LIOT et SOC ainsi que sur quelques bancs des groupes</italique>
+          <italique> DR, Dem</italique>
+          <italique> et</italique>
+          <italique> GDR.</italique>
+          <italique>– Mme Stella Dupont applaudit également)</italique>, en lien avec les associations de la coalition et les députés de tous les groupes, et pour vous être battue afin que nous puissions l’examiner dans les meilleures conditions ; à vous,…</texte>
+      </paragraphe>
+    </point>
+    <point nivpoint="2" valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027062" ordre_absolu_seance="662" code_grammaire="VOTE_ENS_PPL_S_1_10" code_style="Sous-tit_p_cap" code_parole="" sommaire="1" id_syceron="4184417" valeur=" (n[[o]] 3190 rectifié)">
+      <orateurs />
+      <texte>Vote sur l’ensemble (réponse intégrale aux violences sexuelles et sexistes contre les femmes et les enfants)</texte>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027063" ordre_absolu_seance="663" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="VOTE_ENS_PPL_S_2_20" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184418" valeur=" " roledebat="president">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12390.40">Je mets aux voix l’ensemble de la proposition de loi apportant une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027064" ordre_absolu_seance="664" code_grammaire="VOTE_ENS_PPL_S_2_30" code_style="Info Italiques" code_parole="" sommaire="0" id_syceron="4184419" valeur=" ">
+        <orateurs />
+        <texte>
+          <italique>(Il est procédé au scrutin.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027065" ordre_absolu_seance="665" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="VOTE_ENS_PPL_S_2_40" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184420" valeur=" " roledebat="president">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12410.04">Voici le résultat du scrutin :<br />        Nombre de votants                        570<br />        Nombre de suffrages exprimés                503<br />        Majorité absolue                        252<br />                Pour l’adoption                503<br />                Contre                0</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027066" ordre_absolu_seance="666" code_grammaire="VOTE_ENS_PPL_S_2_50" code_style="Info Italiques" code_parole="" sommaire="0" id_syceron="4184421" valeur=" " decision="">
+        <orateurs />
+        <texte>
+          <italique>(La proposition de loi est adoptée.)<br /> (Les députés des groupes EPR, SOC, EcoS, Dem, HOR, LIOT et GDR se lèvent et applaudissent</italique>
+          <italique> très</italique>
+          <italique> longuement.</italique>
+          <italique>– Applaudissements sur les bancs des groupes DR, dont plusieurs députés se lèvent, ainsi que sur ceux des groupes RN et UDR, dont quelques députés se lèvent.</italique>
+          <italique>– Mmes Stella Dupont et Christine Engrand se lèvent également pour applaudir.</italique>
+          <italique>– De</italique>
+          <italique> nombreux députés se tournent vers les tribunes</italique>
+          <italique> en</italique>
+          <italique> continuant</italique>
+          <italique> d’applaudir.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027067" ordre_absolu_seance="667" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184422" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12411.51">Bravo à tous !<italique> (Mme la présidente applaudit.)</italique>
+        </texte>
+      </paragraphe>
+    </point>
+    <point nivpoint="2" valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027068" ordre_absolu_seance="668" code_grammaire="VOTE_ENS_PPL_S_1_10" code_style="Sous-tit_p_cap" code_parole="" sommaire="1" id_syceron="4184423" valeur=" (n[[o]] 3191)">
+      <orateurs />
+      <texte>Vote sur l’ensemble (adapter l’autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales)</texte>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027069" ordre_absolu_seance="669" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="VOTE_ENS_PPL_S_2_20" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184424" valeur=" " roledebat="president">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12475.79">Je mets aux voix l’ensemble de la proposition de loi organique visant à adapter l’autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales.</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027070" ordre_absolu_seance="670" code_grammaire="VOTE_ENS_PPL_S_2_30" code_style="Info Italiques" code_parole="" sommaire="0" id_syceron="4184425" valeur=" ">
+        <orateurs />
+        <texte>
+          <italique>(Il est procédé au scrutin.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027071" ordre_absolu_seance="671" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="VOTE_ENS_PPL_S_2_40" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184426" valeur=" " roledebat="president">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12502.21">Voici le résultat du scrutin :<br />        Nombre de votants                        570<br />        Nombre de suffrages exprimés                503<br />        Majorité absolue                        252<br />                Pour l’adoption                503<br />                Contre                0</texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="13" id_preparation="3027072" ordre_absolu_seance="672" code_grammaire="VOTE_ENS_PPL_S_2_50" code_style="Info Italiques" code_parole="" sommaire="0" id_syceron="4184427" valeur=" " decision="">
+        <orateurs />
+        <texte>
+          <italique>(La proposition de loi organique est adoptée.)<br /> (Applaudissements sur plusieurs bancs des groupes RN, EPR, SOC, DR, EcoS, Dem, HOR, LIOT, GDR et UDR.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="14" id_preparation="3027073" ordre_absolu_seance="673" id_acteur="PA721908" id_mandat="PM843467" id_nomination_oe="0" id_nomination_op="PM845400" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="0" id_syceron="4184590" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme la présidente</nom>
+            <id>721908</id>
+            <qualite />
+          </orateur>
+        </orateurs>
+        <texte stime="12504.08">La parole est à Mme Céline Thiébault-Martinez, rapporteure générale de la commission spéciale.<italique> (Applaudissements prolongés sur les bancs des groupes EPR, SOC,</italique>
+          <italique> dont</italique>
+          <italique> les</italique>
+          <italique> députés</italique>
+          <italique> se</italique>
+          <italique> lèvent, EcoS, Dem, LIOT et GDR ainsi que sur plusieurs bancs des groupes DR et HOR.)</italique>
+        </texte>
+      </paragraphe>
+      <paragraphe valeur_ptsodj="4" ordinal_prise="14" id_preparation="3027074" ordre_absolu_seance="674" id_acteur="PA841893" id_mandat="PM843449" id_nomination_oe="-1" id_nomination_op="PM885122" code_grammaire="PAROLE_GENERIQUE" code_style="NORMAL" code_parole="" sommaire="1" id_syceron="4184591" valeur="">
+        <orateurs>
+          <orateur>
+            <nom>Mme Céline Thiébault-Martinez</nom>
+            <id>841893</id>
+            <qualite>rapporteure générale de la commission spéciale</qualite>
+          </orateur>
+        </orateurs>
+        <texte stime="12561.72">L’histoire doit retenir que, si nous en sommes là, c’est grâce à Mme la présidente de l’Assemblée nationale.<italique> (Applaudissements</italique>
+          <italique> sur</italique>
+          <italique> les</italique>
+          <italique> bancs</italique>
+          <italique> des</italique>
+          <italique> groupes</italique>
+          <italique> EPR,</italique>
+          <italique> SOC,</italique>
+          <italique> EcoS,</italique>
+          <italique> Dem,</italique>
+          <italique> LIOT</italique>
+          <italique> et</italique>
+          <italique> GDR</italique>
+          <italique> ainsi</italique>
+          <italique> que</italique>
+          <italique> sur</italique>
+          <italique> plusieurs</italique>
+          <italique> bancs</italique>
+          <italique> des</italique>
+          <italique> groupes</italique>
+          <italique> DR</italique>
+          <italique> et</italique>
+          <italique> HOR.)</italique> Je l’avais dit dès ma première prise de parole à l’ouverture des débats : la présidente a donné ses lettres de noblesse à cette proposition de loi intégrale en saisissant le Conseil d’État et le Conseil économique, social et environnemental. Cela a donné un coup d’accélérateur au texte, permettant son inscription à l’ordre du jour des débats, de sorte que…</texte>
+      </paragraphe>
+    </point>
+    <point nivpoint="1" valeur_ptsodj="5" ordinal_prise="15" id_preparation="3027112" ordre_absolu_seance="714" code_grammaire="TITRE_TEXTE_DISCUSSION" code_style="Titre" code_parole="" sommaire="1" id_syceron="4184005" valeur=" ">
+      <orateurs />
+      <texte>Débat sur la dette</texte>
+    </point>
+  </contenu>
+</compteRendu>

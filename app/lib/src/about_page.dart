@@ -147,7 +147,10 @@ class AboutPage extends StatelessWidget {
               'prévoit le texte » sont rédigés automatiquement par une '
               'intelligence artificielle (Claude, d\'Anthropic), à partir de '
               'l\'exposé des motifs du texte, sinon de ses articles, avec '
-              'une consigne de neutralité. Ils ne sont pas relus. Tant '
+              'une consigne de neutralité. Les arguments de « Pourquoi ils '
+              'ont voté ainsi » sont résumés automatiquement de la même '
+              'façon, à partir des explications de vote des groupes dans '
+              'les comptes rendus de séance. Ils ne sont pas relus. Tant '
               'qu\'un texte n\'est pas résumé, son titre officiel est '
               'affiché. Seuls le texte officiel et le résultat du vote font '
               'foi.',
