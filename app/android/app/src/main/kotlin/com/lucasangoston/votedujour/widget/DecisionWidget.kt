@@ -200,13 +200,16 @@ class LargeDecisionWidget : BaseDecisionWidget() {
                   color = WidgetColors.secondary, fontSize = 12.sp, fontWeight = FontWeight.Medium),
           maxLines = 1,
       )
+      // Un Column par ligne : Glance limite un Column à 10 enfants.
       decisions.forEachIndexed { index, decision ->
-        Spacer(GlanceModifier.height(if (index == 0) 8.dp else 6.dp))
-        if (index > 0) {
-          Box(GlanceModifier.fillMaxWidth().height(1.dp).background(WidgetColors.divider)) {}
-          Spacer(GlanceModifier.height(6.dp))
+        Column(modifier = GlanceModifier.fillMaxWidth()) {
+          Spacer(GlanceModifier.height(if (index == 0) 8.dp else 6.dp))
+          if (index > 0) {
+            Box(GlanceModifier.fillMaxWidth().height(1.dp).background(WidgetColors.divider)) {}
+            Spacer(GlanceModifier.height(6.dp))
+          }
+          DecisionRow(context, decision)
         }
-        DecisionRow(context, decision)
       }
     }
   }

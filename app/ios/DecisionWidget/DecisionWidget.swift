@@ -116,35 +116,39 @@ private struct DecisionView: View {
   }
 }
 
-/// Petit widget : badge, titre court et étape ; la date relative à côté du
-/// badge quand elle tient sur la même ligne. Pas d'explication.
+/// Petit widget : badge, titre court (4 lignes au plus) et étape, puis la date
+/// relative si la place le permet : le titre passe avant (un titre de 4
+/// lignes ne laisse pas la place à la date sur un iPhone). Pas d'explication.
 private struct SmallDecisionView: View {
   let decision: WidgetDecision
   let now: Date
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 6) {
-      ViewThatFits(in: .horizontal) {
-        HStack(spacing: 4) {
-          ResultBadge(result: decision.result)
-          Spacer(minLength: 4)
-          RelativeDateText(decision: decision, now: now, font: .caption2)
-            .fixedSize()
-        }
-        ResultBadge(result: decision.result)
-      }
+    ViewThatFits(in: .vertical) {
+      content(showsDate: true)
+      content(showsDate: false)
+    }
+  }
+
+  private func content(showsDate: Bool) -> some View {
+    VStack(alignment: .leading, spacing: 5) {
+      ResultBadge(result: decision.result, compact: true)
       Text(decision.title)
         .font(.footnote.weight(.semibold))
         .foregroundStyle(.primary)
         .lineLimit(4)
-        .minimumScaleFactor(0.85)
         .frame(maxWidth: .infinity, alignment: .leading)
       Spacer(minLength: 0)
-      if let stage = decision.stage {
-        Text(stage)
-          .font(.caption2)
-          .foregroundStyle(.secondary)
-          .lineLimit(2)
+      VStack(alignment: .leading, spacing: 1) {
+        if let stage = decision.stage {
+          Text(stage)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+        }
+        if showsDate {
+          RelativeDateText(decision: decision, now: now, font: .caption2)
+        }
       }
     }
   }
@@ -218,6 +222,8 @@ private struct RelativeDateText: View {
 
 private struct ResultBadge: View {
   let result: WidgetDecision.Result
+  /// Petit widget : texte et marges réduits.
+  var compact = false
 
   var body: some View {
     let (label, icon, color): (String, String, Color) =
@@ -226,13 +232,13 @@ private struct ResultBadge: View {
       case .rejete: ("Rejeté", "xmark", .rejected)
       }
     Label {
-      Text(label).font(.caption.weight(.semibold))
+      Text(label).font((compact ? Font.caption2 : .caption).weight(.semibold))
     } icon: {
       Image(systemName: icon).font(.caption2.weight(.bold))
     }
     .labelStyle(BadgeLabelStyle())
     .foregroundStyle(.white)
-    .padding(.horizontal, 7)
+    .padding(.horizontal, compact ? 5 : 7)
     .padding(.vertical, 3)
     .background(color, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
     .fixedSize()
