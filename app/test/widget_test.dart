@@ -58,6 +58,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(requested.single.toString(), 'https://example.test/v1/latest.json');
+    // Nom de l'app dans l'en-tête (#36).
+    expect(find.text('Perchoir'), findsOneWidget);
     expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
     expect(find.text('Adopté'), findsOneWidget);
     expect(find.text('Rejeté'), findsOneWidget);

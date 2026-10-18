@@ -17,12 +17,24 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <ImageView
+        <!-- Logo Perchoir : arcs couleur encre, demi-disque couleur pour. -->
+        <FrameLayout
             android:layout_width="22dp"
             android:layout_height="12dp"
-            android:importantForAccessibility="no"
-            android:src="@drawable/ic_hemicycle"
-            android:tint="@color/decision_widget_primary" />
+            android:importantForAccessibility="no">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_perchoir_arcs"
+                android:tint="@color/decision_widget_primary" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_perchoir_seat"
+                android:tint="@color/decision_widget_pour" />
+        </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"

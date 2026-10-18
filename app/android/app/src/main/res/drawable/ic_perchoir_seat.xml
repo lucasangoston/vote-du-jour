@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo Perchoir des widgets (#36), calque du demi-disque : teinté par Glance (couleur pour).
+     Même cadre que ic_perchoir_arcs.xml, à superposer. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="12dp"
+    android:viewportWidth="106"
+    android:viewportHeight="58">
+    <group
+        android:translateX="-7"
+        android:translateY="-33">
+        <path
+            android:fillColor="#FF1D6B54"
+            android:pathData="M46,86 A14,14 0 0,1 74,86 Z" />
+    </group>
+</vector>
