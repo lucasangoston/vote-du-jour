@@ -1,19 +1,286 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Palette neutre : nuances de gris, sans couleurs de partis ni
-/// bleu-blanc-rouge. Seuls les badges adopté / rejeté portent une couleur.
-ThemeData buildTheme(Brightness brightness) {
-  final scheme = ColorScheme.fromSeed(
-    seedColor: const Color(0xFF6B6B6B),
-    brightness: brightness,
-    dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+/// Police des textes (titres en semi-gras, interlettrage serré).
+const geist = 'Geist';
+
+/// Police des chiffres (décomptes).
+const geistMono = 'GeistMono';
+
+/// Couleurs de la charte « Hémicycle » (#29) : fond, surface, encres et filet
+/// neutres ; seuls le pour (vert) et le contre (brique) portent une couleur,
+/// jamais de couleur de parti ni de bleu-blanc-rouge.
+@immutable
+class HemicycleColors extends ThemeExtension<HemicycleColors> {
+  const HemicycleColors({
+    required this.background,
+    required this.surface,
+    required this.ink,
+    required this.ink2,
+    required this.body,
+    required this.rule,
+    required this.pour,
+    required this.contre,
+    required this.abstention,
+    required this.pressed,
+  });
+
+  static const light = HemicycleColors(
+    background: Color(0xFFF3F4F5),
+    surface: Color(0xFFFFFFFF),
+    ink: Color(0xFF15181C),
+    ink2: Color(0xFF4F5761),
+    body: Color(0xFF2E343B),
+    rule: Color(0xFFE2E5E8),
+    pour: Color(0xFF1D6B54),
+    contre: Color(0xFFB4472B),
+    abstention: Color(0xFFAEB4BB),
+    pressed: Color(0xFFE8EAEC),
   );
-  return ThemeData(colorScheme: scheme, useMaterial3: true);
+
+  static const dark = HemicycleColors(
+    background: Color(0xFF0F1113),
+    surface: Color(0xFF191C20),
+    ink: Color(0xFFECEEF0),
+    ink2: Color(0xFF9AA2AB),
+    body: Color(0xFFC9CED3),
+    rule: Color(0xFF2A2F35),
+    pour: Color(0xFF4FB08F),
+    contre: Color(0xFFE07A58),
+    abstention: Color(0xFF4A5058),
+    pressed: Color(0xFF1F2328),
+  );
+
+  /// Fond des écrans.
+  final Color background;
+
+  /// Cartes et boutons de lien.
+  final Color surface;
+
+  /// Encre principale (titres, texte).
+  final Color ink;
+
+  /// Encre secondaire (méta, légendes).
+  final Color ink2;
+
+  /// Texte courant des explications, entre [ink] et [ink2].
+  final Color body;
+
+  /// Filets de séparation.
+  final Color rule;
+
+  /// Pour, adopté.
+  final Color pour;
+
+  /// Contre, rejeté.
+  final Color contre;
+
+  /// Abstentions.
+  final Color abstention;
+
+  /// Fond d'un élément touché (ligne de liste, bouton icône).
+  final Color pressed;
+
+  @override
+  HemicycleColors copyWith({
+    Color? background,
+    Color? surface,
+    Color? ink,
+    Color? ink2,
+    Color? body,
+    Color? rule,
+    Color? pour,
+    Color? contre,
+    Color? abstention,
+    Color? pressed,
+  }) => HemicycleColors(
+    background: background ?? this.background,
+    surface: surface ?? this.surface,
+    ink: ink ?? this.ink,
+    ink2: ink2 ?? this.ink2,
+    body: body ?? this.body,
+    rule: rule ?? this.rule,
+    pour: pour ?? this.pour,
+    contre: contre ?? this.contre,
+    abstention: abstention ?? this.abstention,
+    pressed: pressed ?? this.pressed,
+  );
+
+  @override
+  HemicycleColors lerp(HemicycleColors? other, double t) {
+    if (other == null) return this;
+    Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
+    return HemicycleColors(
+      background: mix(background, other.background),
+      surface: mix(surface, other.surface),
+      ink: mix(ink, other.ink),
+      ink2: mix(ink2, other.ink2),
+      body: mix(body, other.body),
+      rule: mix(rule, other.rule),
+      pour: mix(pour, other.pour),
+      contre: mix(contre, other.contre),
+      abstention: mix(abstention, other.abstention),
+      pressed: mix(pressed, other.pressed),
+    );
+  }
 }
 
-/// Couleurs des badges de résultat (vert / brique, lisibles en clair et en
-/// sombre).
-class ResultColors {
-  static const adopted = Color(0xFF2E7D32);
-  static const rejected = Color(0xFFB23B1E);
+extension HemicycleTheme on BuildContext {
+  /// Couleurs de la charte du thème courant (clair par défaut).
+  HemicycleColors get colors =>
+      Theme.of(this).extension<HemicycleColors>() ?? HemicycleColors.light;
+}
+
+/// Thème de l'app, en clair ou en sombre.
+ThemeData buildTheme(Brightness brightness) {
+  final c = brightness == Brightness.dark
+      ? HemicycleColors.dark
+      : HemicycleColors.light;
+  final scheme = ColorScheme(
+    brightness: brightness,
+    primary: c.ink,
+    onPrimary: c.background,
+    secondary: c.ink2,
+    onSecondary: c.background,
+    secondaryContainer: c.surface,
+    onSecondaryContainer: c.ink,
+    error: c.contre,
+    onError: c.background,
+    surface: c.background,
+    onSurface: c.ink,
+    onSurfaceVariant: c.ink2,
+    surfaceContainerLowest: c.surface,
+    surfaceContainerLow: c.surface,
+    surfaceContainer: c.surface,
+    surfaceContainerHigh: c.surface,
+    surfaceContainerHighest: c.rule,
+    outline: c.ink2,
+    outlineVariant: c.rule,
+    inverseSurface: c.ink,
+    onInverseSurface: c.background,
+  );
+  final base = ThemeData(
+    colorScheme: scheme,
+    useMaterial3: true,
+    fontFamily: geist,
+    scaffoldBackgroundColor: c.background,
+  );
+  final overlay = brightness == Brightness.dark
+      ? SystemUiOverlayStyle.light
+      : SystemUiOverlayStyle.dark;
+  return base.copyWith(
+    extensions: [c],
+    splashFactory: InkRipple.splashFactory,
+    highlightColor: c.pressed,
+    splashColor: c.pressed,
+    dividerTheme: DividerThemeData(color: c.rule, thickness: 1, space: 1),
+    appBarTheme: AppBarTheme(
+      backgroundColor: c.background,
+      foregroundColor: c.ink,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      systemOverlayStyle: overlay,
+    ),
+    textTheme: base.textTheme.apply(
+      bodyColor: c.ink,
+      displayColor: c.ink,
+      fontFamily: geist,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: c.ink,
+      contentTextStyle: TextStyle(fontFamily: geist, color: c.background),
+      behavior: SnackBarBehavior.floating,
+    ),
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(
+        color: c.ink,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      textStyle: TextStyle(
+        fontFamily: geist,
+        fontSize: 13,
+        color: c.background,
+      ),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: c.ink2),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? c.surface : c.background,
+        ),
+        foregroundColor: WidgetStatePropertyAll(c.ink),
+        side: WidgetStatePropertyAll(BorderSide(color: c.rule)),
+        textStyle: const WidgetStatePropertyAll(
+          TextStyle(
+            fontFamily: geist,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: c.surface,
+        foregroundColor: c.ink,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        minimumSize: const Size(0, 48),
+        textStyle: const TextStyle(
+          fontFamily: geist,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+  );
+}
+
+/// Styles de texte de la charte, d'après les maquettes (tailles en points
+/// logiques, interlettrage converti des `em` de la maquette).
+abstract final class HemicycleText {
+  /// Grand titre d'écran (« Décisions »).
+  static const largeTitle = TextStyle(
+    fontSize: 34,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -1.02,
+    height: 1.15,
+  );
+
+  /// Titre d'une page annexe.
+  static const pageTitle = TextStyle(
+    fontSize: 30,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.9,
+    height: 1.15,
+  );
+
+  /// Titre d'une décision dans le détail.
+  static const detailTitle = TextStyle(
+    fontSize: 26,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.65,
+    height: 1.2,
+  );
+
+  /// Intertitre (« Ce que prévoit le texte »).
+  static const heading = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.18,
+    height: 1.3,
+  );
+
+  /// Titre d'une ligne de la liste.
+  static const rowTitle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.16,
+    height: 1.3,
+  );
+
+  /// Chiffres en Geist Mono.
+  static const mono = TextStyle(
+    fontFamily: geistMono,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
 }

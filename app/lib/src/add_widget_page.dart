@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'app_identity.dart';
+import 'hemicycle/external_link_row.dart';
+import 'theme.dart';
 
 enum WidgetPlatform { ios, android }
 
@@ -24,54 +26,56 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     final platform = _selected ?? _platformOf(context);
     final steps = switch (platform) {
       WidgetPlatform.ios => iosSteps,
       WidgetPlatform.android => androidSteps,
     };
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ajouter le widget')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          Text(
-            'Le widget affiche les dernières décisions de l\'Assemblée '
-            'directement sur votre écran d\'accueil, sans ouvrir l\'app.',
-            style: theme.textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 20),
-          SegmentedButton<WidgetPlatform>(
-            segments: const [
-              ButtonSegment(
-                value: WidgetPlatform.ios,
-                label: Text('iPhone'),
-                icon: Icon(Icons.phone_iphone),
-              ),
-              ButtonSegment(
-                value: WidgetPlatform.android,
-                label: Text('Android'),
-                icon: Icon(Icons.phone_android),
-              ),
-            ],
-            selected: {platform},
-            onSelectionChanged: (s) => setState(() => _selected = s.single),
-          ),
-          const SizedBox(height: 20),
-          for (final (i, step) in steps.indexed)
-            _Step(number: i + 1, text: step, last: i == steps.length - 1),
-          const SizedBox(height: 12),
-          Text(
-            'Trois tailles existent : petite (la dernière décision), moyenne '
-            '(la dernière décision avec son explication) et grande (les trois '
-            'dernières décisions). Touchez une décision pour ouvrir son '
-            'détail.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+    return HemicyclePage(
+      title: 'Ajouter le widget',
+      children: [
+        Text(
+          'Le widget affiche les dernières décisions de l\'Assemblée '
+          'directement sur votre écran d\'accueil, sans ouvrir l\'app.',
+          style: TextStyle(fontSize: 16, height: 1.55, color: colors.body),
+        ),
+        const SizedBox(height: 20),
+        SegmentedButton<WidgetPlatform>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: WidgetPlatform.ios, label: Text('iPhone')),
+            ButtonSegment(
+              value: WidgetPlatform.android,
+              label: Text('Android'),
             ),
+          ],
+          selected: {platform},
+          onSelectionChanged: (s) => setState(() => _selected = s.single),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(24),
           ),
-        ],
-      ),
+          child: Column(
+            children: [
+              for (final (i, step) in steps.indexed)
+                _Step(number: i + 1, text: step, last: i == steps.length - 1),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Trois tailles existent : petite (la dernière décision), moyenne '
+          '(la dernière décision avec son explication) et grande (les trois '
+          'dernières décisions). Touchez une décision pour ouvrir son '
+          'détail.',
+          style: TextStyle(fontSize: 14, height: 1.5, color: colors.ink2),
+        ),
+      ],
     );
   }
 }
@@ -104,8 +108,7 @@ class _Step extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final colors = context.colors;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -117,14 +120,15 @@ class _Step extends StatelessWidget {
                 height: 28,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: scheme.secondaryContainer,
                   shape: BoxShape.circle,
+                  border: Border.all(color: colors.rule, width: 1.5),
                 ),
                 child: Text(
                   '$number',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: scheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w600,
+                  style: HemicycleText.mono.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: colors.ink,
                   ),
                 ),
               ),
@@ -133,7 +137,7 @@ class _Step extends StatelessWidget {
                   child: Container(
                     width: 1,
                     margin: const EdgeInsets.symmetric(vertical: 4),
-                    color: scheme.outlineVariant,
+                    color: colors.rule,
                   ),
                 ),
             ],
@@ -142,7 +146,10 @@ class _Step extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(top: 3, bottom: last ? 8 : 20),
-              child: Text(text, style: theme.textTheme.bodyLarge),
+              child: Text(
+                text,
+                style: TextStyle(fontSize: 15, height: 1.5, color: colors.body),
+              ),
             ),
           ),
         ],

@@ -99,6 +99,7 @@ class DecisionSummary {
     this.dossierUrl,
     this.voteMode = VoteMode.scrutinPublic,
     this.summary,
+    this.count,
   }) : assert(
          numero != null || voteMode != VoteMode.scrutinPublic,
          'un scrutin public a un numéro',
@@ -167,6 +168,11 @@ class DecisionSummary {
   /// en ligne, échec du modèle) et dans les index publiés avant son ajout.
   final PlainSummary? summary;
 
+  /// Décompte du scrutin public (pour, contre, abstentions), pour dessiner l'arc du vote dans la liste et les widgets (#29).
+  /// Absent pour un vote à main levée et dans les index publiés avant son
+  /// ajout.
+  final VoteTally? count;
+
   /// Titre à afficher : celui du résumé, sinon [shortTitle], sinon
   /// [officialTitle].
   String get displayTitle => summary?.title ?? shortTitle ?? officialTitle;
@@ -189,6 +195,25 @@ class DecisionSummary {
     dossierUrl: dossierUrl,
     voteMode: voteMode,
     summary: summary,
+    count: count,
+  );
+
+  /// La même décision avec le décompte [count] (ou sans décompte).
+  DecisionSummary withCount(VoteTally? count) => DecisionSummary(
+    id: id,
+    numero: numero,
+    type: type,
+    status: status,
+    result: result,
+    date: date,
+    officialTitle: officialTitle,
+    sourceUrl: sourceUrl,
+    shortTitle: shortTitle,
+    stage: stage,
+    dossierUrl: dossierUrl,
+    voteMode: voteMode,
+    summary: summary,
+    count: count,
   );
 
   /// Lit une décision ; renvoie `null` si elle utilise une valeur d'énumération
@@ -237,6 +262,7 @@ class DecisionSummary {
       stage: _optionalString(json['stage']),
       dossierUrl: _optionalString(json['dossierUrl']),
       summary: PlainSummary.tryFromJson(json['summary']),
+      count: VoteTally.tryFromJson(json['count']),
     );
   }
 
@@ -256,7 +282,59 @@ class DecisionSummary {
     'stage': ?stage,
     'dossierUrl': ?dossierUrl,
     'summary': ?summary?.toJson(withPoints: summaryPoints),
+    'count': ?count?.toJson(),
   };
+}
+
+/// Voix d'un scrutin public telles que les montre l'arc du vote : pour,
+/// contre, abstentions (#29).
+///
+/// Version légère de `VoteCount` publiée dans l'index : les non-votants n'y
+/// figurent pas, car le site de l'Assemblée ne les donne pas pendant la
+/// séance et l'arc n'en a pas besoin.
+class VoteTally {
+  const VoteTally({
+    required this.pour,
+    required this.contre,
+    required this.abstentions,
+  });
+
+  final int pour;
+  final int contre;
+  final int abstentions;
+
+  /// Pour, contre et abstentions : la base de l'arc.
+  int get total => pour + contre + abstentions;
+
+  static VoteTally? tryFromJson(Object? json) {
+    if (json is! Map<String, Object?>) return null;
+    final pour = json['pour'];
+    final contre = json['contre'];
+    final abstentions = json['abstentions'];
+    if (pour is! int || contre is! int || abstentions is! int) return null;
+    if (pour < 0 || contre < 0 || abstentions < 0) return null;
+    return VoteTally(pour: pour, contre: contre, abstentions: abstentions);
+  }
+
+  Map<String, Object?> toJson() => {
+    'pour': pour,
+    'contre': contre,
+    'abstentions': abstentions,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is VoteTally &&
+      other.pour == pour &&
+      other.contre == contre &&
+      other.abstentions == abstentions;
+
+  @override
+  int get hashCode => Object.hash(pour, contre, abstentions);
+
+  @override
+  String toString() =>
+      'VoteTally(pour: $pour, contre: $contre, abstentions: $abstentions)';
 }
 
 /// Champ optionnel : une valeur absente, vide ou d'un autre type est ignorée

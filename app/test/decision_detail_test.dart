@@ -113,29 +113,32 @@ void main() {
       requested.last.toString(),
       'https://example.test/v1/decisions/VTANR5L17V6346.json',
     );
-    // Titre court, étape, date, résultat, type et intitulé officiel.
-    expect(find.text('Décision'), findsOneWidget);
-    expect(find.text('Restitution de biens culturels'), findsOneWidget);
-    expect(find.text('Texte de compromis (CMP)'), findsOneWidget);
-    expect(find.text('9 avril 2026'), findsOneWidget);
+    // Carte du vote : résultat et décompte.
     expect(find.text('Adopté'), findsOneWidget);
-    expect(find.text("Vote sur l'ensemble d'un texte"), findsOneWidget);
-    expect(find.textContaining("L'ensemble du projet de loi"), findsOneWidget);
-    // Décompte.
     expect(find.text('141'), findsOneWidget);
-    expect(find.text('Abstentions '), findsOneWidget);
+    expect(find.text('abstentions'), findsOneWidget);
     expect(find.text('153 votants · 2 non-votants'), findsOneWidget);
+    // Méta, titre court.
+    expect(find.text('Scrutin public n° 6346'), findsOneWidget);
+    expect(find.text('9 avril 2026'), findsOneWidget);
+    expect(find.text('Texte de compromis (CMP)'), findsOneWidget);
+    expect(find.text('Restitution de biens culturels'), findsOneWidget);
 
-    // Vote par groupe et lien vers le dossier, plus bas dans la page.
+    // Vote par groupe, type, intitulé officiel et liens, plus bas.
     await tester.scrollUntilVisible(
-      find.text("Dossier sur le site de l'Assemblée"),
+      find.text('Suivre le dossier législatif'),
       200,
     );
     expect(find.textContaining('Rassemblement National'), findsOneWidget);
     expect(find.textContaining('Droite Républicaine'), findsOneWidget);
-    expect(find.text('Abstention'), findsOneWidget);
-    expect(find.text('5 pour · 0 contre · 6 abst.'), findsOneWidget);
-    expect(find.text('Scrutin n° 6346'), findsOneWidget);
+    expect(find.text('5 · 0 · 6'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp('Droite Républicaine : Abstention')),
+      findsOneWidget,
+    );
+    expect(find.text("Vote sur l'ensemble d'un texte"), findsOneWidget);
+    expect(find.textContaining("L'ensemble du projet de loi"), findsOneWidget);
+    expect(find.text('Voir le scrutin'), findsOneWidget);
   });
 
   testWidgets('un lien de widget ouvre le détail sans passer par la liste', (
@@ -197,14 +200,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text("Approbation d'un accord"), findsOneWidget);
-    expect(find.text('à main levée'), findsOneWidget);
+    expect(find.text('Vote à main levée'), findsOneWidget);
     expect(
       find.text('Adopté à main levée, sans décompte des voix.'),
       findsOneWidget,
     );
-    expect(find.text('Vote par groupe politique'), findsNothing);
-    expect(find.textContaining('Scrutin n°'), findsNothing);
-    expect(find.text("Dossier sur le site de l'Assemblée"), findsOneWidget);
+    expect(find.bySemanticsLabel('Adopté à main levée'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Suivre le dossier législatif'),
+      200,
+    );
+    expect(find.text('Vote par groupe'), findsNothing);
+    expect(find.textContaining('Scrutin public'), findsNothing);
+    expect(find.text('Voir le scrutin'), findsNothing);
   });
 
   testWidgets('détail d\'une décision provisoire', (tester) async {

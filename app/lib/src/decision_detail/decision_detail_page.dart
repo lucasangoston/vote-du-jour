@@ -1,20 +1,27 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 import 'package:vote_contract/vote_contract.dart';
 
-import '../decision_list_page.dart' show capitalize, formatFrenchDate;
+import '../decision_list_page.dart'
+    show capitalize, formatFrenchDate, sourceNotice;
+import '../hemicycle/external_link_row.dart';
+import '../hemicycle/line_icon.dart';
+import '../hemicycle/result_style.dart';
+import '../hemicycle/vote_arc.dart';
 import '../provisional_badge.dart';
 import '../theme.dart';
-import '../vote_mode_label.dart';
 import 'decision_detail_repository.dart';
 import 'vote_bar.dart';
 
-/// Écran de détail d'une décision : titre court et intitulé officiel, type,
-/// résultat, étape, date, décompte, vote par groupe et lien vers la source.
+/// Écran de détail d'une décision : carte du vote (grand arc, résultat,
+/// décompte), méta, titre, explication, points du résumé, vote par groupe,
+/// liens vers les pages officielles et source.
 ///
-/// [summary] (la ligne de la liste) s'affiche tout de suite ; le fichier de
-/// détail complète l'écran quand il arrive. Ouvert depuis un widget, seul
-/// [id] est connu.
+/// [summary] (la ligne de la liste) s'affiche tout de suite, arc compris ;
+/// le fichier de détail complète l'écran quand il arrive. Ouvert depuis un
+/// widget, seul [id] est connu.
 class DecisionDetailPage extends StatefulWidget {
   const DecisionDetailPage({
     super.key,
@@ -60,75 +67,110 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
   @override
   Widget build(BuildContext context) {
     final decision = _detail?.decision ?? widget.summary;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Décision')),
-      body: decision == null
-          ? _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _Unavailable(onRetry: _load)
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-              children: [
-                _Header(decision),
-                // Résumé en points (#9) : dans le fichier de détail
-                // seulement.
-                if (_detail?.decision.summary?.points case final points?
-                    when points.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _Section(
-                    title: summaryPointsHeading,
-                    child: _SummaryPoints(points),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                if (_detail case final detail?)
-                  ..._voteSections(detail)
-                else if (_loading)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_error != null)
-                  _Unavailable(onRetry: _load, compact: true),
-                const SizedBox(height: 24),
-                _SourceLinks(decision),
-              ],
-            ),
+    final padding = MediaQuery.paddingOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        body: ListView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            padding.top,
+            20,
+            40 + padding.bottom,
+          ),
+          children: [
+            const HemicycleBackButton(),
+            if (decision == null)
+              Padding(
+                padding: const EdgeInsets.only(top: 120),
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _Unavailable(onRetry: _load),
+              )
+            else
+              ..._content(decision),
+          ],
+        ),
+      ),
     );
   }
 
-  List<Widget> _voteSections(DecisionDetail detail) => [
-    _Section(
-      title: 'Décompte',
-      child: switch (detail.count) {
-        final count? => _Count(count),
-        null => const _Muted(mainLeveeNotice),
-      },
-    ),
+  List<Widget> _content(DecisionSummary decision) {
+    final detail = _detail;
+    return [
+      const SizedBox(height: 8),
+      _VoteCard(decision: decision, count: detail?.count),
+      const SizedBox(height: 24),
+      _Meta(decision),
+      const SizedBox(height: 8),
+      Text(
+        capitalize(decision.displayTitle),
+        style: HemicycleText.detailTitle.copyWith(color: context.colors.ink),
+      ),
+      if (decision.explanation case final explanation?) ...[
+        const SizedBox(height: 12),
+        Text(
+          explanation,
+          style: TextStyle(
+            fontSize: 16,
+            height: 1.55,
+            color: context.colors.body,
+          ),
+        ),
+      ],
+      // Résumé en points (#9) : dans le fichier de détail seulement.
+      if (detail?.decision.summary?.points case final points?
+          when points.isNotEmpty) ...[
+        const SizedBox(height: 32),
+        const _Heading(summaryPointsHeading),
+        const SizedBox(height: 12),
+        _SummaryPoints(points),
+      ],
+      if (detail != null)
+        ..._groupSections(detail)
+      else if (_loading)
+        const Padding(
+          padding: EdgeInsets.only(top: 32),
+          child: Center(child: CircularProgressIndicator()),
+        )
+      else if (_error != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 32),
+          child: _Unavailable(onRetry: _load),
+        ),
+      const SizedBox(height: 28),
+      _Facts(decision),
+      const SizedBox(height: 28),
+      _SourceLinks(decision),
+      const SizedBox(height: 24),
+      Text(
+        sourceNotice,
+        style: TextStyle(fontSize: 12, height: 1.5, color: context.colors.ink2),
+      ),
+    ];
+  }
+
+  List<Widget> _groupSections(DecisionDetail detail) => [
     // Décision provisoire (détection en direct, #10) : le site ne donne pas
     // le vote par groupe, le jeu de données du lendemain le complète.
     if (detail.groups.isEmpty &&
         detail.count != null &&
         detail.decision.status == DecisionStatus.provisoire) ...[
-      const SizedBox(height: 24),
-      const _Section(
-        title: 'Vote par groupe politique',
-        child: _Muted(provisionalGroupsNotice),
-      ),
+      const SizedBox(height: 32),
+      const _Heading(groupsHeading),
+      const SizedBox(height: 8),
+      const _Muted(provisionalGroupsNotice),
     ],
     if (detail.groups.isNotEmpty) ...[
-      const SizedBox(height: 24),
-      _Section(
-        title: 'Vote par groupe politique',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (final (i, group) in detail.groups.indexed) ...[
-              if (i > 0) const Divider(height: 1),
-              _GroupRow(group),
-            ],
-          ],
-        ),
+      const SizedBox(height: 32),
+      const _Heading(groupsHeading),
+      const SizedBox(height: 2),
+      for (final group in detail.groups) _GroupRow(group),
+      const SizedBox(height: 12),
+      Text(
+        'Pour · contre · abstentions',
+        style: TextStyle(fontSize: 12.5, color: context.colors.ink2),
       ),
     ],
   ];
@@ -136,6 +178,194 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
 
 /// Intertitre des points du résumé.
 const summaryPointsHeading = 'Ce que prévoit le texte';
+
+/// Intertitre du vote par groupe politique.
+const groupsHeading = 'Vote par groupe';
+
+/// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
+/// vote par groupe.
+const mainLeveeNotice = 'Adopté à main levée, sans décompte des voix.';
+
+/// Vote par groupe d'une décision provisoire, pas encore publié.
+const provisionalGroupsNotice =
+    'Vote par groupe disponible après confirmation par les données '
+    'officielles.';
+
+/// Carte du vote : grand arc, mot du résultat au centre, puis les trois
+/// chiffres (ou la mention « à main levée »).
+class _VoteCard extends StatelessWidget {
+  const _VoteCard({required this.decision, this.count});
+
+  final DecisionSummary decision;
+
+  /// Décompte complet du fichier de détail, s'il est arrivé ; sinon celui
+  /// de l'index (sans les non-votants).
+  final VoteCount? count;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final tally = count?.tally ?? decision.count;
+    final color = resultColor(context, decision.result);
+    final mainLevee = decision.voteMode == VoteMode.mainLevee;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.min(280.0, constraints.maxWidth);
+          return Column(
+            children: [
+              SizedBox(
+                width: width,
+                height: width * VoteArc.aspect,
+                child: Stack(
+                  children: [
+                    VoteArc(
+                      result: decision.result,
+                      count: tally,
+                      voteMode: decision.voteMode,
+                      width: width,
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 6,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          LineIcon(
+                            resultGlyph(decision.result),
+                            size: 26,
+                            strokeWidth: 2.4,
+                            color: color,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            resultWord(decision.result),
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.6,
+                              height: 1.15,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (mainLevee)
+                Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: Text(
+                    mainLeveeNotice,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: colors.ink2),
+                  ),
+                )
+              else if (tally != null) ...[
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    _Figure(tally.pour, 'pour', colors.pour),
+                    const SizedBox(width: 8),
+                    _Figure(tally.contre, 'contre', colors.contre),
+                    const SizedBox(width: 8),
+                    _Figure(
+                      tally.abstentions,
+                      tally.abstentions > 1 ? 'abstentions' : 'abstention',
+                      colors.ink2,
+                    ),
+                  ],
+                ),
+                if (count case final count? when count.nonVotants > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      '${count.votants} votants · ${count.nonVotants} '
+                      'non-votant${count.nonVotants > 1 ? 's' : ''}',
+                      style: TextStyle(fontSize: 12.5, color: colors.ink2),
+                    ),
+                  ),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Un des trois chiffres de la carte, en Geist Mono.
+class _Figure extends StatelessWidget {
+  const _Figure(this.value, this.label, this.color);
+
+  final int value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
+      children: [
+        Text(
+          '$value',
+          style: HemicycleText.mono.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w500,
+            color: color,
+          ),
+        ),
+        Text(label, style: TextStyle(fontSize: 13, color: context.colors.ink2)),
+      ],
+    ),
+  );
+}
+
+/// « Scrutin public n° 8706 · 13 octobre 2026 · 1re lecture à l'AN ».
+class _Meta extends StatelessWidget {
+  const _Meta(this.decision);
+
+  final DecisionSummary decision;
+
+  @override
+  Widget build(BuildContext context) => MetaLine(
+    style: TextStyle(fontSize: 13, height: 1.4, color: context.colors.ink2),
+    parts: [
+      Text(switch (decision.numero) {
+        final numero? when decision.voteMode == VoteMode.scrutinPublic =>
+          'Scrutin public n° $numero',
+        _ => 'Vote à main levée',
+      }),
+      Text(formatFrenchDate(decision.date)),
+      if (decision.stage case final stage?) Text(stage),
+    ],
+    trailing: decision.status == DecisionStatus.provisoire
+        ? const ProvisionalBadge()
+        : null,
+  );
+}
+
+class _Heading extends StatelessWidget {
+  const _Heading(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    header: true,
+    child: Text(
+      text,
+      style: HemicycleText.heading.copyWith(color: context.colors.ink),
+    ),
+  );
+}
 
 /// Points du résumé, en liste à puces.
 class _SummaryPoints extends StatelessWidget {
@@ -145,17 +375,21 @@ class _SummaryPoints extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodyMedium;
+    final style = TextStyle(
+      fontSize: 15,
+      height: 1.5,
+      color: context.colors.body,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final point in points)
+        for (final (i, point) in points.indexed)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('•  ', style: style),
+                SizedBox(width: 18, child: Text('•', style: style)),
                 Expanded(child: Text(point, style: style)),
               ],
             ),
@@ -165,87 +399,30 @@ class _SummaryPoints extends StatelessWidget {
   }
 }
 
-/// Mention d'une décision sans scrutin public (ticket #8) : ni barre ni vote
-/// par groupe.
-const mainLeveeNotice = 'Adopté à main levée, sans décompte des voix.';
-
-/// Vote par groupe d'une décision provisoire, pas encore publié.
-const provisionalGroupsNotice =
-    'Vote par groupe disponible après confirmation par les données '
-    'officielles.';
-
-/// Résultat, date, titre court, étape, type et intitulé officiel.
-class _Header extends StatelessWidget {
-  const _Header(this.decision);
+/// Type de décision, statut et intitulé officiel.
+class _Facts extends StatelessWidget {
+  const _Facts(this.decision);
 
   final DecisionSummary decision;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceVariant;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            _ResultBadge(decision.result),
-            if (voteModeLabel(decision.voteMode) case final mode?) ...[
-              const SizedBox(width: 8),
-              Text(
-                mode,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-            if (decision.status == DecisionStatus.provisoire) ...[
-              const SizedBox(width: 8),
-              const ProvisionalBadge(),
-            ],
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                formatFrenchDate(decision.date),
-                style: theme.textTheme.labelLarge?.copyWith(color: muted),
-              ),
-            ),
-          ],
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _Field(label: 'Type de décision', value: decisionTypeLabel(decision)),
+      if (decision.status == DecisionStatus.provisoire)
+        const _Field(
+          label: 'Statut',
+          value:
+              'Provisoire : lu sur le site de l\'Assemblée, pas encore '
+              'confirmé par les données officielles',
         ),
-        const SizedBox(height: 12),
-        Text(
-          capitalize(decision.displayTitle),
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        if (decision.stage case final stage?) ...[
-          const SizedBox(height: 4),
-          Text(
-            stage,
-            style: theme.textTheme.bodyMedium?.copyWith(color: muted),
-          ),
-        ],
-        if (decision.explanation case final explanation?) ...[
-          const SizedBox(height: 12),
-          Text(explanation, style: theme.textTheme.bodyLarge),
-        ],
-        const SizedBox(height: 16),
-        _Field(label: 'Type de décision', value: decisionTypeLabel(decision)),
-        if (decision.status == DecisionStatus.provisoire)
-          const _Field(
-            label: 'Statut',
-            value:
-                'Provisoire : lu sur le site de l\'Assemblée, pas encore '
-                'confirmé par les données officielles',
-          ),
-        _Field(
-          label: 'Intitulé officiel',
-          value: capitalize(decision.officialTitle),
-        ),
-      ],
-    );
-  }
+      _Field(
+        label: 'Intitulé officiel',
+        value: capitalize(decision.officialTitle),
+      ),
+    ],
+  );
 }
 
 /// Libellé du type de décision.
@@ -267,128 +444,25 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 13, color: colors.ink2)),
           const SizedBox(height: 2),
-          Text(value, style: theme.textTheme.bodyMedium),
+          Text(
+            value,
+            style: TextStyle(fontSize: 14, height: 1.45, color: colors.body),
+          ),
         ],
       ),
     );
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        child,
-      ],
-    );
-  }
-}
-
-/// Barre pour / contre / abstention du scrutin et sa légende.
-class _Count extends StatelessWidget {
-  const _Count(this.count);
-
-  final VoteCount count;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        VoteBar(count, height: 14),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 16,
-          runSpacing: 8,
-          children: [
-            _Legend(color: VoteBar.pourColor, label: 'Pour', value: count.pour),
-            _Legend(
-              color: VoteBar.contreColor,
-              label: 'Contre',
-              value: count.contre,
-            ),
-            _Legend(
-              color: VoteBar.abstentionColor(context),
-              label: count.abstentions > 1 ? 'Abstentions' : 'Abstention',
-              value: count.abstentions,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${count.votants} votants'
-          '${count.nonVotants > 0 ? ' · ${count.nonVotants} non-votant${count.nonVotants > 1 ? 's' : ''}' : ''}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Legend extends StatelessWidget {
-  const _Legend({
-    required this.color,
-    required this.label,
-    required this.value,
-  });
-
-  final Color color;
-  final String label;
-  final int value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text('$label ', style: theme.textTheme.bodyMedium),
-        Text(
-          '$value',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Un groupe : nom, position et petite barre, sans couleur de parti.
+/// Un groupe : nom et sigle, décompte en Geist Mono, barre segmentée.
 class _GroupRow extends StatelessWidget {
   const _GroupRow(this.group);
 
@@ -396,51 +470,61 @@ class _GroupRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceVariant;
+    final colors = context.colors;
     final c = group.count;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text.rich(
-                  TextSpan(
-                    text: group.name,
-                    children: [
-                      if (group.abbreviation case final abbreviation?)
-                        TextSpan(
-                          text: '  $abbreviation',
-                          style: TextStyle(color: muted),
-                        ),
-                    ],
+    return Semantics(
+      container: true,
+      label:
+          '${group.name} : ${groupPositionLabel(group.position)}, '
+          '${c.pour} pour, ${c.contre} contre, ${c.abstentions} abstentions',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: colors.rule)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      text: group.name,
+                      children: [
+                        if (group.abbreviation case final abbreviation?)
+                          TextSpan(
+                            text: ' $abbreviation',
+                            style: TextStyle(color: colors.ink2),
+                          ),
+                      ],
+                    ),
+                    style: TextStyle(fontSize: 14, color: colors.ink),
                   ),
-                  style: theme.textTheme.bodyMedium,
                 ),
-              ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
+                Text(
+                  '${c.pour} · ${c.contre} · ${c.abstentions}',
+                  style: HemicycleText.mono.copyWith(
+                    fontSize: 13,
+                    color: colors.ink2,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 7),
+            if (c.votants > 0)
+              VoteBar(c)
+            else
               Text(
-                groupPositionLabel(group.position),
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                groupPositionLabel(GroupPosition.nonVotant),
+                style: TextStyle(fontSize: 12.5, color: colors.ink2),
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          VoteBar(c, height: 6),
-          const SizedBox(height: 4),
-          Text(
-            '${c.pour} pour · ${c.contre} contre · '
-            '${c.abstentions} abst.'
-            '${c.nonVotants > 0 ? ' · ${c.nonVotants} non-votant${c.nonVotants > 1 ? 's' : ''}' : ''}',
-            style: theme.textTheme.bodySmall?.copyWith(color: muted),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -455,8 +539,8 @@ String groupPositionLabel(GroupPosition position) => switch (position) {
   GroupPosition.nonVotant => 'N\'a pas voté',
 };
 
-/// Liens vers les pages officielles : le dossier législatif (sinon le
-/// scrutin), puis le scrutin.
+/// Liens vers les pages officielles : le scrutin, puis le dossier
+/// législatif.
 class _SourceLinks extends StatelessWidget {
   const _SourceLinks(this.decision);
 
@@ -464,71 +548,45 @@ class _SourceLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     // Vote à main levée : `sourceUrl` est déjà la page du dossier.
+    final mainLevee = decision.voteMode == VoteMode.mainLevee;
     final dossierUrl =
-        decision.dossierUrl ??
-        (decision.voteMode == VoteMode.mainLevee ? decision.sourceUrl : null);
-    final numero = decision.numero;
+        decision.dossierUrl ?? (mainLevee ? decision.sourceUrl : null);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FilledButton.tonalIcon(
-          onPressed: () => _open(dossierUrl ?? decision.sourceUrl),
-          icon: const Icon(Icons.open_in_new, size: 18),
-          label: Text(
-            dossierUrl != null
-                ? 'Dossier sur le site de l\'Assemblée'
-                : 'Scrutin sur le site de l\'Assemblée',
+        if (!mainLevee)
+          ExternalLinkRow(label: 'Voir le scrutin', url: decision.sourceUrl),
+        if (dossierUrl != null) ...[
+          if (!mainLevee) const SizedBox(height: 8),
+          ExternalLinkRow(
+            label: 'Suivre le dossier législatif',
+            url: dossierUrl,
           ),
-        ),
-        if (dossierUrl != null && numero != null)
-          TextButton.icon(
-            onPressed: () => _open(decision.sourceUrl),
-            icon: const Icon(Icons.open_in_new, size: 18),
-            label: Text('Scrutin n° $numero'),
-          ),
-        const SizedBox(height: 8),
-        Text(
-          'Source : Assemblée nationale, open data. Licence Ouverte Etalab.',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
+        ],
       ],
     );
   }
-
-  Future<void> _open(String url) =>
-      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 }
 
 class _Unavailable extends StatelessWidget {
-  const _Unavailable({required this.onRetry, this.compact = false});
+  const _Unavailable({required this.onRetry});
 
   final VoidCallback onRetry;
-  final bool compact;
 
   @override
-  Widget build(BuildContext context) {
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          'Impossible de charger le détail de cette décision.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        FilledButton.tonal(onPressed: onRetry, child: const Text('Réessayer')),
-      ],
-    );
-    return compact
-        ? content
-        : Center(
-            child: Padding(padding: const EdgeInsets.all(24), child: content),
-          );
-  }
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        'Impossible de charger le détail de cette décision.',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 15, color: context.colors.ink2),
+      ),
+      const SizedBox(height: 12),
+      FilledButton(onPressed: onRetry, child: const Text('Réessayer')),
+    ],
+  );
 }
 
 class _Muted extends StatelessWidget {
@@ -537,51 +595,8 @@ class _Muted extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Text(
-      text,
-      style: theme.textTheme.bodyMedium?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
-      ),
-    );
-  }
-}
-
-/// Même badge que la liste (vert / brique, icône en plus de la couleur).
-class _ResultBadge extends StatelessWidget {
-  const _ResultBadge(this.result);
-
-  final VoteResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    final (label, icon, color) = switch (result) {
-      VoteResult.adopte => ('Adopté', Icons.check, ResultColors.adopted),
-      VoteResult.rejete => ('Rejeté', Icons.close, ResultColors.rejected),
-    };
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 2, 8, 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: Colors.white),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(fontSize: 14, height: 1.45, color: context.colors.ink2),
+  );
 }
