@@ -37,6 +37,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<!-- Les liens votedujour:// (widgets) sont traités par home_widget, pas par
 	     le routage de Flutter, pour n'ouvrir l'écran demandé qu'une fois. -->
+	<!-- Notifications des votes importants (#34) : pas d'inscription auprès de
+	     Firebase Cloud Messaging tant que l'utilisateur ne les a pas activées. -->
+	<key>FirebaseMessagingAutoInitEnabled</key>
+	<false/>
 	<key>FlutterDeepLinkingEnabled</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -62,6 +66,10 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

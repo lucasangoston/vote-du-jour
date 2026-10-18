@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     // Compilateur Compose, pour le widget Glance.
     id("org.jetbrains.kotlin.plugin.compose")
+    // Configuration Firebase (google-services.json), pour les notifications.
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }

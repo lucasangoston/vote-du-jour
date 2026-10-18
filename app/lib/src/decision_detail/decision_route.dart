@@ -10,6 +10,10 @@ const _prefix = '/decisions/';
 /// Nom de la route du détail de la décision [id].
 String decisionRouteName(String id) => '$_prefix${Uri.encodeComponent(id)}';
 
+/// Vrai pour une route de détail de décision.
+bool isDecisionRoute(String? name) =>
+    name != null && name.startsWith(_prefix) && name.length > _prefix.length;
+
 /// Identifiant de la décision demandée par un lien profond
 /// `votedujour://decisions/<id>` (lien des widgets), ou `null` pour un lien
 /// vers la liste (`votedujour://decisions`) ou un autre lien.
