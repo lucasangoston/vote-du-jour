@@ -1,6 +1,9 @@
-// Génère l'icône iOS Hémicycle (#29) : logo clair #F3F4F5 (deux rangées de
-// sièges en demi-cercle) sur fond graphite #15181C, opaque, puis les tailles
-// de AppIcon.appiconset.
+// Génère les icônes Perchoir (#36) : logo « hémicycle en bandes » (deux arcs
+// #F3F4F5 et un demi-disque #4FB08F) sur fond graphite #15181C.
+// - iOS : toutes les tailles de AppIcon.appiconset, opaques, carré plein ;
+// - Android : les PNG legacy (mipmap-*/ic_launcher.png), carré arrondi sur
+//   fond transparent. L'icône adaptative, elle, est en vecteur
+//   (drawable/ic_launcher_foreground.xml et ic_launcher_monochrome.xml).
 //
 // Depuis app/ios : swift tool/make_app_icon.swift
 import CoreGraphics
@@ -9,6 +12,7 @@ import ImageIO
 import UniformTypeIdentifiers
 
 let iconSet = URL(fileURLWithPath: "Runner/Assets.xcassets/AppIcon.appiconset")
+let androidRes = URL(fileURLWithPath: "../android/app/src/main/res")
 
 func rgb(_ hex: UInt32) -> CGColor {
   CGColor(
@@ -16,39 +20,62 @@ func rgb(_ hex: UInt32) -> CGColor {
     blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
 }
 
-/// Positions régulières, extrémités comprises (même règle que
-/// `VoteArc.dotPositions` du widget).
-func dotPositions(length: Double, spacing: Double) -> [Double] {
-  let gaps = max(1, Int((length / spacing).rounded()))
-  return (0...gaps).map { Double($0) / Double(gaps) }
+/// Logo dans la grille de 120 des maquettes (Main.dc.html) : arcs de rayon 46
+/// et 28 centrés en (60, 86), épaisseur 12, bouts droits ; demi-disque de
+/// rayon 12. Dessiné dans `square` (côté = 120 unités), y vers le bas comme en
+/// SVG puis retourné pour CoreGraphics.
+func drawLogo(in ctx: CGContext, square: CGRect) {
+  let unit = square.width / 120
+  ctx.saveGState()
+  ctx.translateBy(x: square.minX, y: square.maxY)
+  ctx.scaleBy(x: unit, y: -unit)
+  // Maquette : logo de 96 dans une icône de 120 (échelle 0,8, centré).
+  ctx.translateBy(x: 12, y: 12)
+  ctx.scaleBy(x: 0.8, y: 0.8)
+  ctx.setStrokeColor(rgb(0xF3F4F5))
+  ctx.setLineWidth(12)
+  ctx.setLineCap(.butt)
+  for radius in [46.0, 28.0] {
+    ctx.beginPath()
+    // En repère SVG (y vers le bas), de π à 2π passe par le haut.
+    ctx.addArc(center: CGPoint(x: 60, y: 86), radius: radius, startAngle: .pi, endAngle: 2 * .pi, clockwise: false)
+    ctx.strokePath()
+  }
+  ctx.setFillColor(rgb(0x4FB08F))
+  ctx.beginPath()
+  ctx.addArc(center: CGPoint(x: 60, y: 86), radius: 12, startAngle: .pi, endAngle: 2 * .pi, clockwise: false)
+  ctx.closePath()
+  ctx.fillPath()
+  ctx.restoreGState()
 }
 
-func render(size: Int) -> CGImage {
-  let ctx = CGContext(
+func context(size: Int, opaque: Bool) -> CGContext {
+  CGContext(
     data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0,
     space: CGColorSpace(name: CGColorSpace.sRGB)!,
-    bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
-  ctx.setFillColor(rgb(0x15181C))
-  ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
+    bitmapInfo: (opaque ? CGImageAlphaInfo.noneSkipLast : .premultipliedLast).rawValue)!
+}
 
-  // Maquette (Main.dc.html) : logo de 84 px de large dans une icône de 120,
-  // repère 120 × 66, rangées de rayon 54 et 38, points de 7 tous les 12,1.
+/// iOS : carré plein et opaque, le système applique le masque.
+func renderIOS(size: Int) -> CGImage {
+  let ctx = context(size: size, opaque: true)
+  let full = CGRect(x: 0, y: 0, width: size, height: size)
+  ctx.setFillColor(rgb(0x15181C))
+  ctx.fill(full)
+  drawLogo(in: ctx, square: full)
+  return ctx.makeImage()!
+}
+
+/// Android legacy : carré arrondi (marge 1/24, rayon 23 %), coins transparents.
+func renderAndroidLegacy(size: Int) -> CGImage {
+  let ctx = context(size: size, opaque: false)
   let side = CGFloat(size)
-  let scale = side * 0.7 / 120
-  let originX = (side - 120 * scale) / 2
-  let originY = (side - 66 * scale) / 2
-  ctx.setFillColor(rgb(0xF3F4F5))
-  for radius in [54.0, 38.0] {
-    for t in dotPositions(length: .pi * radius, spacing: 12.1) {
-      let angle = Double.pi * (1 + t)
-      let x = 60 + radius * cos(angle)
-      let y = 60 + radius * sin(angle)  // repère SVG, y vers le bas
-      let d = 7 * scale
-      let cx = originX + CGFloat(x) * scale
-      let cy = side - (originY + CGFloat(y) * scale)  // CoreGraphics, y vers le haut
-      ctx.fillEllipse(in: CGRect(x: cx - d / 2, y: cy - d / 2, width: d, height: d))
-    }
-  }
+  let tile = CGRect(x: 0, y: 0, width: side, height: side).insetBy(dx: side / 24, dy: side / 24)
+  ctx.setFillColor(rgb(0x15181C))
+  ctx.addPath(
+    CGPath(roundedRect: tile, cornerWidth: tile.width * 0.23, cornerHeight: tile.width * 0.23, transform: nil))
+  ctx.fillPath()
+  drawLogo(in: ctx, square: tile)
   return ctx.makeImage()!
 }
 
@@ -58,7 +85,7 @@ func write(_ image: CGImage, to url: URL) {
   precondition(CGImageDestinationFinalize(dest), "écriture de \(url.path)")
 }
 
-// Fichiers attendus par Contents.json : (nom, côté en pixels).
+// iOS, fichiers attendus par Contents.json : (nom, côté en pixels).
 let data = try Data(contentsOf: iconSet.appendingPathComponent("Contents.json"))
 let contents = try JSONSerialization.jsonObject(with: data) as! [String: Any]
 for image in contents["images"] as! [[String: Any]] {
@@ -67,6 +94,13 @@ for image in contents["images"] as! [[String: Any]] {
     let scale = (image["scale"] as? String).flatMap({ Double($0.dropLast()) })
   else { continue }
   let pixels = Int((size * scale).rounded())
-  write(render(size: pixels), to: iconSet.appendingPathComponent(filename))
+  write(renderIOS(size: pixels), to: iconSet.appendingPathComponent(filename))
   print("\(filename) \(pixels) px")
+}
+
+// Android legacy : 48 dp par densité.
+for (density, pixels) in [("mdpi", 48), ("hdpi", 72), ("xhdpi", 96), ("xxhdpi", 144), ("xxxhdpi", 192)] {
+  let url = androidRes.appendingPathComponent("mipmap-\(density)/ic_launcher.png")
+  write(renderAndroidLegacy(size: pixels), to: url)
+  print("mipmap-\(density)/ic_launcher.png \(pixels) px")
 }
