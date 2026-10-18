@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Couleurs de l'aperçu du widget (sélecteur de widgets), mêmes valeurs que
-     WidgetColors dans DecisionWidget.kt. Variante sombre dans values-night. -->
+     WidgetColors dans DecisionWidget.kt (charte Hémicycle, #29). Variante
+     sombre dans values-night. -->
 <resources>
     <color name="decision_widget_background">#FFFFFFFF</color>
-    <color name="decision_widget_primary">#FF1B1B1B</color>
-    <color name="decision_widget_secondary">#FF5E5E5E</color>
+    <color name="decision_widget_primary">#FF15181C</color>
+    <color name="decision_widget_secondary">#FF4F5761</color>
+    <color name="decision_widget_rule">#FFE2E5E8</color>
+    <color name="decision_widget_pour">#FF1D6B54</color>
+    <color name="decision_widget_contre">#FFB4472B</color>
+    <color name="decision_widget_abstention">#FFAEB4BB</color>
 </resources>

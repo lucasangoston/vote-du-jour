@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Généré (charte Hémicycle, #29) : aperçu, vote à main levée adopté. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="66dp"
+    android:viewportWidth="120"
+    android:viewportHeight="66">
+    <path
+        android:fillColor="@color/decision_widget_pour"
+        android:pathData="M4.00,60.00a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM7.81,40.87a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM18.64,24.64a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM34.87,13.81a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM54.00,10.00a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM73.13,13.81a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM89.36,24.64a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM100.19,40.87a6,6 0,1 0,12,0a6,6 0,1 0,-12,0zM104.00,60.00a6,6 0,1 0,12,0a6,6 0,1 0,-12,0z" />
+</vector>

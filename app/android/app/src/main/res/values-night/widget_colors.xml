@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="decision_widget_background">#FF1E1E1E</color>
-    <color name="decision_widget_primary">#FFEDEDED</color>
-    <color name="decision_widget_secondary">#FFABABAB</color>
+    <color name="decision_widget_background">#FF191C20</color>
+    <color name="decision_widget_primary">#FFECEEF0</color>
+    <color name="decision_widget_secondary">#FF9AA2AB</color>
+    <color name="decision_widget_rule">#FF2A2F35</color>
+    <color name="decision_widget_pour">#FF4FB08F</color>
+    <color name="decision_widget_contre">#FFE07A58</color>
+    <color name="decision_widget_abstention">#FF4A5058</color>
 </resources>
