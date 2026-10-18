@@ -366,7 +366,7 @@ void main() {
     );
 
     test('requête : modèle des résumés, explications entre balises', () {
-      expect(argumentsPromptVersion, 1);
+      expect(argumentsPromptVersion, 2);
       expect(request['model'], summaryModel);
       expect(request['system'], argumentsSystemPrompt);
       final message =
@@ -607,7 +607,7 @@ void main() {
           expect(arguments.pour.map((a) => a.group), ['EcoS', 'Dem']);
           expect(arguments.contre, isEmpty);
           expect(arguments.source.url, compteRenduUrl(crUid));
-          expect(arguments.promptVersion, 1);
+          expect(arguments.promptVersion, argumentsPromptVersion);
         }
         // Sans explications de vote : pas de champ `arguments`.
         final raw =
@@ -621,7 +621,7 @@ void main() {
         expect(state['lastModified'], crLastModified);
         final entry = (state['entries'] as Map)['VTANR5L17V8706'] as Map;
         expect(entry['status'], 'fait');
-        expect(entry['promptVersion'], 1);
+        expect(entry['promptVersion'], argumentsPromptVersion);
         expect(entry['compteRendu'], crUid);
 
         // Passage suivant : archive inchangée (If-Modified-Since), aucun appel.
