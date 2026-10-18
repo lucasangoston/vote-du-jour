@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
+import '../decision_details.dart';
 import '../decision_selector.dart';
 import '../dossier_index.dart';
 import '../job.dart' show dossiersStateKey, indexCacheControl;
@@ -265,6 +266,13 @@ Future<LiveOutcome> runLivePass({
     provisional: [for (final p in known.values) p.toScrutin()],
     generatedAt: now,
     dossiers: dossiers,
+  );
+
+  // Détails des décisions provisoires avant l'index qui renvoie vers eux
+  // (#6) ; seuls ceux qui ont changé sont réécrits.
+  await publishDecisionDetails(
+    store,
+    buildProvisionalDetails(reconciled.pending, reconciled.index),
   );
 
   final changed = !_sameDecisions(

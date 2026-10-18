@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
+import 'decision_details.dart';
 import 'dossier_index.dart';
 import 'dump_reader.dart';
 import 'dump_source.dart';
+import 'group_directory.dart';
 import 'index_builder.dart';
 import 'live/live_state.dart';
 import 'live/reconciler.dart';
@@ -49,6 +51,7 @@ class JobPublished extends JobOutcome {
     required this.index,
     required this.unrecognized,
     this.warnings = const [],
+    this.detailsWritten = 0,
   });
 
   /// Nombre de scrutins lus dans le jeu de données.
@@ -61,6 +64,9 @@ class JobPublished extends JobOutcome {
   /// Problèmes non bloquants (jeu de données des dossiers indisponible…).
   final List<String> warnings;
 
+  /// Fichiers de détail réécrits (les autres n'avaient pas changé).
+  final int detailsWritten;
+
   @override
   String toString() => [
     '$scrutins scrutins lus, ${index.decisions.length} décisions publiées '
@@ -69,6 +75,8 @@ class JobPublished extends JobOutcome {
         'rattachées à un dossier, '
         '${index.decisions.where((d) => d.voteMode == VoteMode.mainLevee).length}'
         ' adoptées à main levée).',
+    '$detailsWritten fichiers de détail réécrits '
+        '(${decisionDetailPath('<id>')}).',
     ...warnings.map((w) => 'Attention : $w'),
     if (unrecognized.isNotEmpty)
       '${unrecognized.length} intitulés non reconnus, écartés (à relire) :',
@@ -102,6 +110,7 @@ Future<JobOutcome> runJob({
   required DumpSource source,
   required ObjectStore store,
   DumpSource? dossiers,
+  DumpSource? organes,
   DateTime Function() clock = DateTime.now,
   bool force = false,
 }) async {
@@ -119,10 +128,19 @@ Future<JobOutcome> runJob({
       ? null
       : await _fetchDossiers(dossiers, dossierState, warnings);
   final dossierIndex = dossierUpdate?.index ?? dossierState?.index;
+  // Noms des groupes politiques, pour les fichiers de détail.
+  final groups = await loadGroupDirectory(
+    source: organes,
+    store: store,
+    warnings: warnings,
+    now: clock(),
+    force: force,
+  );
 
   final fetch = await source.fetch(
-    // De nouveaux dossiers changent les libellés : on retraite les scrutins.
-    ifModifiedSince: dossierUpdate != null ? null : previous,
+    // De nouveaux dossiers changent les libellés, de nouveaux noms de groupes
+    // les fichiers de détail : on retraite les scrutins.
+    ifModifiedSince: dossierUpdate != null || groups.changed ? null : previous,
   );
   switch (fetch) {
     case DumpNotModified():
@@ -140,6 +158,16 @@ Future<JobOutcome> runJob({
         dossiers: dossierIndex,
       );
       final index = reconciled.index;
+      // Les détails avant l'index, qui renvoie vers eux. Les décisions
+      // encore provisoires ont le décompte du site, sans vote par groupe.
+      final detailsWritten = await publishDecisionDetails(
+        store,
+        buildDecisionDetails(
+          [...scrutins, ...reconciled.pending],
+          index,
+          groups: groups.directory,
+        ),
+      );
       await store.write(
         indexPath,
         const JsonEncoder.withIndent('  ').convert(index.toJson()),
@@ -164,6 +192,7 @@ Future<JobOutcome> runJob({
           cacheControl: 'no-store',
         );
       }
+      await groups.save(store);
       await ConfirmedSnapshot.fromDump(
         scrutins,
         lastModified: lastModified,
@@ -176,6 +205,7 @@ Future<JobOutcome> runJob({
         index: index,
         unrecognized: unrecognizedScrutins(scrutins),
         warnings: warnings,
+        detailsWritten: detailsWritten,
       );
   }
 }

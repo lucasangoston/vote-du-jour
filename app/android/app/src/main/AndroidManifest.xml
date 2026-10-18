@@ -21,6 +21,13 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Les liens votedujour:// (widgets) sont traités par home_widget,
+                 pas par le routage de Flutter, pour n'ouvrir l'écran demandé
+                 qu'une fois. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false"
+              />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

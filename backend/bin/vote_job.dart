@@ -43,6 +43,15 @@ Future<void> main(List<String> arguments) async {
       'dossiers-file',
       help: 'Lit les dossiers législatifs depuis un fichier zip local.',
     )
+    ..addOption(
+      'organes-url',
+      defaultsTo: organesDumpUrl,
+      help: 'URL du jeu de données des acteurs et organes (noms des groupes).',
+    )
+    ..addOption(
+      'organes-file',
+      help: 'Lit les acteurs et organes depuis un fichier zip local.',
+    )
     ..addFlag(
       'live',
       negatable: false,
@@ -109,11 +118,16 @@ Future<void> main(List<String> arguments) async {
   final dossiers = dossiersFile != null
       ? FileDumpSource(dossiersFile)
       : HttpDumpSource(url: args.option('dossiers-url')!);
+  final organesFile = args.option('organes-file');
+  final organes = organesFile != null
+      ? FileDumpSource(organesFile)
+      : HttpDumpSource(url: args.option('organes-url')!);
 
   final outcome = await runJob(
     source: source,
     store: store,
     dossiers: dossiers,
+    organes: organes,
     force: args.flag('force'),
   );
   stdout.writeln(outcome);

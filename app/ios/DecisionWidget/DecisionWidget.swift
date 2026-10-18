@@ -5,6 +5,19 @@ import WidgetKit
 /// paramètre `homeWidget` permet au plugin home_widget de le reconnaître.
 private let listURL = URL(string: "votedujour://decisions?homeWidget")!
 
+extension WidgetDecision {
+  /// Lien ouvert par un tap sur la décision : son écran de détail
+  /// (`votedujour://decisions/<id>?homeWidget`).
+  var detailURL: URL {
+    var components = URLComponents()
+    components.scheme = "votedujour"
+    components.host = "decisions"
+    components.path = "/\(id)"
+    components.queryItems = [URLQueryItem(name: "homeWidget", value: nil)]
+    return components.url ?? listURL
+  }
+}
+
 struct DecisionEntry: TimelineEntry {
   let date: Date
   let decision: WidgetDecision?
@@ -40,7 +53,7 @@ struct DecisionWidgetView: View {
         EmptyDecisionView()
       }
     }
-    .widgetURL(listURL)
+    .widgetURL(entry.decision?.detailURL ?? listURL)
     .containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
   }
 }
