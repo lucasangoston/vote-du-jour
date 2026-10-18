@@ -166,18 +166,70 @@ struct VoteArcView: View {
   }
 }
 
-/// Logo Hémicycle : deux rangées de sièges en demi-cercle (en-tête du grand
-/// widget, état vide).
+/// Logo Perchoir, « hémicycle en bandes » (#36) : deux arcs épais (encre) et
+/// un demi-disque plein (pour) au centre. En-tête du grand widget, état vide.
 struct HemicycleLogo: View {
   var color: Color = Palette.ink
+  /// Épaisseur des arcs et rayon du demi-disque, en unités de la grille de
+  /// 120 : 14 aux tailles des widgets (maquettes Widgets-*.dc.html).
+  var weight: CGFloat = 14
 
   var body: some View {
     ZStack {
-      ArcDots(radius: 54, diameter: 10, spacing: 15)
-      ArcDots(radius: 34, diameter: 10, spacing: 15)
+      PerchoirArcs(weight: weight).fill(color)
+      PerchoirSeat(radius: weight).fill(Palette.pour)
     }
-    .foregroundStyle(color)
-    .aspectRatio(120 / 66, contentMode: .fit)
+    .aspectRatio(PerchoirFrame.box.width / PerchoirFrame.box.height, contentMode: .fit)
     .accessibilityHidden(true)
+  }
+}
+
+/// Cadre du logo dans la grille de 120 (viewBox `8 34 104 58` des maquettes),
+/// centre des arcs en (60, 86).
+private enum PerchoirFrame {
+  static let box = CGRect(x: 8, y: 34, width: 104, height: 58)
+  static let center = CGPoint(x: 60, y: 86)
+
+  /// Grille → `rect`, à l'échelle et centré.
+  static func transform(in rect: CGRect) -> CGAffineTransform {
+    let s = min(rect.width / box.width, rect.height / box.height)
+    let dx = rect.midX - box.midX * s
+    let dy = rect.midY - box.midY * s
+    return CGAffineTransform(translationX: dx, y: dy).scaledBy(x: s, y: s)
+  }
+
+  /// Demi-cercle supérieur de rayon `radius` (de gauche à droite par le haut).
+  static func halfCircle(radius: CGFloat) -> Path {
+    var path = Path()
+    path.addArc(
+      center: center, radius: radius, startAngle: .degrees(180), endAngle: .degrees(360),
+      clockwise: false)
+    return path
+  }
+}
+
+/// Les deux arcs (rayons 46 et 28), bouts droits.
+private struct PerchoirArcs: Shape {
+  var weight: CGFloat
+
+  func path(in rect: CGRect) -> Path {
+    var arcs = Path()
+    for radius: CGFloat in [46, 28] {
+      arcs.addPath(
+        PerchoirFrame.halfCircle(radius: radius)
+          .strokedPath(StrokeStyle(lineWidth: weight, lineCap: .butt)))
+    }
+    return arcs.applying(PerchoirFrame.transform(in: rect))
+  }
+}
+
+/// Le demi-disque plein du centre.
+private struct PerchoirSeat: Shape {
+  var radius: CGFloat
+
+  func path(in rect: CGRect) -> Path {
+    var seat = PerchoirFrame.halfCircle(radius: radius)
+    seat.closeSubpath()
+    return seat.applying(PerchoirFrame.transform(in: rect))
   }
 }

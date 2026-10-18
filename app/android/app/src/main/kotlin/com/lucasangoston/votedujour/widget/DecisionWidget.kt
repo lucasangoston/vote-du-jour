@@ -332,15 +332,26 @@ private fun ArcImage(context: Context, decision: WidgetDecision, style: ArcStyle
   }
 }
 
-/** Logo Hémicycle, couleur de l'encre. */
+/**
+ * Logo Perchoir (hémicycle en bandes) : deux calques superposés, arcs couleur encre et demi-disque
+ * couleur pour, teintés en jour / nuit comme l'arc du vote.
+ */
 @Composable
 private fun Logo(modifier: GlanceModifier) {
-  Image(
-      provider = ImageProvider(R.drawable.ic_hemicycle),
-      contentDescription = null,
-      modifier = modifier,
-      colorFilter = ColorFilter.tint(WidgetColors.ink),
-  )
+  Box(modifier = modifier) {
+    Image(
+        provider = ImageProvider(R.drawable.ic_perchoir_arcs),
+        contentDescription = null,
+        modifier = modifier,
+        colorFilter = ColorFilter.tint(WidgetColors.ink),
+    )
+    Image(
+        provider = ImageProvider(R.drawable.ic_perchoir_seat),
+        contentDescription = null,
+        modifier = modifier,
+        colorFilter = ColorFilter.tint(WidgetColors.pour),
+    )
+  }
 }
 
 /** « Adopté » / « Rejeté », mot coloré sans pastille. */

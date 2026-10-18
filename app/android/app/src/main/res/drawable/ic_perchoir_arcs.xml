@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo Perchoir des widgets (#36), calque des deux arcs : teinté par Glance (couleur encre).
+     Grille de 120 de la maquette, épaisseur 14 aux petites tailles (Widgets-*.dc.html) ;
+     cadre 106 x 58 (rapport 22 x 12) calé sur le tracé. Le demi-disque est dans
+     ic_perchoir_seat.xml, même cadre. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="12dp"
+    android:viewportWidth="106"
+    android:viewportHeight="58">
+    <group
+        android:translateX="-7"
+        android:translateY="-33">
+        <path
+            android:pathData="M14,86 A46,46 0 0,1 106,86"
+            android:strokeColor="#FF15181C"
+            android:strokeLineCap="butt"
+            android:strokeWidth="14" />
+        <path
+            android:pathData="M32,86 A28,28 0 0,1 88,86"
+            android:strokeColor="#FF15181C"
+            android:strokeLineCap="butt"
+            android:strokeWidth="14" />
+    </group>
+</vector>
