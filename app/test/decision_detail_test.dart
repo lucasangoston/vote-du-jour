@@ -117,21 +117,24 @@ void main() {
     expect(find.text('Adopté'), findsOneWidget);
     expect(find.text('141'), findsOneWidget);
     expect(find.text('abstentions'), findsOneWidget);
-    expect(find.text('153 votants · 2 non-votants'), findsOneWidget);
+    expect(find.text('153 députés ont voté'), findsOneWidget);
     // Méta, titre court.
     expect(find.text('Scrutin public n° 6346'), findsOneWidget);
     expect(find.text('9 avril 2026'), findsOneWidget);
     expect(find.text('Texte de compromis (CMP)'), findsOneWidget);
     expect(find.text('Restitution de biens culturels'), findsOneWidget);
 
-    // Vote par groupe, type, intitulé officiel et liens, plus bas.
+    // Qui a voté quoi, puis type, intitulé officiel et liens, plus bas.
+    await tester.scrollUntilVisible(find.text('Aucun groupe'), 200);
+    expect(find.text('Qui a voté quoi'), findsOneWidget);
+    expect(find.text('RN'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Suivre le dossier législatif'),
       200,
     );
-    expect(find.textContaining('Rassemblement National'), findsOneWidget);
-    expect(find.textContaining('Droite Républicaine'), findsOneWidget);
-    expect(find.text('5 · 0 · 6'), findsOneWidget);
+    expect(find.text('30'), findsOneWidget);
+    expect(find.text('Aucun groupe'), findsOneWidget);
+    expect(find.text('6 · 5 pour'), findsOneWidget);
     expect(
       find.bySemanticsLabel(RegExp('Droite Républicaine : Abstention')),
       findsOneWidget,
@@ -210,7 +213,8 @@ void main() {
       find.text('Suivre le dossier législatif'),
       200,
     );
-    expect(find.text('Vote par groupe'), findsNothing);
+    expect(find.text('Qui a voté quoi'), findsNothing);
+    expect(find.textContaining('ont voté'), findsNothing);
     expect(find.textContaining('Scrutin public'), findsNothing);
     expect(find.text('Voir le scrutin'), findsNothing);
   });

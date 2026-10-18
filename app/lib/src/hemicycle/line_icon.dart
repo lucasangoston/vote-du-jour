@@ -38,6 +38,13 @@ class LineGlyph {
     ],
   );
 
+  /// Trait de « Abstention ».
+  static const dash = LineGlyph(
+    lines: [
+      [Offset(6, 12), Offset(18, 12)],
+    ],
+  );
+
   /// Retour.
   static const back = LineGlyph(
     lines: [
