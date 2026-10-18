@@ -13,11 +13,13 @@ import '../hemicycle/vote_arc.dart';
 import '../provisional_badge.dart';
 import '../theme.dart';
 import 'decision_detail_repository.dart';
+import 'vote_arguments.dart';
 import 'who_voted_what.dart';
 
 /// Écran de détail d'une décision : carte du vote (grand arc, résultat,
 /// décompte), méta, titre, explication, points du résumé, « Qui a voté
-/// quoi » (groupes rangés par position), liens vers les pages officielles et source.
+/// quoi » (groupes rangés par position), « Pourquoi ils ont voté ainsi »
+/// (arguments des groupes), liens vers les pages officielles et source.
 ///
 /// [summary] (la ligne de la liste) s'affiche tout de suite, arc compris ;
 /// le fichier de détail complète l'écran quand il arrive. Ouvert depuis un
@@ -167,6 +169,13 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       const _Heading(groupsHeading),
       const SizedBox(height: 14),
       WhoVotedWhat(detail.groups),
+    ],
+    // Arguments des groupes (#35) : absents sans explications de vote.
+    if (detail.arguments case final arguments?) ...[
+      const SizedBox(height: 32),
+      const _Heading(argumentsHeading),
+      const SizedBox(height: 12),
+      VoteArguments(arguments),
     ],
   ];
 }
