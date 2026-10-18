@@ -93,11 +93,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(_summary.explanation), findsOneWidget);
+    await tester.scrollUntilVisible(find.text(_summary.points.last), 200);
     expect(find.text(summaryPointsHeading), findsOneWidget);
     for (final point in _summary.points) {
       expect(find.text(point), findsOneWidget);
     }
     // L'intitulé officiel reste affiché.
+    await tester.scrollUntilVisible(
+      find.textContaining("L'ensemble de la proposition de loi"),
+      200,
+    );
     expect(
       find.textContaining("L'ensemble de la proposition de loi"),
       findsOneWidget,
@@ -150,6 +155,7 @@ void main() {
         'title': "Retour de l'âge légal de départ à 62 ans",
         'stage': "1re lecture à l'AN",
         'explanation': _summary.explanation,
+        'voteMode': 'scrutin_public',
       },
       {
         'id': 'VTANR5L17V217',
@@ -157,6 +163,7 @@ void main() {
         'date': '2024-10-31',
         'title': 'Restaurer un système de retraite plus juste',
         'stage': "1re lecture à l'AN",
+        'voteMode': 'scrutin_public',
       },
     ]);
   });
