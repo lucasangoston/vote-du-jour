@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -18,10 +19,12 @@ import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
@@ -50,6 +53,9 @@ import es.antonborri.home_widget.HomeWidgetGlanceState
 import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
 import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
 import es.antonborri.home_widget.actionStartActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /** Lien ouvert par un tap : l'app s'ouvre sur la liste des décisions. */
 private val LIST_URI = Uri.parse("votedujour://decisions?homeWidget")
@@ -382,7 +388,25 @@ abstract class BaseDecisionWidgetReceiver<T : GlanceAppWidget> :
       appWidgetManager: AppWidgetManager,
       appWidgetIds: IntArray,
   ) {
-    super.onUpdate(context, appWidgetManager, appWidgetIds)
+    // Pas de super.onUpdate : celui de home_widget attend la mise à jour Glance dans un runBlocking
+    // sur le thread principal, alors que Glance démarre sa session (SessionWorker) sur ce même
+    // thread. Le récepteur restait bloqué jusqu'à l'ANR et le widget n'était pas redessiné. Même
+    // travail (rafraîchir l'état puis redessiner), mais hors du thread principal.
+    val pending = goAsync()
+    CoroutineScope(Dispatchers.Default).launch {
+      try {
+        val manager = GlanceAppWidgetManager(context)
+        appWidgetIds.forEach { appWidgetId ->
+          val id = manager.getGlanceIdBy(appWidgetId)
+          updateAppWidgetState(context, HomeWidgetGlanceStateDefinition(), id) { it }
+          glanceAppWidget.update(context, id)
+        }
+      } catch (e: Exception) {
+        Log.w("DecisionWidget", "Mise à jour du widget impossible : $e")
+      } finally {
+        pending.finish()
+      }
+    }
     DecisionRefreshScheduler.schedule(context)
   }
 
