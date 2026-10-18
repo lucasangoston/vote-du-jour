@@ -38,6 +38,13 @@ enum RelativeDate {
     }
   }
 
+  /// Le libellé en milieu de ligne (« Adopté · il y a 5 jours ») : initiale en
+  /// minuscule.
+  static func inlineLabel(day: String, now: Date, calendar: Calendar = .current) -> String {
+    let label = label(day: day, now: now, calendar: calendar)
+    return label.prefix(1).lowercased() + label.dropFirst()
+  }
+
   /// « 13 octobre 2026 » (« 1er » pour le premier du mois).
   static func fullDate(year: Int, month: Int, day: Int) -> String {
     "\(day == 1 ? "1er" : String(day)) \(months[month - 1]) \(year)"

@@ -97,6 +97,46 @@ final class SnapshotConverterTests: XCTestCase {
     XCTAssertNil(decisions[2]["explanation"])
   }
 
+  func testDecompteEtModeDeVote() throws {
+    let decisions = try convert([
+      // `nonVotants` est ignoré.
+      decision(8727, #","count":{"pour":503,"contre":0,"abstentions":67,"nonVotants":3}"#),
+      // Index antérieur : ni décompte ni mode (scrutin public).
+      decision(8726),
+      // Décompte malformé : ignoré, la décision reste lisible.
+      decision(8725, #","voteMode":"scrutin_public","count":{"pour":1,"contre":"2","abstentions":0}"#),
+    ])
+    XCTAssertEqual(decisions.count, 3)
+    XCTAssertEqual(
+      decisions[0]["count"] as? [String: Int], ["pour": 503, "contre": 0, "abstentions": 67])
+    XCTAssertEqual(decisions[0]["voteMode"] as? String, "scrutin_public")
+    XCTAssertNil(decisions[1]["count"])
+    XCTAssertEqual(decisions[1]["voteMode"] as? String, "scrutin_public")
+    XCTAssertNil(decisions[2]["count"])
+
+    let mainLevee = try convert([
+      """
+      {"id":"L17-VD1","voteMode":"main_levee","type":"ensemble","result":"rejete",
+      "date":"2026-10-07","officialTitle":"t","sourceUrl":"https://example.test/d"}
+      """
+    ])
+    XCTAssertEqual(mainLevee[0]["voteMode"] as? String, "main_levee")
+    XCTAssertNil(mainLevee[0]["count"])
+  }
+
+  /// L'instantané produit est relu par le widget avec son décompte.
+  func testDecompteReluParLeWidget() throws {
+    let index =
+      #"{"schemaVersion":1,"decisions":["#
+      + decision(8728, #","count":{"pour":144,"contre":199,"abstentions":5}"#) + "]}"
+    let json = try XCTUnwrap(
+      SnapshotConverter.snapshot(fromIndex: Data(index.utf8), savedAt: savedAt))
+    let snapshot = try JSONDecoder().decode(DecisionSnapshot.self, from: Data(json.utf8))
+    let widget = try XCTUnwrap(snapshot.decisions.first)
+    XCTAssertEqual(widget.count, VoteCount(pour: 144, contre: 199, abstentions: 5))
+    XCTAssertEqual(widget.voteMode, .scrutinPublic)
+  }
+
   /// Téléchargement réel de `latest.json` vers le groupe d'apps, comme le fait
   /// la timeline. Réseau requis : lancé seulement avec
   /// `TEST_RUNNER_VDJ_NETWORK_TESTS=1 xcodebuild test …`.
