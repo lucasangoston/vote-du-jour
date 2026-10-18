@@ -25,6 +25,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Logos des groupes parlementaires (#33) ; source et licence de chaque
+  # fichier dans assets/group_logos/SOURCES.md.
+  assets:
+    - assets/group_logos/
+
   # Polices de la charte (#29), embarquées : Geist et Geist Mono, licence SIL
   # Open Font License (assets/fonts/OFL.txt).
   fonts:
