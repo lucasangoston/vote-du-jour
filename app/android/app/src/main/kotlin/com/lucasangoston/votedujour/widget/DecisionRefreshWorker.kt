@@ -42,12 +42,15 @@ class DecisionRefreshWorker(context: Context, params: WorkerParameters) :
   companion object {
     const val KEY_REDRAW_ONLY = "redraw_only"
 
+    /** Redessine les widgets posés, toutes tailles confondues. */
     suspend fun redrawWidgets(context: Context) {
-      val widget = DecisionWidget()
-      GlanceAppWidgetManager(context).getGlanceIds(DecisionWidget::class.java).forEach { id ->
-        // Comme home_widget : toucher l'état force Glance à recomposer avec les préférences à jour.
-        updateAppWidgetState(context, HomeWidgetGlanceStateDefinition(), id) { it }
-        widget.update(context, id)
+      val manager = GlanceAppWidgetManager(context)
+      DecisionWidgets.all().forEach { widget ->
+        manager.getGlanceIds(widget.javaClass).forEach { id ->
+          // Comme home_widget : toucher l'état force Glance à recomposer avec les préférences à jour.
+          updateAppWidgetState(context, HomeWidgetGlanceStateDefinition(), id) { it }
+          widget.update(context, id)
+        }
       }
     }
   }

@@ -10,6 +10,12 @@ import org.json.JSONObject
  * home_widget. Les champs optionnels absents ne sont pas affichés.
  */
 data class DecisionSnapshot(val decisions: List<WidgetDecision>) {
+  /**
+   * Les [count] décisions les plus récentes, de la plus récente à la plus ancienne (l'instantané
+   * est déjà dans cet ordre). Moins s'il en contient moins ; aucune pour un [count] négatif ou nul.
+   */
+  fun latest(count: Int): List<WidgetDecision> = decisions.take(count.coerceAtLeast(0))
+
   companion object {
     const val STORAGE_KEY = "decisions_snapshot"
     private const val SUPPORTED_VERSION = 1

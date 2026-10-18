@@ -9,14 +9,15 @@ enum DecisionTimeline {
   static func make(now: Date = .now, calendar: Calendar = .current) async -> Timeline<DecisionEntry> {
     await DecisionFetcher.refreshIfNeeded(now: now)
     // Les jours sans séance, l'index publié garde les décisions précédentes :
-    // le widget affiche toujours la dernière.
-    let decision = DecisionSnapshot.load()?.decisions.first
-    var entries = [DecisionEntry(date: now, decision: decision)]
+    // le widget affiche toujours les dernières. Toutes les tailles partagent
+    // cette timeline : le grand widget en affiche trois, les autres une.
+    let decisions = DecisionSnapshot.load()?.latest(DecisionSnapshot.largeWidgetCount) ?? []
+    var entries = [DecisionEntry(date: now, decisions: decisions)]
     if let midnight = calendar.nextDate(
       after: now, matching: DateComponents(hour: 0, minute: 0, second: 0),
       matchingPolicy: .nextTime)
     {
-      entries.append(DecisionEntry(date: midnight, decision: decision))
+      entries.append(DecisionEntry(date: midnight, decisions: decisions))
     }
     return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadInterval)))
   }

@@ -33,7 +33,21 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- Widget moyen : la dernière décision (Glance, alimenté par home_widget). -->
+        <!-- Widgets (Glance, alimentés par home_widget) : un récepteur par taille,
+             pour que chacune apparaisse dans le sélecteur de widgets. -->
+        <!-- Petit : la dernière décision. -->
+        <receiver
+            android:name=".widget.SmallDecisionWidgetReceiver"
+            android:exported="true"
+            android:label="@string/decision_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/decision_widget_small_info" />
+        </receiver>
+        <!-- Moyen : la dernière décision et son explication. -->
         <receiver
             android:name=".widget.DecisionWidgetReceiver"
             android:exported="true"
@@ -44,6 +58,18 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/decision_widget_info" />
+        </receiver>
+        <!-- Grand : les trois dernières décisions. -->
+        <receiver
+            android:name=".widget.LargeDecisionWidgetReceiver"
+            android:exported="true"
+            android:label="@string/decision_widget_large_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/decision_widget_large_info" />
         </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
