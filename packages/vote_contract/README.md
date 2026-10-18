@@ -197,3 +197,41 @@ sans relecture humaine :
   ignoré.
 - `promptVersion` : version de la consigne qui a produit le résumé.
 - Ajout rétrocompatible : les anciennes versions de l'app ignorent le champ.
+
+## Arguments pour et contre (ticket #35)
+
+Champ optionnel `arguments` du fichier de détail : les raisons données par
+les groupes dans leurs explications de vote en séance, résumées
+automatiquement par Claude Haiku 5.5 à partir du compte rendu, sans
+relecture humaine (`DecisionArguments`).
+
+```json
+"arguments": {
+  "pour": [
+    { "group": "SOC", "organeRef": "PO845419", "text": "Le texte renforce la protection des victimes." }
+  ],
+  "contre": [],
+  "abstention": [
+    { "group": "LFI-NFP", "organeRef": "PO845413", "text": "Les moyens prévus ne suivent pas." }
+  ],
+  "source": {
+    "date": "2026-10-13",
+    "url": "https://www.assemblee-nationale.fr/dyn/17/comptes-rendus/seance/CRSANR5L17S2027O1N020"
+  },
+  "promptVersion": 1
+}
+```
+
+- Un camp par position de groupe dans le scrutin (`pour`, `contre`,
+  `abstention`), 0 à 3 arguments chacun ; liste vide quand aucun groupe de ce
+  camp ne s'est exprimé. `group` est le sigle du groupe, comme
+  `abbreviation` dans `groups` ; `organeRef` (optionnel) sa référence.
+- `source` : jour de la séance et lien vers son compte rendu.
+- `promptVersion` : version de la consigne
+  (`backend/lib/src/arguments/arguments_prompt.dart`).
+- Absent pour un vote sans explications de vote (main levée, petits textes,
+  conventions), une décision provisoire ou pas encore rattachée à son compte
+  rendu, et dans les fichiers plus anciens. Des arguments malformés (source
+  ou version absente, aucun argument lisible) sont ignorés : le détail reste
+  lisible. Un argument illisible est ignoré.
+- Ajout rétrocompatible : les anciennes versions de l'app ignorent le champ.

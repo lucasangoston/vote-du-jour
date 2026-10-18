@@ -22,7 +22,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # Résumés compris : au plus 15 appels au modèle par passage (#9).
+    # Résumés compris : au plus 15 appels au modèle par passage (#9), plus 5
+    # pour les arguments (#35) et une archive des comptes rendus de ~59 Mo.
     timeout-minutes: 25
     defaults:
       run:

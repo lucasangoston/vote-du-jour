@@ -132,9 +132,38 @@ Future<void> main(List<String> arguments) async {
     force: args.flag('force'),
   );
   stdout.writeln(outcome);
+  await _argue(store);
   await _notify(store);
   // Le client HTTP par défaut garde des connexions ouvertes.
   exit(0);
+}
+
+/// Arguments pour et contre tirés des explications de vote (#35), après la
+/// publication et les résumés. Sans clé `ANTHROPIC_API_KEY`, aucun nouvel
+/// argument (ceux de l'état restent publiés). Le passage en direct n'en
+/// rédige pas.
+Future<void> _argue(ObjectStore store) async {
+  final key = Platform.environment['ANTHROPIC_API_KEY'] ?? '';
+  if (key.trim().isEmpty) {
+    stdout.writeln(
+      'Arguments désactivés (pas de clé ANTHROPIC_API_KEY) : arguments '
+      'existants conservés.',
+    );
+    return;
+  }
+  final report = await runArgumentsPass(
+    store: store,
+    service: ArgumentsService(
+      llm: AnthropicClient(apiKey: key.trim()),
+      comptesRendus: HttpDumpSource(url: comptesRendusDumpUrl),
+    ),
+  );
+  stdout.writeln(report);
+  if (Platform.environment['GITHUB_ACTIONS'] == 'true') {
+    for (final w in report.warnings) {
+      stdout.writeln('::warning title=Arguments::$w');
+    }
+  }
 }
 
 /// Notifications push des votes importants (#34), après la publication et
