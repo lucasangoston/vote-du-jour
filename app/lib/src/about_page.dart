@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_identity.dart';
 import 'hemicycle/external_link_row.dart';
 import 'hemicycle/hemicycle_logo.dart';
+import 'notifications/important_votes_setting.dart';
 import 'theme.dart';
 
 const _openDataUrl = 'https://data.assemblee-nationale.fr';
@@ -45,6 +46,7 @@ class AboutPage extends StatelessWidget {
             ],
           ),
         ),
+        const ImportantVotesSetting(),
         const _Section(
           title: 'Application indépendante',
           children: [

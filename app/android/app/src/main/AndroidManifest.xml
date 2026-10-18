@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Notifications des votes importants (#34), Android 13 et plus. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="Vote du jour"
         android:name="${applicationName}"
@@ -71,6 +73,15 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/decision_widget_large_info" />
         </receiver>
+        <!-- Notifications des votes importants (#34) : pas d'inscription auprès
+             de Firebase Cloud Messaging tant que l'utilisateur ne les a pas
+             activées. -->
+        <meta-data
+            android:name="firebase_messaging_auto_init_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

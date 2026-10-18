@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "89652376352",
+    "project_id": "perchoir-app-fr",
+    "storage_bucket": "perchoir-app-fr.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89652376352:android:b9dfad0325be3715561d45",
+        "android_client_info": {
+          "package_name": "com.lucasangoston.votedujour"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgP0pZaCaBNdyF2cMrTEja52OTdSkN6n4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
