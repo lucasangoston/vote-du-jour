@@ -43,6 +43,15 @@ final class RelativeDateTests: XCTestCase {
     XCTAssertEqual(label("2026-10-16", at(2026, 10, 15)), "Aujourd'hui")
   }
 
+  func testLibelleEnMilieuDeLigne() {
+    func inline(_ day: String, _ now: Date) -> String {
+      RelativeDate.inlineLabel(day: day, now: now, calendar: paris)
+    }
+    XCTAssertEqual(inline("2026-10-16", at(2026, 10, 16)), "aujourd'hui")
+    XCTAssertEqual(inline("2026-10-16", at(2026, 10, 21)), "il y a 5 jours")
+    XCTAssertEqual(inline("2026-09-01", at(2026, 10, 17)), "1er septembre 2026")
+  }
+
   func testJourIllisible() {
     XCTAssertEqual(label("pas-une-date", at(2026, 10, 17)), "pas-une-date")
   }

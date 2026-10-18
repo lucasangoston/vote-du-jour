@@ -27,6 +27,14 @@
 		A12E0C0F1A2B3C4D5E6F700A /* DecisionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7002 /* DecisionFetcher.swift */; };
 		A12E0C0F1A2B3C4D5E6F700B /* DecisionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD7708118B29BD5A8CBBD0F /* DecisionSnapshot.swift */; };
 		A12E0C0F1A2B3C4D5E6F700D /* SnapshotConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F700C /* SnapshotConverterTests.swift */; };
+		A12E0C0F1A2B3C4D5E6F7011 /* VoteArc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7010 /* VoteArc.swift */; };
+		A12E0C0F1A2B3C4D5E6F7012 /* VoteArc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7010 /* VoteArc.swift */; };
+		A12E0C0F1A2B3C4D5E6F7014 /* HemicycleViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7013 /* HemicycleViews.swift */; };
+		A12E0C0F1A2B3C4D5E6F7016 /* VoteArcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7015 /* VoteArcTests.swift */; };
+		A12E0C0F1A2B3C4D5E6F7019 /* Geist-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7018 /* Geist-Regular.ttf */; };
+		A12E0C0F1A2B3C4D5E6F701B /* Geist-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701A /* Geist-SemiBold.ttf */; };
+		A12E0C0F1A2B3C4D5E6F701D /* GeistMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701C /* GeistMono-Regular.ttf */; };
+		A12E0C0F1A2B3C4D5E6F701F /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +107,13 @@
 		DD45EEFB39A6CDC5893A2728 /* DecisionWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = DecisionWidget.entitlements; sourceTree = "<group>"; };
 		A12E0C0F1A2B3C4D5E6F7008 /* DecisionTimeline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DecisionTimeline.swift; sourceTree = "<group>"; };
 		A12E0C0F1A2B3C4D5E6F700C /* SnapshotConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotConverterTests.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7010 /* VoteArc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteArc.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7013 /* HemicycleViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HemicycleViews.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7015 /* VoteArcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteArcTests.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7018 /* Geist-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Geist-Regular.ttf; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F701A /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Geist-SemiBold.ttf; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F701C /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistMono-Regular.ttf; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +141,7 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 				A12E0C0F1A2B3C4D5E6F7006 /* RelativeDateTests.swift */,
 				A12E0C0F1A2B3C4D5E6F700C /* SnapshotConverterTests.swift */,
+				A12E0C0F1A2B3C4D5E6F7015 /* VoteArcTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -138,6 +154,9 @@
 				A12E0C0F1A2B3C4D5E6F7001 /* RelativeDate.swift */,
 				A12E0C0F1A2B3C4D5E6F7002 /* DecisionFetcher.swift */,
 				A12E0C0F1A2B3C4D5E6F7008 /* DecisionTimeline.swift */,
+				A12E0C0F1A2B3C4D5E6F7010 /* VoteArc.swift */,
+				A12E0C0F1A2B3C4D5E6F7013 /* HemicycleViews.swift */,
+				A12E0C0F1A2B3C4D5E6F7017 /* Fonts */,
 				2D84410258265CFF9C57F2CA /* Info.plist */,
 				DD45EEFB39A6CDC5893A2728 /* DecisionWidget.entitlements */,
 			);
@@ -193,6 +212,17 @@
 				A7AC10E62465EE4C8A26CB6D /* Runner.entitlements */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		A12E0C0F1A2B3C4D5E6F7017 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				A12E0C0F1A2B3C4D5E6F7018 /* Geist-Regular.ttf */,
+				A12E0C0F1A2B3C4D5E6F701A /* Geist-SemiBold.ttf */,
+				A12E0C0F1A2B3C4D5E6F701C /* GeistMono-Regular.ttf */,
+				A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -323,6 +353,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A12E0C0F1A2B3C4D5E6F7019 /* Geist-Regular.ttf in Resources */,
+				A12E0C0F1A2B3C4D5E6F701B /* Geist-SemiBold.ttf in Resources */,
+				A12E0C0F1A2B3C4D5E6F701D /* GeistMono-Regular.ttf in Resources */,
+				A12E0C0F1A2B3C4D5E6F701F /* OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,6 +407,8 @@
 				A12E0C0F1A2B3C4D5E6F700A /* DecisionFetcher.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F700B /* DecisionSnapshot.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F700D /* SnapshotConverterTests.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7012 /* VoteArc.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7016 /* VoteArcTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +431,8 @@
 				A12E0C0F1A2B3C4D5E6F7003 /* RelativeDate.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F7004 /* DecisionFetcher.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F7009 /* DecisionTimeline.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7011 /* VoteArc.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7014 /* HemicycleViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
