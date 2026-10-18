@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
+import 'arguments/arguments_state.dart';
 import 'decision_details.dart';
 import 'dossier_index.dart';
 import 'dump_reader.dart';
@@ -200,13 +201,15 @@ Future<JobOutcome> runJob({
       final index = summaryCache.applyTo(reconciled.index);
       // Les détails avant l'index, qui renvoie vers eux. Les décisions
       // encore provisoires ont le décompte du site, sans vote par groupe.
+      // Les décisions déjà argumentées (#35) gardent leurs arguments.
+      final arguments = await ArgumentsState.read(store, warnings);
       final detailsWritten = await publishDecisionDetails(
         store,
         buildDecisionDetails(
           [...scrutins, ...reconciled.pending],
           index,
           groups: groups.directory,
-        ),
+        ).map(arguments.apply),
       );
       await store.write(
         indexPath,

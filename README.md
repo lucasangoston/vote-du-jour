@@ -36,6 +36,7 @@ Données publiées dans le bucket :
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin, texte déposé de chaque dossier), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
 - `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
 - `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service).
+- `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
@@ -72,6 +73,18 @@ Le titre court et l'étape de la procédure viennent du jeu de données des doss
 - Coût borné : un seul appel par décision (cache `state/resumes.json`, résumé repris sans appel pour un autre vote sur le même texte), au plus 15 appels et 5 décisions « à régénérer » retentées par passage.
 - Le passage en direct (`live.yml`) n'appelle pas le modèle : il applique les résumés du cache. Une décision provisoire est résumée au passage horaire suivant.
 - Sans `ANTHROPIC_API_KEY`, le job publie sans nouveau résumé (les résumés existants restent publiés). La clé n'existe que dans les secrets GitHub : en local, le job ne résume rien.
+
+## Arguments pour et contre (#35)
+
+Après les résumés, le job tire des explications de vote des groupes les arguments pour, contre et d'abstention de chaque vote sur l'ensemble (ou sur l'article unique, ou sur une proposition de résolution), publiés dans le fichier de détail (`arguments`, format dans `packages/vote_contract/README.md`). Code : `backend/lib/src/arguments/`.
+
+- Source : comptes rendus de séance, open data AN (`syseron.xml.zip`, ~59 Mo, XML Syceron, publiés ~2 jours après la séance), téléchargés seulement s'ils ont changé (`If-Modified-Since`), et seulement si une décision attend des arguments. Seuls les comptes rendus des jours concernés sont analysés.
+- Rattachement prudent : une décision confirmée est rattachée à la section « Explications de vote » (ou « … communes ») suivie du « Vote sur l'ensemble » du même jour qui nomme le même texte (phrase « Je mets aux voix… », sinon titre du vote ou de la discussion), même nature (loi organique ou non, résolution ou non) et mêmes voix pour et contre quand le compte rendu les donne. Un rattachement qui n'est pas unique dans les deux sens est abandonné : en cas de doute, rien. Une section commune à deux textes vaut pour les deux. Des explications sur une motion de rejet, suivies de la discussion, ne sont jamais rattachées au vote final.
+- Chaque intervention est classée selon la position, dans le scrutin, du groupe de l'orateur (sigle écrit après son nom) ; interruptions, présidence, didascalies, non-inscrits et orateurs sans groupe sont ignorés.
+- Modèle : le même que les résumés, consigne dédiée versionnée dans `backend/lib/src/arguments/arguments_prompt.dart` (`argumentsPromptVersion`) : 2 à 3 arguments par camp présent, chacun attribué à un groupe de ce camp qui l'a réellement dit, rien d'ajouté, ton neutre, une phrase courte. Seules les explications de vote sont envoyées, entre balises `<explications_de_vote>`, au plus 6 000 caractères par groupe. Sortie structurée (schéma JSON limitant chaque camp à ses groupes) ; une réponse qui attribue un argument à un autre groupe, est vide, trop longue ou mal formée est rejetée en entier.
+- Coût borné : au plus 5 appels par passage ; une décision faite pour la version courante de la consigne n'est plus jamais redemandée (`state/arguments.json`) ; après 3 réponses rejetées, elle est abandonnée. Le passage en direct n'en rédige pas, et le job republie les arguments de l'état quand il reconstruit les fichiers de détail.
+- Votes sans explications de vote (main levée, petits textes, conventions) : pas de champ `arguments`.
+- Sans `ANTHROPIC_API_KEY`, aucun nouvel argument (ceux de l'état restent publiés).
 
 ## Détection en direct
 

@@ -1,4 +1,5 @@
 import 'decision.dart';
+import 'decision_arguments.dart';
 import 'decision_index.dart';
 import 'paths.dart';
 
@@ -184,6 +185,7 @@ class DecisionDetail {
     this.count,
     this.groups = const [],
     this.source = SourceAttribution.assembleeNationale,
+    this.arguments,
   });
 
   /// Champs de l'index (titre court, intitulé officiel, type, résultat, date,
@@ -200,19 +202,34 @@ class DecisionDetail {
 
   final SourceAttribution source;
 
+  /// Arguments pour et contre tirés des explications de vote (ticket #35) ;
+  /// absents sans explications de vote rattachées.
+  final DecisionArguments? arguments;
+
   /// Le même détail pour [decision] (par exemple, la décision résumée).
   DecisionDetail withDecision(DecisionSummary decision) => DecisionDetail(
     decision: decision,
     count: count,
     groups: groups,
     source: source,
+    arguments: arguments,
+  );
+
+  /// Le même détail avec [arguments] (`null` : sans arguments).
+  DecisionDetail withArguments(DecisionArguments? arguments) => DecisionDetail(
+    decision: decision,
+    count: count,
+    groups: groups,
+    source: source,
+    arguments: arguments,
   );
 
   /// Lit un fichier de détail publié.
   ///
   /// Lève [UnsupportedSchemaException] si le fichier n'est pas en version
   /// [schemaVersion], et [FormatException] s'il est malformé ou si la
-  /// décision utilise une valeur inconnue. Un groupe illisible est ignoré.
+  /// décision utilise une valeur inconnue. Un groupe illisible est ignoré ;
+  /// des arguments malformés aussi (le détail reste lisible, sans eux).
   factory DecisionDetail.fromJson(Object? json) {
     if (json is! Map<String, Object?>) {
       throw const FormatException('Détail : objet JSON attendu');
@@ -237,6 +254,7 @@ class DecisionDetail {
         if (groups is List)
           for (final g in groups) ?GroupVoteDetail.tryFromJson(g),
       ],
+      arguments: DecisionArguments.tryFromJson(json['arguments']),
     );
   }
 
@@ -246,5 +264,6 @@ class DecisionDetail {
     'decision': decision.toJson(summaryPoints: true),
     'count': ?count?.toJson(),
     'groups': [for (final g in groups) g.toJson()],
+    'arguments': ?arguments?.toJson(),
   };
 }
