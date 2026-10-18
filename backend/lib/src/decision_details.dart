@@ -73,7 +73,6 @@ DecisionDetail buildDecisionDetail(
   );
 }
 
-
 /// Contenu publié d'un fichier de détail.
 String encodeDecisionDetail(DecisionDetail detail) =>
     const JsonEncoder.withIndent('  ').convert(detail.toJson());
