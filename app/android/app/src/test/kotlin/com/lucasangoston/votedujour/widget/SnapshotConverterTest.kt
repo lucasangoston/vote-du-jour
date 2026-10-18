@@ -112,6 +112,45 @@ class SnapshotConverterTest {
   }
 
   @Test
+  fun recopie_le_decompte_et_le_mode_de_vote() {
+    val count = ""","count":{"pour":503,"contre":0,"abstentions":67,"nonVotants":4}"""
+    val mainLevee =
+        """{"id":"L17-VD234087DEC","voteMode":"main_levee","type":"ensemble",
+        "status":"confirmee","result":"adopte","date":"2026-10-07",
+        "officialTitle":"projet de loi GloBE","sourceUrl":"https://example.test/d"}"""
+    val index =
+        """{"schemaVersion":1,"decisions":[
+        ${decision(8730, count)},
+        $mainLevee,
+        ${decision(8729, ""","count":{"pour":1,"contre":-2,"abstentions":0}""")}]}"""
+
+    val snapshotJson = SnapshotConverter.fromIndex(index, savedAt)!!
+    val decisions = JSONObject(snapshotJson).getJSONArray("decisions")
+
+    assertEquals(3, decisions.length())
+    decisions.getJSONObject(0).let {
+      assertEquals("scrutin_public", it.getString("voteMode"))
+      val c = it.getJSONObject("count")
+      assertEquals(listOf(503, 0, 67), listOf(c.getInt("pour"), c.getInt("contre"), c.getInt("abstentions")))
+      // Format fixé de l'instantané : sans `nonVotants`.
+      assertEquals(3, c.length())
+      assertEquals(false, c.has("nonVotants"))
+    }
+    decisions.getJSONObject(1).let {
+      assertEquals("main_levee", it.getString("voteMode"))
+      assertEquals(false, it.has("count"))
+    }
+    // Décompte malformé : omis, la décision reste.
+    assertEquals(false, decisions.getJSONObject(2).has("count"))
+
+    val parsed = DecisionSnapshot.parse(snapshotJson)!!.decisions
+    assertEquals(VoteCount(503, 0, 67), parsed[0].count)
+    assertEquals(VoteMode.SCRUTIN_PUBLIC, parsed[0].voteMode)
+    assertEquals(VoteArc.Dotted(ArcColor.POUR), parsed[1].arc)
+    assertEquals(VoteArc.Solid(ArcColor.POUR), parsed[2].arc)
+  }
+
+  @Test
   fun refuse_une_autre_version_ou_un_index_illisible() {
     assertNull(SnapshotConverter.fromIndex("""{"schemaVersion":2,"decisions":[]}""", savedAt))
     assertNull(SnapshotConverter.fromIndex("pas du json", savedAt))

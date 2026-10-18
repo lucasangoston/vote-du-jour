@@ -65,7 +65,8 @@ object DecisionFetcher {
  * Conversion fidèle de l'index publié (contrat `vote_contract`, version 1) vers l'instantané lu par
  * le widget, comme `WidgetSnapshot.fromIndex` côté Dart : les trois décisions lisibles les plus
  * récentes, titre = titre du résumé, sinon `shortTitle`, sinon `officialTitle` (avec majuscule
- * initiale), étape = `stage`, explication = phrase du résumé (#9).
+ * initiale), étape = `stage`, explication = phrase du résumé (#9), mode de vote et décompte
+ * (`count`) pour l'arc du vote (#29).
  */
 object SnapshotConverter {
   private const val SCHEMA_VERSION = 1
@@ -173,6 +174,10 @@ object SnapshotConverter {
     stage?.let { out.put("stage", it) }
     // Phrase du résumé, affichée par le widget moyen.
     summary?.second?.let { out.put("explanation", it.trim()) }
+    // Arc du vote (#29) : mode de vote et décompte (`nonVotants` ignoré). Un décompte malformé est
+    // omis, la décision reste lisible.
+    out.put("voteMode", voteMode)
+    VoteCount.parse(d.optJSONObject("count"))?.let { out.put("count", it.toJson()) }
     return out
   }
 

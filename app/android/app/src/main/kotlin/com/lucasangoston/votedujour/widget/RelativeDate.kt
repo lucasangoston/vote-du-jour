@@ -38,6 +38,10 @@ object RelativeDate {
     }
   }
 
+  /** [label] en milieu de ligne, après « · » : « il y a 3 jours », « hier ». */
+  fun inline(day: LocalDate, today: LocalDate = LocalDate.now()): String =
+      label(day, today).replaceFirstChar { it.lowercase() }
+
   /** « 13 octobre 2026 » (« 1er » pour le premier du mois). */
   fun fullDate(day: LocalDate): String {
     val dayOfMonth = if (day.dayOfMonth == 1) "1er" else day.dayOfMonth.toString()

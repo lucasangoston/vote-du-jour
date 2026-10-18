@@ -6,11 +6,15 @@ import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -24,19 +28,24 @@ import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
+import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider as GlanceColor
 import com.lucasangoston.votedujour.MainActivity
+import com.lucasangoston.votedujour.R
 import es.antonborri.home_widget.HomeWidgetGlanceState
 import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
 import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
@@ -49,17 +58,27 @@ private val LIST_URI = Uri.parse("votedujour://decisions?homeWidget")
 private fun detailUri(decision: WidgetDecision): Uri =
     Uri.parse("votedujour://decisions/${Uri.encode(decision.id)}?homeWidget")
 
-/** Palette neutre (pas de couleur de parti), clair / sombre. */
+/**
+ * Couleurs de la charte Hémicycle (#29), clair / sombre. Les aperçus du sélecteur reprennent les
+ * mêmes valeurs (`values/widget_colors.xml`, `values-night/widget_colors.xml`).
+ */
 private object WidgetColors {
-  val background = ColorProvider(day = Color(0xFFFFFFFF), night = Color(0xFF1E1E1E))
-  val primary = ColorProvider(day = Color(0xFF1B1B1B), night = Color(0xFFEDEDED))
-  val secondary = ColorProvider(day = Color(0xFF5E5E5E), night = Color(0xFFABABAB))
-  val divider = ColorProvider(day = Color(0x1F000000), night = Color(0x29FFFFFF))
-  val onBadge = ColorProvider(day = Color.White, night = Color.White)
+  val surface = ColorProvider(day = Color(0xFFFFFFFF), night = Color(0xFF191C20))
+  val ink = ColorProvider(day = Color(0xFF15181C), night = Color(0xFFECEEF0))
+  val ink2 = ColorProvider(day = Color(0xFF4F5761), night = Color(0xFF9AA2AB))
+  val rule = ColorProvider(day = Color(0xFFE2E5E8), night = Color(0xFF2A2F35))
+  val pour = ColorProvider(day = Color(0xFF1D6B54), night = Color(0xFF4FB08F))
+  val contre = ColorProvider(day = Color(0xFFB4472B), night = Color(0xFFE07A58))
+  val abstention = ColorProvider(day = Color(0xFFAEB4BB), night = Color(0xFF4A5058))
 
-  // Mêmes teintes que les badges de l'app (`ResultColors` dans `theme.dart`).
-  val adopted = ColorProvider(day = Color(0xFF2E7D32), night = Color(0xFF2E7D32))
-  val rejected = ColorProvider(day = Color(0xFFB23B1E), night = Color(0xFFB23B1E))
+  fun of(color: ArcColor): GlanceColor =
+      when (color) {
+        ArcColor.POUR -> pour
+        ArcColor.ABSTENTION -> abstention
+        ArcColor.CONTRE -> contre
+      }
+
+  fun of(result: VoteResult): GlanceColor = of(ArcColor.of(result))
 }
 
 /**
@@ -70,6 +89,9 @@ private object WidgetColors {
 abstract class BaseDecisionWidget : GlanceAppWidget() {
 
   override val stateDefinition = HomeWidgetGlanceStateDefinition()
+
+  // Taille exacte : l'arc et le nombre de lignes s'adaptent à la place disponible.
+  override val sizeMode: SizeMode = SizeMode.Exact
 
   /** Nombre de décisions affichées. */
   protected open val decisionCount: Int = 1
@@ -85,9 +107,9 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
           modifier =
               GlanceModifier.fillMaxSize()
                   .appWidgetBackground()
-                  .background(WidgetColors.background)
-                  .cornerRadius(16.dp)
-                  .padding(contentPadding)
+                  .background(WidgetColors.surface)
+                  .cornerRadius(22.dp)
+                  .padding(horizontal = horizontalPadding, vertical = verticalPadding)
                   .clickable(actionStartActivity<MainActivity>(context, tapUri(decisions))),
           contentAlignment = Alignment.TopStart,
       ) {
@@ -96,7 +118,15 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
     }
   }
 
-  protected open val contentPadding = 16.dp
+  protected open val horizontalPadding = 14.dp
+  protected open val verticalPadding = 14.dp
+
+  /** Place disponible dans le widget, marges déduites. */
+  @Composable
+  protected fun contentWidth(): Dp = LocalSize.current.width - horizontalPadding * 2
+
+  @Composable
+  protected fun contentHeight(): Dp = LocalSize.current.height - verticalPadding * 2
 
   /** Lien d'un tap hors des lignes : par défaut, le détail de la dernière décision. */
   protected open fun tapUri(decisions: List<WidgetDecision>): Uri =
@@ -105,150 +135,169 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
   @Composable protected abstract fun Content(context: Context, decisions: List<WidgetDecision>)
 }
 
-/** Widget moyen : la dernière décision, son résultat, sa date et son explication. */
+/**
+ * Widget moyen : à gauche l'arc, le résultat et le décompte ; à droite l'étape et la date, le
+ * titre et l'explication sur deux lignes.
+ */
 class DecisionWidget : BaseDecisionWidget() {
+  override val horizontalPadding = 16.dp
+
   @Composable
   override fun Content(context: Context, decisions: List<WidgetDecision>) {
     val decision = decisions.first()
-    Column(modifier = GlanceModifier.fillMaxSize()) {
-      Row(
-          modifier = GlanceModifier.fillMaxWidth(),
+    // Colonne de la maquette (92 dp) ; plus étroite si le widget est réduit.
+    val roomy = contentWidth() >= 280.dp && contentHeight() >= 100.dp
+    val columnWidth = if (roomy) 92.dp else 64.dp
+    Row(
+        modifier =
+            GlanceModifier.fillMaxSize().semantics {
+              contentDescription = WidgetText.description(decision)
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Column(
+          modifier = GlanceModifier.width(columnWidth),
+          horizontalAlignment = Alignment.CenterHorizontally,
           verticalAlignment = Alignment.CenterVertically,
       ) {
-        ResultBadge(decision.result)
-        decision.stage?.let {
-          Spacer(GlanceModifier.width(8.dp))
-          Text(it, style = caption(), maxLines = 1)
-        }
-        Spacer(GlanceModifier.defaultWeight())
-        // Calculée à chaque rendu : le worker redessine le widget juste après minuit.
-        Text(RelativeDate.label(decision.date), style = caption(), maxLines = 1)
+        ArcImage(context, decision, ArcStyle(columnWidth.value, stroke = 14f))
+        Spacer(GlanceModifier.height(6.dp))
+        ResultText(decision.result, if (roomy) 13.sp else 12.sp)
+        decision.count
+            ?.takeUnless { decision.isMainLevee }
+            ?.let {
+              Spacer(GlanceModifier.height(4.dp))
+              Text(
+                  it.label,
+                  style =
+                      TextStyle(
+                          color = WidgetColors.ink2,
+                          fontSize = 10.5.sp,
+                          fontFamily = FontFamily.Monospace,
+                      ),
+                  maxLines = 1,
+              )
+            }
       }
-      Spacer(GlanceModifier.height(8.dp))
-      Text(
-          decision.title,
-          style = titleStyle(15.sp),
-          maxLines = if (decision.explanation == null) 4 else 2,
-      )
-      decision.explanation?.let {
-        Spacer(GlanceModifier.height(4.dp))
-        Text(it, style = caption(), maxLines = 2)
+      Spacer(GlanceModifier.width(14.dp))
+      Column(
+          modifier = GlanceModifier.defaultWeight(),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        // Calculée à chaque rendu : le worker redessine le widget juste après minuit.
+        Text(WidgetText.mediumMeta(decision), style = meta(), maxLines = 1)
+        Spacer(GlanceModifier.height(5.dp))
+        Text(
+            decision.title,
+            style = titleStyle(14.5.sp),
+            maxLines = if (decision.explanation == null) 4 else 2,
+        )
+        decision.explanation?.let {
+          Spacer(GlanceModifier.height(5.dp))
+          Text(it, style = TextStyle(color = WidgetColors.ink2, fontSize = 12.sp), maxLines = 2)
+        }
       }
     }
   }
 }
 
 /**
- * Petit widget : badge, titre court et étape de la dernière décision ; la date relative à côté du
- * badge quand la largeur le permet. Pas d'explication.
+ * Petit widget : l'arc et le résultat coloré, le titre, puis la date relative (et les mentions
+ * « provisoire » ou « à main levée »).
  */
 class SmallDecisionWidget : BaseDecisionWidget() {
-  // Taille exacte : la date n'est affichée que si elle tient à côté du badge.
-  override val sizeMode = SizeMode.Exact
-  override val contentPadding = 12.dp
-
   @Composable
   override fun Content(context: Context, decisions: List<WidgetDecision>) {
     val decision = decisions.first()
-    val size = LocalSize.current
-    Column(modifier = GlanceModifier.fillMaxSize()) {
+    // Maquette : arc de 58 dp à côté de « Adopté » (~46 dp) ; plus petit si la place manque.
+    val arcWidth = (contentWidth() - 48.dp).coerceIn(32.dp, 58.dp)
+    // Lignes de titre (18 dp chacune) dans la hauteur restante sous l'arc et au-dessus de la date.
+    val titleLines = ((contentHeight() - ArcStyle(arcWidth.value, 16f).heightDp.dp - 30.dp) / 18.dp)
+    Column(
+        modifier =
+            GlanceModifier.fillMaxSize().semantics {
+              contentDescription = WidgetText.description(decision)
+            }
+    ) {
       Row(
           modifier = GlanceModifier.fillMaxWidth(),
-          verticalAlignment = Alignment.CenterVertically,
+          verticalAlignment = Alignment.Bottom,
       ) {
-        ResultBadge(decision.result)
-        if (showsDateNextToBadge(size)) {
-          Spacer(GlanceModifier.defaultWeight())
-          Text(RelativeDate.label(decision.date), style = caption(11.sp), maxLines = 1)
-        }
+        ArcImage(context, decision, ArcStyle(arcWidth.value, stroke = 16f))
+        Spacer(GlanceModifier.defaultWeight())
+        ResultText(decision.result, 12.sp)
       }
-      Spacer(GlanceModifier.height(6.dp))
+      Spacer(GlanceModifier.defaultWeight())
       Text(
           decision.title,
           style = titleStyle(14.sp),
-          maxLines = if (size.height < 150.dp) 3 else 4,
-          modifier = GlanceModifier.defaultWeight(),
+          maxLines = titleLines.toInt().coerceIn(1, 4),
       )
-      decision.stage?.let {
-        Spacer(GlanceModifier.height(4.dp))
-        Text(it, style = caption(11.sp), maxLines = 2)
-      }
+      Spacer(GlanceModifier.defaultWeight())
+      Text(WidgetText.smallDate(decision), style = meta(), maxLines = 1)
     }
   }
-
-  /** Le badge (~70 dp) et « Il y a 3 jours » (~75 dp) tiennent côte à côte. */
-  private fun showsDateNextToBadge(size: DpSize): Boolean =
-      size.width - contentPadding * 2 >= 150.dp
 }
 
 /**
- * Grand widget : les trois dernières décisions. Chaque ligne ouvre le détail de sa décision ; le
- * reste du widget (titre, marges) ouvre la liste.
+ * Grand widget : en-tête (logo et « Dernières décisions »), puis les trois dernières décisions avec
+ * leur mini-arc. Chaque ligne ouvre le détail de sa décision ; le reste du widget (en-tête, marges)
+ * ouvre la liste.
  */
 class LargeDecisionWidget : BaseDecisionWidget() {
   override val decisionCount = LARGE_WIDGET_COUNT
+  override val horizontalPadding = 16.dp
+  override val verticalPadding = 14.dp
 
   override fun tapUri(decisions: List<WidgetDecision>): Uri = LIST_URI
 
   @Composable
   override fun Content(context: Context, decisions: List<WidgetDecision>) {
+    // Glance limite un Column à 10 enfants : en-tête, marge, puis ligne et filet par décision.
     Column(modifier = GlanceModifier.fillMaxSize()) {
-      Text(
-          "DERNIÈRES DÉCISIONS",
-          style =
-              TextStyle(
-                  color = WidgetColors.secondary, fontSize = 12.sp, fontWeight = FontWeight.Medium),
-          maxLines = 1,
-      )
-      // Un Column par ligne : Glance limite un Column à 10 enfants.
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Logo(GlanceModifier.size(22.dp, 12.dp))
+        Spacer(GlanceModifier.width(8.dp))
+        Text(
+            "Dernières décisions",
+            style =
+                TextStyle(color = WidgetColors.ink2, fontSize = 12.sp, fontWeight = FontWeight.Medium),
+            maxLines = 1,
+        )
+      }
+      Spacer(GlanceModifier.height(6.dp))
       decisions.forEachIndexed { index, decision ->
-        Column(modifier = GlanceModifier.fillMaxWidth()) {
-          Spacer(GlanceModifier.height(if (index == 0) 8.dp else 6.dp))
-          if (index > 0) {
-            Box(GlanceModifier.fillMaxWidth().height(1.dp).background(WidgetColors.divider)) {}
-            Spacer(GlanceModifier.height(6.dp))
-          }
-          DecisionRow(context, decision)
+        DecisionRow(context, decision, GlanceModifier.defaultWeight())
+        if (index < decisions.lastIndex) {
+          Box(GlanceModifier.fillMaxWidth().height(1.dp).background(WidgetColors.rule)) {}
         }
       }
     }
   }
 
   @Composable
-  private fun DecisionRow(context: Context, decision: WidgetDecision) {
-    Column(
+  private fun DecisionRow(context: Context, decision: WidgetDecision, modifier: GlanceModifier) {
+    Row(
         modifier =
-            GlanceModifier.fillMaxWidth()
-                .padding(vertical = 2.dp)
+            modifier
+                .fillMaxWidth()
                 .clickable(actionStartActivity<MainActivity>(context, detailUri(decision)))
-                .semantics { contentDescription = rowDescription(decision) },
+                .semantics { contentDescription = WidgetText.description(decision) },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-      Row(
-          modifier = GlanceModifier.fillMaxWidth(),
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        ResultBadge(decision.result)
-        Spacer(GlanceModifier.defaultWeight())
-        Text(RelativeDate.label(decision.date), style = caption(), maxLines = 1)
-      }
-      Spacer(GlanceModifier.height(4.dp))
-      Text(decision.title, style = titleStyle(14.sp), maxLines = 2)
-      // Sur sa propre ligne : « provisoire » ou « à main levée » restent visibles.
-      decision.stage?.let {
-        Spacer(GlanceModifier.height(2.dp))
-        Text(it, style = caption(), maxLines = 1)
+      ArcImage(context, decision, ArcStyle(48f, stroke = 16f))
+      Spacer(GlanceModifier.width(12.dp))
+      Column(modifier = GlanceModifier.defaultWeight()) {
+        Text(decision.title, style = titleStyle(14.sp), maxLines = 2)
+        Spacer(GlanceModifier.height(3.dp))
+        // Sur la ligne du résultat : « provisoire » ou « à main levée » restent visibles.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          ResultText(decision.result, 11.5.sp)
+          Text(WidgetText.largeMeta(decision), style = meta(), maxLines = 1)
+        }
       }
     }
   }
-
-  private fun rowDescription(decision: WidgetDecision): String =
-      listOfNotNull(
-              if (decision.result == VoteResult.ADOPTE) "Adopté" else "Rejeté",
-              decision.title,
-              decision.stage,
-              RelativeDate.label(decision.date),
-          )
-          .joinToString(". ")
 
   companion object {
     /** Nombre de décisions du grand widget. */
@@ -256,41 +305,64 @@ class LargeDecisionWidget : BaseDecisionWidget() {
   }
 }
 
+/**
+ * Arc du vote : un masque par couleur, superposés et teintés en jour / nuit (Android 12+ choisit la
+ * teinte au moment de l'affichage, sans redessiner le widget).
+ */
 @Composable
-private fun ResultBadge(result: VoteResult) {
-  val (label, color) =
-      when (result) {
-        VoteResult.ADOPTE -> "✓ Adopté" to WidgetColors.adopted
-        VoteResult.REJETE -> "✕ Rejeté" to WidgetColors.rejected
-      }
-  Box(
-      modifier =
-          GlanceModifier.background(color)
-              .cornerRadius(6.dp)
-              .padding(horizontal = 8.dp, vertical = 3.dp)
-  ) {
-    Text(
-        label,
-        style = TextStyle(color = WidgetColors.onBadge, fontSize = 12.sp, fontWeight = FontWeight.Bold),
-        maxLines = 1,
-    )
+private fun ArcImage(context: Context, decision: WidgetDecision, style: ArcStyle) {
+  val size = GlanceModifier.size(style.widthDp.dp, style.heightDp.dp)
+  Box(modifier = size) {
+    VoteArcRenderer.layers(context, decision.arc, style).forEach { (color, bitmap) ->
+      Image(
+          provider = ImageProvider(bitmap),
+          // Décrit par la ligne ou le widget (WidgetText.description).
+          contentDescription = null,
+          modifier = size,
+          contentScale = ContentScale.FillBounds,
+          colorFilter = ColorFilter.tint(WidgetColors.of(color)),
+      )
+    }
   }
+}
+
+/** Logo Hémicycle, couleur de l'encre. */
+@Composable
+private fun Logo(modifier: GlanceModifier) {
+  Image(
+      provider = ImageProvider(R.drawable.ic_hemicycle),
+      contentDescription = null,
+      modifier = modifier,
+      colorFilter = ColorFilter.tint(WidgetColors.ink),
+  )
+}
+
+/** « Adopté » / « Rejeté », mot coloré sans pastille. */
+@Composable
+private fun ResultText(result: VoteResult, size: TextUnit) {
+  Text(
+      WidgetText.result(result),
+      style = TextStyle(color = WidgetColors.of(result), fontSize = size, fontWeight = FontWeight.Bold),
+      maxLines = 1,
+  )
 }
 
 @Composable
 private fun EmptyContent() {
   Column {
+    Logo(GlanceModifier.size(33.dp, 18.dp))
+    Spacer(GlanceModifier.height(10.dp))
     Text("Décisions de l'Assemblée", style = titleStyle(15.sp))
     Spacer(GlanceModifier.height(4.dp))
-    Text("Ouvrez l'app pour charger la dernière décision.", style = caption())
+    Text("Ouvrez l'app pour charger la dernière décision.", style = meta(12.sp))
   }
 }
 
-private fun titleStyle(size: androidx.compose.ui.unit.TextUnit) =
-    TextStyle(color = WidgetColors.primary, fontSize = size, fontWeight = FontWeight.Medium)
+/** Titres : police système en graisse moyenne (Glance n'a pas de demi-gras ni Geist). */
+private fun titleStyle(size: TextUnit) =
+    TextStyle(color = WidgetColors.ink, fontSize = size, fontWeight = FontWeight.Medium)
 
-private fun caption(size: androidx.compose.ui.unit.TextUnit = 12.sp) =
-    TextStyle(color = WidgetColors.secondary, fontSize = size)
+private fun meta(size: TextUnit = 11.5.sp) = TextStyle(color = WidgetColors.ink2, fontSize = size)
 
 /**
  * Récepteurs des trois tailles. Le rafraîchissement autonome (voir DecisionRefreshWorker.kt) est
