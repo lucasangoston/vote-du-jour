@@ -1,47 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Aperçu du widget dans le sélecteur (Android 12+), avec un exemple. -->
+<!-- Aperçu du widget moyen dans le sélecteur (Android 12+), avec un exemple
+     (charte Hémicycle, #29). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/decision_widget_preview_background"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="14dp">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="92dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="92dp"
+            android:layout_height="51dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitXY"
+            android:src="@drawable/decision_widget_preview_arc_adopte" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/decision_widget_preview_badge"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="3dp"
-            android:text="✓ Adopté"
-            android:textColor="#FFFFFFFF"
-            android:textSize="12sp"
+            android:layout_marginTop="6dp"
+            android:text="Adopté"
+            android:textColor="@color/decision_widget_pour"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
-        <!-- RemoteViews n'accepte pas de View nue : la date prend la place
-             restante et s'aligne à droite. -->
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:text="13 octobre 2026"
+            android:layout_marginTop="4dp"
+            android:fontFamily="monospace"
+            android:text="503 · 0 · 67"
+            android:textColor="@color/decision_widget_secondary"
+            android:textSize="10.5sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="1re lecture à l'AN · il y a 5 jours"
+            android:textColor="@color/decision_widget_secondary"
+            android:textSize="11.5sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="2"
+            android:text="Juges spécialisés pour les violences sexuelles et intrafamiliales"
+            android:textColor="@color/decision_widget_primary"
+            android:textSize="14.5sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Le texte prévoit une formation obligatoire pour les magistrats chargés des violences sexuelles et intrafamiliales."
             android:textColor="@color/decision_widget_secondary"
             android:textSize="12sp" />
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:maxLines="4"
-        android:text="L'ensemble du projet de loi relatif à la simplification de la vie économique."
-        android:textColor="@color/decision_widget_primary"
-        android:textSize="15sp" />
 </LinearLayout>
