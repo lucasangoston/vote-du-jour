@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 
 /// Autorisation d'afficher des notifications, accordée par l'utilisateur.
 enum PushPermission {
@@ -86,7 +87,24 @@ class FirebasePushMessaging implements PushMessaging {
     // AndroidManifest) : aucun jeton n'est créé tant que l'utilisateur n'a
     // pas activé les notifications.
     await _messaging.setAutoInitEnabled(true);
+    await _apnsToken();
     await _messaging.subscribeToTopic(topic);
+  }
+
+  /// iOS : FCM refuse l'abonnement tant qu'Apple n'a pas remis le jeton APNs
+  /// à l'appareil, ce qui arrive quelques instants après l'inscription
+  /// (juste après l'autorisation, ou au lancement). Attend ce jeton jusqu'à
+  /// [timeout] ; au-delà, l'abonnement échoue et sera retenté au prochain
+  /// lancement.
+  Future<void> _apnsToken({
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    final deadline = DateTime.now().add(timeout);
+    while (await _messaging.getAPNSToken() == null) {
+      if (DateTime.now().isAfter(deadline)) return;
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    }
   }
 
   @override
