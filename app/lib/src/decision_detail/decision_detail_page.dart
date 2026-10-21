@@ -126,8 +126,6 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
           when points.isNotEmpty) ...[
         const SizedBox(height: 32),
         const _Heading(summaryPointsHeading),
-        const SizedBox(height: 4),
-        const _AiNotice(),
         const SizedBox(height: 12),
         _SummaryPoints(points),
       ],
@@ -184,10 +182,6 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
 
 /// Intertitre des points du résumé.
 const summaryPointsHeading = 'Ce que prévoit le texte';
-
-/// Mention discrète sous l'intertitre des points : ils sont rédigés par une
-/// IA (voir « Résumés » dans « À propos »).
-const aiSummaryNotice = 'Résumé par IA';
 
 /// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
 /// vote par groupe.
@@ -363,16 +357,6 @@ class _Heading extends StatelessWidget {
       text,
       style: HemicycleText.heading.copyWith(color: context.colors.ink),
     ),
-  );
-}
-
-class _AiNotice extends StatelessWidget {
-  const _AiNotice();
-
-  @override
-  Widget build(BuildContext context) => Text(
-    aiSummaryNotice,
-    style: TextStyle(fontSize: 12.5, color: context.colors.ink2),
   );
 }
 

@@ -102,7 +102,7 @@ void main() {
         brightness: brightness,
       );
       await tester.scrollUntilVisible(
-        find.textContaining('Résumé par IA · séance', findRichText: true),
+        find.textContaining('Séance du', findRichText: true),
         200,
       );
       expect(find.text('Pourquoi ils ont voté ainsi'), findsOneWidget);
@@ -131,7 +131,7 @@ void main() {
       expect(find.text('NI'), findsOneWidget);
       expect(
         find.textContaining(
-          'Résumé par IA · séance du 13 oct. (compte rendu)',
+          'Séance du 13 oct. (compte rendu)',
           findRichText: true,
         ),
         findsOneWidget,

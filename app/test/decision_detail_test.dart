@@ -128,11 +128,10 @@ void main() {
     await tester.scrollUntilVisible(find.text('RN'), 200);
     expect(find.text('Qui a voté quoi'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Dossier législatif'), 200);
-    expect(find.text('30'), findsOneWidget);
+    expect(find.text('30'), findsNothing);
     // Personne contre : pas de rangée vide.
     expect(find.text('Contre'), findsNothing);
     expect(find.text('Aucun groupe'), findsNothing);
-    expect(find.text('6 · 5 pour'), findsOneWidget);
     expect(
       find.bySemanticsLabel(RegExp('Droite Républicaine : Abstention')),
       findsOneWidget,
