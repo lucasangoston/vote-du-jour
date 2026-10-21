@@ -202,11 +202,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text("Approbation d'un accord"), findsOneWidget);
-    // Méta : date et étape, sans « Vote à main levée » (l'arc le dit).
+    // Méta : date et étape, sans « Vote à main levée » (la carte le dit).
     expect(find.text('7 oct. 2026'), findsOneWidget);
     expect(find.text('1re lecture'), findsOneWidget);
     expect(find.text('Vote à main levée'), findsNothing);
-    expect(find.text('Sans décompte des voix'), findsOneWidget);
+    expect(find.text('À main levée · sans décompte des voix'), findsOneWidget);
     expect(find.bySemanticsLabel('Adopté à main levée'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Dossier législatif'), 200);
     expect(find.text('Qui a voté quoi'), findsNothing);

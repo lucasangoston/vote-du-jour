@@ -190,15 +190,14 @@ const summaryPointsHeading = 'Ce que prévoit le texte';
 const aiSummaryNotice = 'Résumé par IA';
 
 /// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
-/// vote par groupe. L'arc en pointillés dit « à main levée » (et son label
-/// le dit aux lecteurs d'écran).
-const mainLeveeNotice = 'Sans décompte des voix';
+/// vote par groupe.
+const mainLeveeNotice = 'À main levée · sans décompte des voix';
 
 /// Vote par groupe d'une décision provisoire, pas encore publié.
 const provisionalGroupsNotice = 'Vote par groupe publié après confirmation.';
 
 /// Carte du vote : grand arc, mot du résultat au centre, puis les trois
-/// chiffres (ou la mention « sans décompte »).
+/// chiffres (ou la mention « à main levée »).
 class _VoteCard extends StatelessWidget {
   const _VoteCard({required this.decision, this.count});
 
@@ -326,7 +325,7 @@ class _Figure extends StatelessWidget {
 }
 
 /// « Scrutin n° 8706 · 13 oct. 2026 · 1re lecture » ; « 13 oct. 2026 ·
-/// 1re lecture » pour un vote à main levée (l'arc le dit déjà).
+/// 1re lecture » pour un vote à main levée (la carte le dit déjà).
 class _Meta extends StatelessWidget {
   const _Meta(this.decision);
 
