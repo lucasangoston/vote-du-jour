@@ -112,60 +112,6 @@ void main() {
     });
   });
 
-  group('groupFigure', () {
-    test('voix de la position seules', () {
-      expect(groupFigure(_group('RN', GroupPosition.pour, pour: 121)), '121');
-      expect(groupFigure(_group('X', GroupPosition.contre, contre: 30)), '30');
-      expect(
-        groupFigure(_group('X', GroupPosition.abstention, abstentions: 8)),
-        '8',
-      );
-      // Les non-votants ne comptent pas comme des voix.
-      expect(
-        groupFigure(_group('EPR', GroupPosition.pour, pour: 89, nonVotants: 1)),
-        '89',
-      );
-    });
-
-    test('groupe divisé : voix de la position, puis les autres', () {
-      expect(
-        groupFigure(
-          _group('LFI-NFP', GroupPosition.abstention, pour: 4, abstentions: 66),
-        ),
-        '66 · 4 pour',
-      );
-      expect(
-        groupFigure(
-          _group('UDR', GroupPosition.pour, pour: 16, abstentions: 1),
-        ),
-        '16 · 1 abst.',
-      );
-      expect(
-        groupFigure(
-          _group(
-            'X',
-            GroupPosition.contre,
-            pour: 2,
-            contre: 30,
-            abstentions: 1,
-          ),
-        ),
-        '30 · 2 pour · 1 abst.',
-      );
-    });
-
-    test('groupe partagé et groupe qui n\'a pas voté', () {
-      expect(
-        groupFigure(_group('X', GroupPosition.partage, pour: 3, contre: 3)),
-        '3 pour · 3 contre',
-      );
-      expect(
-        groupFigure(_group('X', GroupPosition.nonVotant, nonVotants: 1)),
-        isNull,
-      );
-    });
-  });
-
   test('logos par sigle, vignette à sigle sinon', () {
     expect(groupLogoAsset(_scrutin8706.first), 'assets/group_logos/rn.png');
     final ni = _scrutin8706.last;
@@ -202,9 +148,7 @@ void main() {
       expect(find.text('Aucun groupe'), findsNothing);
       expect(find.byType(GroupTile), findsNWidgets(12));
       expect(find.byType(Image), findsNWidgets(11));
-      expect(find.text('121'), findsOneWidget);
-      expect(find.text('66 · 4 pour'), findsOneWidget);
-      expect(find.text('16 · 1 abst.'), findsOneWidget);
+      expect(find.text('121'), findsNothing);
       expect(find.text('NI'), findsOneWidget);
       expect(find.text('Non inscrits'), findsOneWidget);
       expect(find.textContaining('Groupes classés'), findsNothing);
@@ -243,7 +187,7 @@ void main() {
     expect(find.text('Abstention'), findsNothing);
     expect(find.text('Aucun groupe'), findsNothing);
     expect(find.byType(GroupTile), findsNWidgets(5));
-    expect(find.text('71'), findsOneWidget);
+    expect(find.text('71'), findsNothing);
     expect(find.text('RN'), findsOneWidget);
   });
 }

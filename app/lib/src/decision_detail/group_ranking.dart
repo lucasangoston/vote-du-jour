@@ -47,25 +47,3 @@ int positionVotes(GroupVoteDetail group) {
     GroupPosition.nonVotant => 0,
   };
 }
-
-/// Chiffres d'une vignette : les voix de la position, puis celles des
-/// membres qui ont voté autrement (« 66 · 4 pour », « 16 · 1 abst. »).
-/// Groupe partagé : le détail de ses voix (« 3 pour · 3 contre »). Groupe
-/// qui n'a pas voté : `null`.
-String? groupFigure(GroupVoteDetail group) {
-  final c = group.count;
-  final parts = [
-    (GroupPosition.pour, c.pour, 'pour'),
-    (GroupPosition.contre, c.contre, 'contre'),
-    (GroupPosition.abstention, c.abstentions, 'abst.'),
-  ];
-  final others = [
-    for (final (position, n, label) in parts)
-      if (n > 0 && position != group.position) '$n $label',
-  ];
-  return switch (group.position) {
-    GroupPosition.nonVotant => null,
-    GroupPosition.partage => others.join(' · '),
-    _ => [positionVotes(group).toString(), ...others].join(' · '),
-  };
-}

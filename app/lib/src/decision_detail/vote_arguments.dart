@@ -21,10 +21,9 @@ String argumentsSideLabel(GroupPosition position) => switch (position) {
 /// Libellé du lien vers le compte rendu, dans la ligne de source.
 const argumentsSourceLink = 'compte rendu';
 
-/// « Résumé par IA · séance du 13 oct. » (suivi du lien vers le compte
-/// rendu).
+/// « Séance du 13 oct. » (suivi du lien vers le compte rendu).
 String argumentsSourceLead(ArgumentsSource source) =>
-    'Résumé par IA · séance du '
+    'Séance du '
     '${formatShortFrenchDate(source.date, withYear: false)}';
 
 /// Cartes « Pour », « Contre » et « Abstention » (sans
@@ -219,7 +218,7 @@ class _SmallLogo extends StatelessWidget {
   }
 }
 
-/// « Résumé par IA · séance du 13 oct. (compte rendu) » : toucher la ligne
+/// « Séance du 13 oct. (compte rendu) » : toucher la ligne
 /// ouvre le compte rendu.
 class _SourceLine extends StatelessWidget {
   const _SourceLine(this.source);

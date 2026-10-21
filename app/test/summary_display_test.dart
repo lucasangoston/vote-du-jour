@@ -95,9 +95,6 @@ void main() {
     expect(find.text(_summary.explanation), findsOneWidget);
     await tester.scrollUntilVisible(find.text(_summary.points.last), 200);
     expect(find.text(summaryPointsHeading), findsOneWidget);
-    // Mention discrète sous l'intertitre : les points viennent d'une IA.
-    expect(find.text(aiSummaryNotice), findsOneWidget);
-    expect(aiSummaryNotice, 'Résumé par IA');
     for (final point in _summary.points) {
       expect(find.text(point), findsOneWidget);
     }
@@ -139,7 +136,6 @@ void main() {
     await tester.tap(find.text('Restaurer un système de retraite plus juste'));
     await tester.pumpAndSettle();
     expect(find.text(summaryPointsHeading), findsNothing);
-    expect(find.text(aiSummaryNotice), findsNothing);
     expect(find.byType(Scaffold), findsOneWidget);
   });
 

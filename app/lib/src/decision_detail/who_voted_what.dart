@@ -121,8 +121,7 @@ class _TileGrid extends StatelessWidget {
   );
 }
 
-/// Vignette d'un groupe : logo (ou sigle sur fond graphite), légende,
-/// voix de sa position.
+/// Vignette d'un groupe : logo (ou sigle sur fond graphite) et légende.
 class GroupTile extends StatelessWidget {
   const GroupTile(this.group, {super.key});
 
@@ -132,7 +131,6 @@ class GroupTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final c = group.count;
-    final figure = groupFigure(group);
     return Semantics(
       container: true,
       label:
@@ -161,18 +159,6 @@ class GroupTile extends StatelessWidget {
                 color: colors.ink,
               ),
             ),
-            if (figure != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                figure,
-                textAlign: TextAlign.center,
-                style: HemicycleText.mono.copyWith(
-                  fontSize: 12,
-                  height: 1.3,
-                  color: colors.ink2,
-                ),
-              ),
-            ],
           ],
         ),
       ),
