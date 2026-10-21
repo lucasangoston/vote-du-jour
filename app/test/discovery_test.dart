@@ -26,26 +26,32 @@ void main() {
     await tester.tap(find.byTooltip('Ajouter le widget'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Touchez « Widgets ».'), findsOneWidget);
+    expect(find.text('Widgets.'), findsOneWidget);
 
     await tester.tap(find.text('iPhone'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('« Ajouter un widget »'), findsOneWidget);
+    expect(find.text('Touchez Modifier › Ajouter un widget.'), findsOneWidget);
     debugDefaultTargetPlatformOverride = null;
   });
 
-  testWidgets('la liste ouvre « À propos et méthode »', (tester) async {
+  testWidgets('la liste ouvre « À propos »', (tester) async {
     await pumpApp(tester);
 
-    await tester.tap(find.byTooltip('À propos et méthode'));
+    await tester.tap(find.byTooltip('À propos'));
     await tester.pumpAndSettle();
 
     expect(find.text('Source des données'), findsOneWidget);
     expect(find.text('Licence Ouverte Etalab'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Résumés'), 200);
     expect(
-      find.textContaining('rédigés automatiquement par une intelligence'),
+      find.textContaining('rédigés par une IA (Claude, d\'Anthropic)'),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        'Un groupe est classé selon le vote de la majorité de ses membres.',
+      ),
       findsOneWidget,
     );
   });

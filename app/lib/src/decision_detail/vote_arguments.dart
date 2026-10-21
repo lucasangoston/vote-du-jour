@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vote_contract/vote_contract.dart';
 
-import '../decision_list_page.dart' show formatFrenchDate;
+import '../decision_list_page.dart' show formatShortFrenchDate;
 import '../hemicycle/line_icon.dart';
 import '../theme.dart';
 import 'group_logo.dart';
@@ -12,22 +12,22 @@ const argumentsHeading = 'Pourquoi ils ont voté ainsi';
 
 /// Titre de la carte d'un camp.
 String argumentsSideLabel(GroupPosition position) => switch (position) {
-  GroupPosition.pour => 'Arguments pour',
-  GroupPosition.contre => 'Arguments contre',
-  GroupPosition.abstention => 'Arguments d\'abstention',
+  GroupPosition.pour => 'Pour',
+  GroupPosition.contre => 'Contre',
+  GroupPosition.abstention => 'Abstention',
   GroupPosition.partage || GroupPosition.nonVotant => '',
 };
 
 /// Libellé du lien vers le compte rendu, dans la ligne de source.
-const argumentsSourceLink = 'compte rendu officiel';
+const argumentsSourceLink = 'compte rendu';
 
-/// « Résumé des explications de vote des groupes, séance du 13 octobre
-/// 2026 » (suivi du lien vers le compte rendu).
+/// « Résumé par IA · séance du 13 oct. » (suivi du lien vers le compte
+/// rendu).
 String argumentsSourceLead(ArgumentsSource source) =>
-    'Résumé des explications de vote des groupes, séance du '
-    '${formatFrenchDate(source.date)}';
+    'Résumé par IA · séance du '
+    '${formatShortFrenchDate(source.date, withYear: false)}';
 
-/// Cartes « Arguments pour », « contre » et « d'abstention » (sans
+/// Cartes « Pour », « Contre » et « Abstention » (sans
 /// l'intertitre), un camp sans argument n'a pas de carte ; puis la ligne
 /// de source, qui ouvre le compte rendu de la séance.
 class VoteArguments extends StatelessWidget {
@@ -219,8 +219,8 @@ class _SmallLogo extends StatelessWidget {
   }
 }
 
-/// « Résumé des explications de vote des groupes, séance du …
-/// (compte rendu officiel). » : toucher la ligne ouvre le compte rendu.
+/// « Résumé par IA · séance du 13 oct. (compte rendu) » : toucher la ligne
+/// ouvre le compte rendu.
 class _SourceLine extends StatelessWidget {
   const _SourceLine(this.source);
 
@@ -248,7 +248,7 @@ class _SourceLine extends StatelessWidget {
                   decorationColor: colors.ink2,
                 ),
               ),
-              const TextSpan(text: ').'),
+              const TextSpan(text: ')'),
             ],
           ),
           style: TextStyle(fontSize: 12.5, height: 1.5, color: colors.ink2),

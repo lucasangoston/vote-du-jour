@@ -117,29 +117,28 @@ void main() {
     expect(find.text('Adopté'), findsOneWidget);
     expect(find.text('141'), findsOneWidget);
     expect(find.text('abstentions'), findsOneWidget);
-    expect(find.text('153 députés ont voté'), findsOneWidget);
+    expect(find.textContaining('ont voté'), findsNothing);
     // Méta, titre court.
-    expect(find.text('Scrutin public n° 6346'), findsOneWidget);
-    expect(find.text('9 avril 2026'), findsOneWidget);
+    expect(find.text('Scrutin n° 6346'), findsOneWidget);
+    expect(find.text('9 avr. 2026'), findsOneWidget);
     expect(find.text('Texte de compromis (CMP)'), findsOneWidget);
     expect(find.text('Restitution de biens culturels'), findsOneWidget);
 
-    // Qui a voté quoi, puis type, intitulé officiel et liens, plus bas.
-    await tester.scrollUntilVisible(find.text('Aucun groupe'), 200);
+    // Qui a voté quoi, puis texte officiel et liens, plus bas.
+    await tester.scrollUntilVisible(find.text('RN'), 200);
     expect(find.text('Qui a voté quoi'), findsOneWidget);
-    expect(find.text('RN'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Suivre le dossier législatif'),
-      200,
-    );
+    await tester.scrollUntilVisible(find.text('Dossier législatif'), 200);
     expect(find.text('30'), findsOneWidget);
-    expect(find.text('Aucun groupe'), findsOneWidget);
+    // Personne contre : pas de rangée vide.
+    expect(find.text('Contre'), findsNothing);
+    expect(find.text('Aucun groupe'), findsNothing);
     expect(find.text('6 · 5 pour'), findsOneWidget);
     expect(
       find.bySemanticsLabel(RegExp('Droite Républicaine : Abstention')),
       findsOneWidget,
     );
-    expect(find.text("Vote sur l'ensemble d'un texte"), findsOneWidget);
+    expect(find.text('Type de décision'), findsNothing);
+    expect(find.text('Texte officiel'), findsOneWidget);
     expect(find.textContaining("L'ensemble du projet de loi"), findsOneWidget);
     expect(find.text('Voir le scrutin'), findsOneWidget);
   });
@@ -203,19 +202,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text("Approbation d'un accord"), findsOneWidget);
-    expect(find.text('Vote à main levée'), findsOneWidget);
-    expect(
-      find.text('Adopté à main levée, sans décompte des voix.'),
-      findsOneWidget,
-    );
+    // Méta : date et étape, sans « Vote à main levée » (l'arc le dit).
+    expect(find.text('7 oct. 2026'), findsOneWidget);
+    expect(find.text('1re lecture'), findsOneWidget);
+    expect(find.text('Vote à main levée'), findsNothing);
+    expect(find.text('Sans décompte des voix'), findsOneWidget);
     expect(find.bySemanticsLabel('Adopté à main levée'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Suivre le dossier législatif'),
-      200,
-    );
+    await tester.scrollUntilVisible(find.text('Dossier législatif'), 200);
     expect(find.text('Qui a voté quoi'), findsNothing);
     expect(find.textContaining('ont voté'), findsNothing);
-    expect(find.textContaining('Scrutin public'), findsNothing);
+    expect(find.textContaining('Scrutin n°'), findsNothing);
     expect(find.text('Voir le scrutin'), findsNothing);
   });
 
@@ -265,12 +261,11 @@ void main() {
     expect(find.text('provisoire'), findsOneWidget);
     expect(find.text('503'), findsOneWidget);
     expect(
-      find.text(
-        'Vote par groupe disponible après confirmation par les données '
-        'officielles.',
-      ),
+      find.text('Vote par groupe publié après confirmation.'),
       findsOneWidget,
     );
+    // Le statut n'est plus répété en bas : le badge suffit.
+    expect(find.text('Statut'), findsNothing);
   });
 
   test('liens profonds des widgets', () {

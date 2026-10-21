@@ -67,9 +67,7 @@ class _DecisionListPageState extends State<DecisionListPage> {
       if (_index != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Actualisation impossible : dernières données connues.',
-            ),
+            content: Text('Hors ligne : dernières données connues.'),
           ),
         );
       }
@@ -238,8 +236,8 @@ class _RowSeparator extends StatelessWidget {
   );
 }
 
-/// Ligne de la liste : mini-arc du vote, résultat coloré · étape, titre et
-/// phrase d'explication sur deux lignes.
+/// Ligne de la liste : mini-arc du vote, résultat coloré · type (s'il change
+/// la lecture), titre et phrase d'explication sur deux lignes.
 class DecisionRow extends StatelessWidget {
   const DecisionRow(this.decision, {super.key});
 
@@ -276,9 +274,10 @@ class DecisionRow extends StatelessWidget {
                         color: resultColor(context, decision.result),
                       ),
                     ),
-                    // Étape de la procédure ou étiquette (« Résolution (sans
-                    // valeur de loi) ») : absente des index antérieurs à #7.
-                    if (decision.stage case final stage?) Text(stage),
+                    // Pas l'étape de la procédure (détail seulement) : le
+                    // type, quand il change la lecture du résultat.
+                    if (listTypeLabel(decision.type) case final type?)
+                      Text(type),
                     // Adopté sans scrutin public, donc sans décompte (#8).
                     if (voteModeLabel(decision.voteMode) case final mode?)
                       Text(mode),
@@ -317,6 +316,18 @@ class DecisionRow extends StatelessWidget {
   }
 }
 
+/// Type de la décision dans la ligne de la liste, pour ceux qui changent la
+/// lecture du résultat (une résolution n'a pas valeur de loi, un rejet
+/// préalable rejette le texte…) ; `null` pour un vote sur un texte.
+String? listTypeLabel(DecisionType type) => switch (type) {
+  DecisionType.resolution => 'Résolution',
+  DecisionType.motionDeCensure => 'Motion de censure',
+  DecisionType.rejetPrealable => 'Rejet préalable',
+  DecisionType.declarationGouvernement => 'Déclaration du Gouvernement',
+  DecisionType.premierePartieBudget => '1re partie du budget',
+  DecisionType.ensembleTexte || DecisionType.autre => null,
+};
+
 /// Mention de la source exigée par la Licence Ouverte.
 class _SourceNotice extends StatelessWidget {
   const _SourceNotice();
@@ -338,8 +349,8 @@ class _SourceNotice extends StatelessWidget {
 
 /// Mention de la source, en bas de la liste et du détail.
 const sourceNotice =
-    'Source : Assemblée nationale, open data, Licence Ouverte Etalab. '
-    'Application indépendante, non officielle.';
+    'Source : Assemblée nationale (open data, Licence Ouverte). '
+    'App non officielle.';
 
 class _Message extends StatelessWidget {
   const _Message({required this.text, this.action});
@@ -368,15 +379,17 @@ class _Message extends StatelessWidget {
   }
 }
 
-const _months = [
-  'janvier', 'février', 'mars', 'avril', 'mai', 'juin', //
-  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+const _shortMonths = [
+  'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', //
+  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
 ];
 
-/// « 13 octobre 2026 » (« 1er » pour le premier du mois).
-String formatFrenchDate(DateTime date) {
+/// « 13 oct. 2026 », ou « 13 oct. » sans [withYear] (« 1er » pour le
+/// premier du mois).
+String formatShortFrenchDate(DateTime date, {bool withYear = true}) {
   final day = date.day == 1 ? '1er' : '${date.day}';
-  return '$day ${_months[date.month - 1]} ${date.year}';
+  final month = _shortMonths[date.month - 1];
+  return withYear ? '$day $month ${date.year}' : '$day $month';
 }
 
 String capitalize(String s) =>

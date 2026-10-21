@@ -36,8 +36,7 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
       title: 'Ajouter le widget',
       children: [
         Text(
-          'Le widget affiche les dernières décisions de l\'Assemblée '
-          'directement sur votre écran d\'accueil, sans ouvrir l\'app.',
+          'Les dernières décisions sur votre écran d\'accueil.',
           style: TextStyle(fontSize: 16, height: 1.55, color: colors.body),
         ),
         const SizedBox(height: 20),
@@ -69,10 +68,7 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Trois tailles existent : petite (la dernière décision), moyenne '
-          '(la dernière décision avec son explication) et grande (les trois '
-          'dernières décisions). Touchez une décision pour ouvrir son '
-          'détail.',
+          '3 tailles : 1 décision, 1 décision expliquée, ou les 3 dernières.',
           style: TextStyle(fontSize: 14, height: 1.5, color: colors.ink2),
         ),
       ],
@@ -82,21 +78,19 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
 
 @visibleForTesting
 const iosSteps = [
-  'Sur l\'écran d\'accueil, faites un appui long sur une zone vide, '
-      'jusqu\'à ce que les icônes se mettent à trembler.',
-  'Touchez « Modifier » en haut de l\'écran, puis « Ajouter un widget ».',
-  'Recherchez « $appName » et touchez l\'app dans les résultats.',
-  'Balayez pour choisir une taille, puis touchez « Ajouter le widget ».',
-  'Placez le widget où vous le souhaitez, puis touchez « OK ».',
+  'Appui long sur une zone vide de l\'écran d\'accueil.',
+  'Touchez Modifier › Ajouter un widget.',
+  'Cherchez « $appName ».',
+  'Choisissez une taille › Ajouter le widget.',
+  'Placez-le, puis OK.',
 ];
 
 @visibleForTesting
 const androidSteps = [
-  'Sur l\'écran d\'accueil, faites un appui long sur une zone vide.',
-  'Touchez « Widgets ».',
-  'Recherchez « $appName » dans la liste et touchez l\'app.',
-  'Maintenez le widget de la taille souhaitée, puis faites-le glisser sur '
-      'l\'écran d\'accueil.',
+  'Appui long sur une zone vide.',
+  'Widgets.',
+  'Cherchez « $appName ».',
+  'Faites glisser la taille voulue.',
 ];
 
 class _Step extends StatelessWidget {

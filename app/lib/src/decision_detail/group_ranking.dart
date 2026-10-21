@@ -10,22 +10,13 @@ class GroupRow {
   final List<GroupVoteDetail> groups;
 }
 
-/// Rangées affichées toujours, même vides (« Aucun groupe »).
-const _alwaysShown = [
-  GroupPosition.pour,
-  GroupPosition.contre,
-  GroupPosition.abstention,
-];
-
 /// Classe les groupes selon leur position (celle de la majorité de leurs
-/// membres) : rangées Pour, Contre et Abstention toujours présentes, puis
-/// Partagé et N'ont pas voté si elles ne sont pas vides. Aucun groupe ne
-/// disparaît. Dans une rangée, les groupes vont du plus grand nombre de voix
+/// membres) : rangées Pour, Contre, Abstention, Partagé et N'ont pas voté,
+/// une rangée vide n'est pas affichée. Aucun groupe ne disparaît. Dans une rangée, les groupes vont du plus grand nombre de voix
 /// de la position au plus petit ; à égalité, l'ordre du fichier est gardé.
 List<GroupRow> rankGroups(List<GroupVoteDetail> groups) => [
   for (final position in GroupPosition.values)
-    if (_rowOf(groups, position) case final row
-        when row.isNotEmpty || _alwaysShown.contains(position))
+    if (_rowOf(groups, position) case final row when row.isNotEmpty)
       GroupRow(position, row),
 ];
 

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:vote_contract/vote_contract.dart';
 
 import '../decision_list_page.dart'
-    show capitalize, formatFrenchDate, sourceNotice;
+    show capitalize, formatShortFrenchDate, sourceNotice;
 import '../hemicycle/external_link_row.dart';
 import '../hemicycle/line_icon.dart';
 import '../hemicycle/result_style.dart';
@@ -126,6 +126,8 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
           when points.isNotEmpty) ...[
         const SizedBox(height: 32),
         const _Heading(summaryPointsHeading),
+        const SizedBox(height: 4),
+        const _AiNotice(),
         const SizedBox(height: 12),
         _SummaryPoints(points),
       ],
@@ -183,21 +185,20 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
 /// Intertitre des points du résumé.
 const summaryPointsHeading = 'Ce que prévoit le texte';
 
-/// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
-/// vote par groupe.
-const mainLeveeNotice = 'Adopté à main levée, sans décompte des voix.';
+/// Mention discrète sous l'intertitre des points : ils sont rédigés par une
+/// IA (voir « Résumés » dans « À propos »).
+const aiSummaryNotice = 'Résumé par IA';
 
-/// « 570 députés ont voté » : pour, contre et abstentions.
-String votersLabel(int total) =>
-    total > 1 ? '$total députés ont voté' : '$total député a voté';
+/// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
+/// vote par groupe. L'arc en pointillés dit « à main levée » (et son label
+/// le dit aux lecteurs d'écran).
+const mainLeveeNotice = 'Sans décompte des voix';
 
 /// Vote par groupe d'une décision provisoire, pas encore publié.
-const provisionalGroupsNotice =
-    'Vote par groupe disponible après confirmation par les données '
-    'officielles.';
+const provisionalGroupsNotice = 'Vote par groupe publié après confirmation.';
 
 /// Carte du vote : grand arc, mot du résultat au centre, puis les trois
-/// chiffres (ou la mention « à main levée »).
+/// chiffres (ou la mention « sans décompte »).
 class _VoteCard extends StatelessWidget {
   const _VoteCard({required this.decision, this.count});
 
@@ -289,13 +290,6 @@ class _VoteCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 14),
-                  child: Text(
-                    votersLabel(tally.total),
-                    style: TextStyle(fontSize: 13, color: colors.ink2),
-                  ),
-                ),
               ],
             ],
           );
@@ -331,7 +325,8 @@ class _Figure extends StatelessWidget {
   );
 }
 
-/// « Scrutin public n° 8706 · 13 octobre 2026 · 1re lecture à l'AN ».
+/// « Scrutin n° 8706 · 13 oct. 2026 · 1re lecture » ; « 13 oct. 2026 ·
+/// 1re lecture » pour un vote à main levée (l'arc le dit déjà).
 class _Meta extends StatelessWidget {
   const _Meta(this.decision);
 
@@ -341,19 +336,21 @@ class _Meta extends StatelessWidget {
   Widget build(BuildContext context) => MetaLine(
     style: TextStyle(fontSize: 13, height: 1.4, color: context.colors.ink2),
     parts: [
-      Text(switch (decision.numero) {
-        final numero? when decision.voteMode == VoteMode.scrutinPublic =>
-          'Scrutin public n° $numero',
-        _ => 'Vote à main levée',
-      }),
-      Text(formatFrenchDate(decision.date)),
-      if (decision.stage case final stage?) Text(stage),
+      if (decision.numero case final numero?
+          when decision.voteMode == VoteMode.scrutinPublic)
+        Text('Scrutin n° $numero'),
+      Text(formatShortFrenchDate(decision.date)),
+      if (decision.stage case final stage?) Text(shortStage(stage)),
     ],
     trailing: decision.status == DecisionStatus.provisoire
         ? const ProvisionalBadge()
         : null,
   );
 }
+
+/// Étape sans « à l'AN », implicite dans l'app : « 1re lecture à l'AN »
+/// devient « 1re lecture ».
+String shortStage(String stage) => stage.replaceAll(" à l'AN", '');
 
 class _Heading extends StatelessWidget {
   const _Heading(this.text);
@@ -367,6 +364,16 @@ class _Heading extends StatelessWidget {
       text,
       style: HemicycleText.heading.copyWith(color: context.colors.ink),
     ),
+  );
+}
+
+class _AiNotice extends StatelessWidget {
+  const _AiNotice();
+
+  @override
+  Widget build(BuildContext context) => Text(
+    aiSummaryNotice,
+    style: TextStyle(fontSize: 12.5, color: context.colors.ink2),
   );
 }
 
@@ -402,42 +409,19 @@ class _SummaryPoints extends StatelessWidget {
   }
 }
 
-/// Type de décision, statut et intitulé officiel.
+/// Intitulé officiel du scrutin (le type et le statut sont déjà dans la
+/// méta).
 class _Facts extends StatelessWidget {
   const _Facts(this.decision);
 
   final DecisionSummary decision;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _Field(label: 'Type de décision', value: decisionTypeLabel(decision)),
-      if (decision.status == DecisionStatus.provisoire)
-        const _Field(
-          label: 'Statut',
-          value:
-              'Provisoire : lu sur le site de l\'Assemblée, pas encore '
-              'confirmé par les données officielles',
-        ),
-      _Field(
-        label: 'Intitulé officiel',
-        value: capitalize(decision.officialTitle),
-      ),
-    ],
+  Widget build(BuildContext context) => _Field(
+    label: 'Texte officiel',
+    value: capitalize(decision.officialTitle),
   );
 }
-
-/// Libellé du type de décision.
-String decisionTypeLabel(DecisionSummary decision) => switch (decision.type) {
-  DecisionType.ensembleTexte => 'Vote sur l\'ensemble d\'un texte',
-  DecisionType.motionDeCensure => 'Motion de censure',
-  DecisionType.declarationGouvernement => 'Déclaration du Gouvernement',
-  DecisionType.rejetPrealable => 'Motion de rejet préalable',
-  DecisionType.premierePartieBudget => 'Vote sur la première partie du budget',
-  DecisionType.resolution => 'Proposition de résolution',
-  DecisionType.autre => 'Scrutin solennel',
-};
 
 class _Field extends StatelessWidget {
   const _Field({required this.label, required this.value});
@@ -485,10 +469,7 @@ class _SourceLinks extends StatelessWidget {
           ExternalLinkRow(label: 'Voir le scrutin', url: decision.sourceUrl),
         if (dossierUrl != null) ...[
           if (!mainLevee) const SizedBox(height: 8),
-          ExternalLinkRow(
-            label: 'Suivre le dossier législatif',
-            url: dossierUrl,
-          ),
+          ExternalLinkRow(label: 'Dossier législatif', url: dossierUrl),
         ],
       ],
     );
@@ -505,7 +486,7 @@ class _Unavailable extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     children: [
       Text(
-        'Impossible de charger le détail de cette décision.',
+        'Détail indisponible.',
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 15, color: context.colors.ink2),
       ),
