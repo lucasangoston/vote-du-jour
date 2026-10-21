@@ -12,7 +12,10 @@ import 'hemicycle/vote_arc.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'theme.dart';
+import 'upcoming_section.dart';
 import 'vote_mode_label.dart';
+
+export 'relative_date.dart' show formatShortFrenchDate;
 
 /// Liste des dernières décisions, groupées par jour. Se rafraîchit à
 /// l'ouverture et à chaque retour de l'app au premier plan.
@@ -121,9 +124,15 @@ class _DecisionListPageState extends State<DecisionListPage> {
         ),
       ];
     }
+    // Ordre du jour de l'Assemblée, avant les décisions (#53) ; rien sans
+    // point à venir.
+    final upcoming = SliverToBoxAdapter(
+      child: UpcomingSection(items: index.upcoming),
+    );
     if (index.decisions.isEmpty) {
-      return const [
-        SliverFillRemaining(
+      return [
+        upcoming,
+        const SliverFillRemaining(
           hasScrollBody: false,
           child: _Message(text: 'Aucune décision publiée pour le moment.'),
         ),
@@ -131,6 +140,7 @@ class _DecisionListPageState extends State<DecisionListPage> {
     }
     final now = DateTime.now();
     return [
+      upcoming,
       for (final day in groupByDay(index.decisions)) ...[
         SliverToBoxAdapter(
           child: _DayHeading(dayGroupLabel(day.first.date, now: now)),
@@ -377,19 +387,6 @@ class _Message extends StatelessWidget {
       ),
     );
   }
-}
-
-const _shortMonths = [
-  'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', //
-  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
-];
-
-/// « 13 oct. 2026 », ou « 13 oct. » sans [withYear] (« 1er » pour le
-/// premier du mois).
-String formatShortFrenchDate(DateTime date, {bool withYear = true}) {
-  final day = date.day == 1 ? '1er' : '${date.day}';
-  final month = _shortMonths[date.month - 1];
-  return withYear ? '$day $month ${date.year}' : '$day $month';
 }
 
 String capitalize(String s) =>
