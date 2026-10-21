@@ -38,7 +38,7 @@ Modifiable sans nouvelle version.
 Chaque décision de l'Assemblée nationale en bref : le résultat, qui a voté quoi et les arguments pour et contre. Sans compte, sans publicité.
 ```
 
-## Description (1962) [4000]
+## Description (2131) [4000]
 
 ```text
 Perchoir résume les décisions de l'Assemblée nationale : chaque vote sur l'ensemble d'un texte, chaque motion de censure, chaque résolution, en quelques mots.
@@ -51,11 +51,14 @@ POUR CHAQUE DÉCISION
 • Les principaux arguments pour et contre, tirés des débats
 • Les liens vers le scrutin et le dossier législatif officiels
 
+À VENIR
+En tête de liste, les prochains points de l'ordre du jour de l'Assemblée, dont les votes solennels annoncés.
+
 WIDGET
 Les dernières décisions sur l'écran d'accueil, en trois tailles : la dernière décision, la dernière décision expliquée, ou les trois dernières.
 
 NOTIFICATIONS, SI VOUS LE SOUHAITEZ
-Une notification pour les votes importants seulement : votes solennels, motions de censure, textes de compromis et lectures définitives. Une à trois par semaine environ, désactivables à tout moment.
+Une notification pour les votes importants seulement : votes solennels, motions de censure, textes de compromis et lectures définitives, et la veille au soir l'annonce d'un vote solennel. Une à trois par semaine environ, désactivables à tout moment.
 
 DÉLAI
 Une décision apparaît 10 à 30 minutes après le vote, marquée « provisoire », puis est confirmée le lendemain avec le décompte complet et le vote de chaque groupe. Les votes sur les amendements et les articles ne sont pas affichés.
@@ -95,11 +98,8 @@ demande au moins une capture « iPhone with Dynamic Island (medium display) »
 (6,3"), tandis que le tableau ne rend obligatoire que le 6,9" (ou à défaut le
 6,5"). Les deux jeux sont fournis : déposer le 6,9" et le 6,3".
 
-**iPad** : le projet Xcode déclare `TARGETED_DEVICE_FAMILY = "1,2"` (iPhone et
-iPad). Tant que c'est le cas, App Store Connect exige aussi des captures iPad
-13 pouces (2064 × 2752). Pour une V1 iPhone seulement, passer
-`TARGETED_DEVICE_FAMILY` à `1` dans `app/ios/Runner.xcodeproj` (cibles Runner
-et DecisionWidget) avant la première archive.
+Pas de captures iPad : l'app est déclarée iPhone seulement
+(`TARGETED_DEVICE_FAMILY = 1`, #50).
 
 ## Classification par âge
 
@@ -177,11 +177,11 @@ Data: public open data published by the Assemblée nationale (data.assemblee-nat
 
 AI-generated content: titles, one-line explanations, key points and arguments for/against are generated server-side, ahead of time, by Claude (Anthropic) from the official texts and debate transcripts, with a neutrality instruction. Users cannot prompt the AI. This is disclosed in the About screen and the store description; every decision links to the official vote and legislative file.
 
-Notifications (optional): after the user opens a decision for the first time, the app asks for notification permission. If granted, the device subscribes to a single Firebase Cloud Messaging topic ("votes-importants": solemn votes, motions of censure, final readings), about 1 to 3 per week. They can be turned off in About > "Votes importants". No push token is sent to our server.
+Notifications (optional): after the user opens a decision for the first time, the app asks for notification permission. If granted, the device subscribes to a single Firebase Cloud Messaging topic ("votes-importants": solemn votes, motions of censure, final readings, and the evening before a scheduled solemn vote), about 1 to 3 per week. They can be turned off in About > "Votes importants". No push token is sent to our server.
 
 Home screen widget: long-press the Home Screen > Edit > Add Widget > "Perchoir" (small, medium and large sizes).
 
-Content: votes take place only when the Assembly sits; outside session weeks the list shows the latest decisions with their dates.
+Content: the list starts with "À venir" (upcoming items of the official agenda, also from Assemblée nationale open data), then past decisions. Votes take place only when the Assembly sits; outside session weeks the list shows the latest decisions with their dates.
 
 Contact: Lucas Angoston, lucasangostonpro@gmail.com
 ```

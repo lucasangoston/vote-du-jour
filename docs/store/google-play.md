@@ -25,7 +25,7 @@ Les longueurs entre parenthèses sont comptées en caractères Unicode par
 - **Règles de confidentialité** :
   https://lucasangoston.github.io/vote-du-jour/confidentialite.html
 
-## Description complète (1962) [4000]
+## Description complète (2131) [4000]
 
 Même texte que l'App Store.
 
@@ -40,11 +40,14 @@ POUR CHAQUE DÉCISION
 • Les principaux arguments pour et contre, tirés des débats
 • Les liens vers le scrutin et le dossier législatif officiels
 
+À VENIR
+En tête de liste, les prochains points de l'ordre du jour de l'Assemblée, dont les votes solennels annoncés.
+
 WIDGET
 Les dernières décisions sur l'écran d'accueil, en trois tailles : la dernière décision, la dernière décision expliquée, ou les trois dernières.
 
 NOTIFICATIONS, SI VOUS LE SOUHAITEZ
-Une notification pour les votes importants seulement : votes solennels, motions de censure, textes de compromis et lectures définitives. Une à trois par semaine environ, désactivables à tout moment.
+Une notification pour les votes importants seulement : votes solennels, motions de censure, textes de compromis et lectures définitives, et la veille au soir l'annonce d'un vote solennel. Une à trois par semaine environ, désactivables à tout moment.
 
 DÉLAI
 Une décision apparaît 10 à 30 minutes après le vote, marquée « provisoire », puis est confirmée le lendemain avec le décompte complet et le vote de chaque groupe. Les votes sur les amendements et les articles ne sont pas affichés.
