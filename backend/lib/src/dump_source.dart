@@ -35,21 +35,52 @@ abstract interface class DumpSource {
 }
 
 /// Télécharge l'archive en HTTP avec une requête conditionnelle.
+///
+/// Le serveur de l'Assemblée coupe parfois la connexion en plein
+/// téléchargement ou répond 5xx : la requête est alors retentée jusqu'à
+/// [attempts] fois, à [retryDelay] d'intervalle.
 class HttpDumpSource implements DumpSource {
-  HttpDumpSource({this.url = scrutinsDumpUrl, http.Client? client})
-    : _client = client ?? http.Client();
+  HttpDumpSource({
+    this.url = scrutinsDumpUrl,
+    http.Client? client,
+    this.attempts = 3,
+    this.retryDelay = const Duration(seconds: 20),
+  }) : _client = client ?? http.Client();
 
   final String url;
+  final int attempts;
+  final Duration retryDelay;
   final http.Client _client;
 
   @override
   Future<DumpFetch> fetch({String? ifModifiedSince}) async {
+    for (var attempt = 1; ; attempt++) {
+      try {
+        return await _fetchOnce(ifModifiedSince);
+      } on Object catch (e) {
+        if (!_isTransient(e) || attempt >= attempts) rethrow;
+        stderr.writeln(
+          'Archive des scrutins : $e, nouvel essai '
+          '($attempt/$attempts) dans ${retryDelay.inSeconds} s',
+        );
+        await Future<void>.delayed(retryDelay);
+      }
+    }
+  }
+
+  static bool _isTransient(Object e) =>
+      e is http.ClientException || e is SocketException || e is _ServerError;
+
+  Future<DumpFetch> _fetchOnce(String? ifModifiedSince) async {
     final response = await _client.get(
       Uri.parse(url),
       headers: {'if-modified-since': ?ifModifiedSince},
     );
     if (response.statusCode == HttpStatus.notModified) {
       return const DumpNotModified();
+    }
+    if (response.statusCode >= 500) {
+      throw _ServerError('GET $url : HTTP ${response.statusCode}');
     }
     if (response.statusCode != HttpStatus.ok) {
       throw HttpException('GET $url : HTTP ${response.statusCode}');
@@ -61,6 +92,11 @@ class HttpDumpSource implements DumpSource {
     }
     return DumpDownloaded(response.bodyBytes, lastModified: lastModified);
   }
+}
+
+/// Réponse 5xx : erreur passagère du serveur, retentée.
+class _ServerError extends HttpException {
+  _ServerError(super.message);
 }
 
 /// Lit l'archive depuis un fichier local (développement).
