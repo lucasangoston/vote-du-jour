@@ -54,5 +54,7 @@ void main() {
       ),
       findsOneWidget,
     );
+    await tester.scrollUntilVisible(find.text('Aide et contact'), 200);
+    expect(find.text('Politique de confidentialité'), findsOneWidget);
   });
 }
