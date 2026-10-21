@@ -364,7 +364,7 @@ void main() {
   });
 
   group('les 47 titres non classés par la règle initiale (spike #15)', () {
-    // test/fixtures/titres_non_classes.csv, produit par tools/spike_delai.
+    // test/fixtures/titres_non_classes.csv, produit par le spike #15.
     final expected = <int, Classification>{
       // Première partie d'une loi de finances rejetée : le texte tombe.
       438: retained(DecisionType.premierePartieBudget, rejete),

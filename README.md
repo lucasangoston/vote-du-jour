@@ -21,7 +21,6 @@ packages/vote_contract/  contrat de données partagé (Dart pur) : DecisionIndex
 backend/                 job Dart planifié : téléchargement conditionnel, lecture du dump, sélection des décisions, publication
 app/                     app Flutter (iOS, Android ; cible web pour le développement)
 .github/workflows/       ci.yml (tests), publish.yml (job horaire + lancement manuel) et live.yml (détection en direct)
-tools/                   outils ponctuels (spikes)
 ```
 
 Le job et l'app dépendent du contrat par chemin relatif (`path: ../packages/vote_contract`), sans workspace : chaque paquet se résout seul, et le job tourne en CI avec le seul SDK Dart.

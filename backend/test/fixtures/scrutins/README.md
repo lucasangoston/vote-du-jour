@@ -65,5 +65,5 @@ Ajoutés pour le ticket #10 (détection en direct), archive téléchargée le
 
 `../titres_non_classes.csv` : les 47 intitulés réels que la règle initiale du
 PRD ne classait pas (numéro, date, code du type de vote, sort, titre), produits
-par le spike #15 (`tools/spike_delai`, branche `spike/15-delai-publication`)
+par le spike #15 (outil jetable, supprimé depuis ; voir PR #16)
 sur le même jeu de données.
