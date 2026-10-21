@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistance · Perchoir</title>
+<meta name="description" content="Assistance et questions fréquentes de l'application Perchoir.">
+<style>
+:root{--bg:#F3F4F5;--surface:#FFFFFF;--ink:#15181C;--ink2:#4F5761;--line:#DDE0E3;--accent:#1D6B54;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1113;--surface:#181B1E;--ink:#ECEEF0;--ink2:#A4ABB3;--line:#2A2E33;--accent:#4FB08F}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.9rem;line-height:1.2;margin:16px 0 8px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:32px 0 8px}
+p,li{color:var(--ink2)}
+strong{color:var(--ink)}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+.back{font-weight:600;text-decoration:none}
+.card{background:var(--surface);border-radius:20px;padding:20px;margin-top:16px}
+.card p{margin:0 0 4px}
+details{border-top:1px solid var(--line);padding:14px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:600;color:var(--ink)}
+details p,details ol{margin:10px 0 0}
+footer{margin-top:40px;font-size:.875rem;color:var(--ink2)}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← Perchoir</a>
+  <h1>Assistance</h1>
+
+  <div class="card">
+    <p><strong>Contact</strong></p>
+    <p>Une question, une erreur dans un résumé, un problème ? Écrivez à <a href="mailto:lucasangostonpro@gmail.com">lucasangostonpro@gmail.com</a>. Pour aider, précisez votre téléphone (iPhone ou Android) et la décision concernée.</p>
+  </div>
+
+  <h2>Questions fréquentes</h2>
+
+  <details>
+    <summary>Comment ajouter le widget ?</summary>
+    <p><strong>iPhone :</strong></p>
+    <ol>
+      <li>Restez appuyé sur un espace vide de l'écran d'accueil.</li>
+      <li>Touchez « Modifier », puis « Ajouter un widget ».</li>
+      <li>Cherchez « Perchoir », choisissez une taille (une décision, une décision expliquée, ou les trois dernières), puis « Ajouter le widget ».</li>
+    </ol>
+    <p><strong>Android :</strong></p>
+    <ol>
+      <li>Restez appuyé sur un espace vide de l'écran d'accueil.</li>
+      <li>Touchez « Widgets ».</li>
+      <li>Cherchez « Perchoir » et faites glisser le widget sur l'écran.</li>
+    </ol>
+    <p>Si le widget reste vide, ouvrez l'application une fois. Les étapes sont aussi dans l'application (icône widget en haut de la liste).</p>
+  </details>
+
+  <details>
+    <summary>Comment activer ou couper les notifications ?</summary>
+    <p>Perchoir vous prévient seulement des votes importants : votes solennels, motions de censure, textes de compromis et lectures définitives, et, la veille au soir, l'annonce d'un vote solennel prévu le lendemain, soit une à trois notifications par semaine environ. Pour les couper ou les réactiver : page À propos de l'application, interrupteur « Votes importants ». Vous pouvez aussi les gérer dans les réglages de notifications du téléphone. Si vous aviez refusé l'autorisation, il faut la rétablir dans les réglages du téléphone.</p>
+  </details>
+
+  <details>
+    <summary>Une décision vient d'avoir lieu et n'apparaît pas.</summary>
+    <p>Une décision apparaît 10 à 30 minutes après le vote, marquée « provisoire », puis est confirmée le lendemain avec le décompte complet et le vote de chaque groupe. Seuls les votes sur l'ensemble d'un texte, les motions de censure, les déclarations du Gouvernement, les rejets préalables et les résolutions ont une fiche détaillée. Les articles votés au scrutin public du texte en débat apparaissent seulement dans la carte « En débat », en tête de liste ; les amendements ne sont pas affichés.</p>
+  </details>
+
+  <details>
+    <summary>D'où viennent les données ?</summary>
+    <p>De l'<a href="https://data.assemblee-nationale.fr">open data de l'Assemblée nationale</a>, publié sous <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/">Licence Ouverte Etalab</a>. Chaque décision renvoie vers le texte officiel. Perchoir est une application indépendante et non officielle, liée ni à l'Assemblée, ni au Gouvernement, ni à un parti.</p>
+  </details>
+
+  <details>
+    <summary>Qui rédige les résumés ? Puis-je m'y fier ?</summary>
+    <p>Les titres, explications, points clés et arguments pour et contre sont rédigés automatiquement par une IA (Claude, d'Anthropic), avec une consigne de neutralité, à partir des textes et des comptes rendus des débats, sans relecture humaine. Ils peuvent contenir des erreurs : seuls le texte officiel et le résultat du vote font foi. Signalez toute erreur par e-mail.</p>
+  </details>
+
+  <details>
+    <summary>Faut-il un compte ? Mes données sont-elles collectées ?</summary>
+    <p>Aucun compte, aucune publicité, aucun suivi. Voir la <a href="confidentialite.html">politique de confidentialité</a>.</p>
+  </details>
+
+  <footer><a href="index.html">Perchoir</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="https://github.com/lucasangoston/vote-du-jour">Code source</a></footer>
+</main>
+</body>
+</html>

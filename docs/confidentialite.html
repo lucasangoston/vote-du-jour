@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confidentialité · Perchoir</title>
+<meta name="description" content="Politique de confidentialité de l'application Perchoir.">
+<style>
+:root{--bg:#F3F4F5;--surface:#FFFFFF;--ink:#15181C;--ink2:#4F5761;--line:#DDE0E3;--accent:#1D6B54;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1113;--surface:#181B1E;--ink:#ECEEF0;--ink2:#A4ABB3;--line:#2A2E33;--accent:#4FB08F}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.9rem;line-height:1.2;margin:16px 0 8px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:32px 0 8px}
+p,li{color:var(--ink2)}
+strong{color:var(--ink)}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+.back{font-weight:600;text-decoration:none}
+.card{background:var(--surface);border-radius:20px;padding:20px;margin-top:16px}
+.card p{margin:0}
+ul{padding-left:1.2em}
+footer{margin-top:40px;font-size:.875rem;color:var(--ink2)}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← Perchoir</a>
+  <h1>Politique de confidentialité</h1>
+  <p>Mise à jour le 21 octobre 2026.</p>
+
+  <div class="card">
+    <p><strong>En bref :</strong> Perchoir ne demande aucun compte et l'éditeur ne collecte aucune donnée personnelle. Pas de publicité, pas de mesure d'audience, pas de cookies. Seules les notifications, si vous les gardez, passent par un service de Google (Firebase Cloud Messaging).</p>
+  </div>
+
+  <h2>Responsable du traitement</h2>
+  <p>Lucas Angoston, éditeur de l'application Perchoir, à titre personnel.<br>
+  Contact : <a href="mailto:lucasangostonpro@gmail.com">lucasangostonpro@gmail.com</a></p>
+
+  <h2>Données collectées par l'éditeur</h2>
+  <p>Aucune. L'application ne propose ni compte, ni inscription, ni formulaire. Elle n'envoie à l'éditeur ni nom, ni adresse e-mail, ni localisation, ni contacts, ni historique de lecture, ni identifiant publicitaire. Aucun outil d'analyse d'audience, de mesure de plantages ou de publicité n'est intégré.</p>
+
+  <h2>Contenu affiché</h2>
+  <p>L'application télécharge des fichiers publics (les décisions de l'Assemblée nationale, son ordre du jour et les résumés), identiques pour tous les utilisateurs. Ces fichiers sont hébergés chez Cloudflare (service de stockage R2). Comme pour toute requête sur Internet, l'hébergeur reçoit techniquement l'adresse IP de l'appareil et peut en garder une trace dans ses journaux techniques, selon sa propre politique ; l'éditeur n'exploite pas ces journaux.</p>
+  <p>Les résumés sont rédigés en amont, sur un serveur, par une IA (Claude, d'Anthropic) à partir des textes publics de l'Assemblée. Aucune donnée vous concernant n'est envoyée à Anthropic.</p>
+
+  <h2>Notifications</h2>
+  <p>Si vous les autorisez, l'application peut vous prévenir des votes importants. Pour cela :</p>
+  <ul>
+    <li>Firebase Cloud Messaging (Google) attribue à l'installation de l'application un <strong>jeton technique</strong> (identifiant d'installation), avec quelques informations techniques nécessaires à l'envoi (modèle d'appareil, version du système et de l'application, langue, fuseau horaire).</li>
+    <li><strong>Finalité :</strong> uniquement l'envoi des notifications. Ce jeton est abonné à un sujet commun (« votes importants ») : le même message part vers tous les abonnés ; aucun message n'est personnalisé.</li>
+    <li>Le jeton n'est associé à aucune identité : ni nom, ni e-mail, ni compte. L'éditeur ne le stocke pas et ne le croise avec aucune autre donnée.</li>
+    <li>Les bibliothèques Firebase transmettent aussi à Google des informations techniques non rattachées à un identifiant (type d'appareil, versions du système et des bibliothèques), que Google utilise pour ses statistiques d'usage de Firebase. L'éditeur n'y a pas accès.</li>
+    <li><strong>Base légale :</strong> votre consentement, donné à la demande d'autorisation du système. Tant que les notifications ne sont pas autorisées, l'application ne demande pas de jeton.</li>
+    <li>Vous pouvez arrêter à tout moment : interrupteur « Votes importants » dans la page À propos de l'application (désabonnement du sujet), ou dans les réglages de notifications de votre téléphone. Supprimer l'application supprime le jeton de l'appareil.</li>
+  </ul>
+  <p>Google agit comme sous-traitant pour ce service et peut traiter ces données hors de l'Union européenne, dans le cadre de ses garanties contractuelles. Voir la <a href="https://firebase.google.com/support/privacy">page confidentialité de Firebase</a>.</p>
+
+  <h2>Données stockées sur l'appareil</h2>
+  <p>Vos préférences (par exemple, le choix des notifications) et une copie des dernières décisions, pour l'affichage hors ligne et le widget, sont enregistrées <strong>uniquement sur votre appareil</strong>. Elles ne sont pas transmises à l'éditeur et disparaissent avec l'application.</p>
+
+  <h2>Cookies et traceurs</h2>
+  <p>Ni l'application ni ce site n'utilisent de cookies, de traceurs ou de pixels de mesure.</p>
+
+  <h2>Liens externes</h2>
+  <p>Les liens vers le site de l'Assemblée nationale ou d'autres sites s'ouvrent dans votre navigateur ; ces sites ont leur propre politique de confidentialité.</p>
+
+  <h2>Enfants</h2>
+  <p>L'application ne collecte aucune donnée personnelle, quel que soit l'âge de l'utilisateur.</p>
+
+  <h2>Vos droits</h2>
+  <p>Conformément au RGPD et à la loi Informatique et Libertés, vous disposez de droits d'accès, de rectification, d'effacement, d'opposition, de limitation et de retrait de votre consentement. L'éditeur ne détenant aucune donnée permettant de vous identifier, il ne peut en général pas relier une demande à un appareil ; pour les notifications, couper l'interrupteur ou supprimer l'application suffit. Pour toute question : <a href="mailto:lucasangostonpro@gmail.com">lucasangostonpro@gmail.com</a>.</p>
+  <p>Vous pouvez aussi introduire une réclamation auprès de la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a> (Commission nationale de l'informatique et des libertés).</p>
+
+  <h2>Modifications</h2>
+  <p>Toute évolution de cette politique sera publiée sur cette page, avec sa date de mise à jour.</p>
+
+  <footer><a href="index.html">Perchoir</a> · <a href="support.html">Assistance</a></footer>
+</main>
+</body>
+</html>
