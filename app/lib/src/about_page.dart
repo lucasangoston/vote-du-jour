@@ -9,6 +9,9 @@ import 'theme.dart';
 
 const _openDataUrl = 'https://data.assemblee-nationale.fr';
 const _licenceUrl = 'https://www.etalab.gouv.fr/licence-ouverte-open-licence/';
+const _supportUrl = 'https://lucasangoston.github.io/vote-du-jour/support.html';
+const _privacyUrl =
+    'https://lucasangoston.github.io/vote-du-jour/confidentialite.html';
 
 const _firebaseNotice =
     'Les notifications passent par Firebase Cloud Messaging (Google).';
@@ -88,7 +91,8 @@ class AboutPage extends StatelessWidget {
             _Bullet('Résolutions (sans valeur de loi)'),
             SizedBox(height: 4),
             _Paragraph(
-              'Pas les amendements ni les articles. Adopté ne veut pas dire '
+              'Les articles votés au scrutin public apparaissent dans '
+              '« En débat », pas les amendements. Adopté ne veut pas dire '
               'loi : le texte poursuit son parcours.',
             ),
           ],
@@ -125,6 +129,18 @@ class AboutPage extends StatelessWidget {
               'partir des textes et des comptes rendus, sans relecture. Seuls '
               'le texte officiel et le résultat font foi.',
               style: TextStyle(fontSize: 14, height: 1.5, color: colors.ink2),
+            ),
+          ],
+        ),
+        // Contact exigé par Google Play pour les applis d'actualités.
+        const _Section(
+          title: 'Contact',
+          children: [
+            ExternalLinkRow(label: 'Aide et contact', url: _supportUrl),
+            SizedBox(height: 8),
+            ExternalLinkRow(
+              label: 'Politique de confidentialité',
+              url: _privacyUrl,
             ),
           ],
         ),
