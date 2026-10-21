@@ -171,12 +171,8 @@ class SummaryCache {
       };
 
   /// [index] avec le résumé de chaque décision résumée.
-  DecisionIndex applyTo(DecisionIndex index) => DecisionIndex(
-    generatedAt: index.generatedAt,
-    source: index.source,
-    decisions: [for (final d in index.decisions) apply(d)],
-    upcoming: index.upcoming,
-  );
+  DecisionIndex applyTo(DecisionIndex index) =>
+      index.withDecisions([for (final d in index.decisions) apply(d)]);
 
   /// Reprend les résumés de l'index publié [published] absents du cache
   /// (cache perdu ou illisible) : ils ne sont pas redemandés. Les points ne

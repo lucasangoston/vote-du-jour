@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
+import 'agenda/in_debate.dart';
 import 'arguments/arguments_state.dart';
 import 'decision_details.dart';
 import 'dossier_index.dart';
@@ -119,8 +120,9 @@ class JobPublished extends JobOutcome {
 /// par le réconciliateur ([reconcile]) : ceux que le jeu de données contient
 /// sont confirmés, les autres restent publiés comme provisoires. Le job
 /// enregistre aussi l'instantané des scrutins dont la détection en direct a
-/// besoin ([ConfirmedSnapshot]) ; s'il manque, le jeu de données est
-/// retraité.
+/// besoin ([ConfirmedSnapshot]) et les votes sur les articles du bloc « En
+/// débat » ([ArticleVotesState], #55) ; s'il en manque un, le jeu de données
+/// est retraité.
 ///
 /// Les résumés déjà obtenus ([SummaryCache]) sont appliqués à chaque index
 /// publié. Puis, avec [summaries] (clé d'API présente), qu'un jeu de données
@@ -139,9 +141,12 @@ Future<JobOutcome> runJob({
   bool force = false,
 }) async {
   final warnings = <String>[];
-  // Sans instantané pour la détection en direct (#10), on retraite le jeu
-  // de données pour l'écrire.
-  final previous = force || await store.read(confirmedSnapshotKey) == null
+  // Sans instantané pour la détection en direct (#10) ou sans votes sur
+  // les articles (#55), on retraite le jeu de données pour les écrire.
+  final previous =
+      force ||
+          await store.read(confirmedSnapshotKey) == null ||
+          await store.read(articleVotesKey) == null
       ? null
       : _readLastModified(await store.read(stateKey));
 
@@ -196,11 +201,12 @@ Future<JobOutcome> runJob({
       if (summaryCache.adoptPublished(published, now: now)) {
         await summaryCache.write(store);
       }
-      // L'ordre du jour publié (#52) est gardé : le passage de l'agenda,
-      // juste après le job, le met à jour.
+      // L'ordre du jour (#52) et le texte en débat (#55) publiés sont
+      // gardés : le passage de l'agenda, juste après le job, les met à jour.
       final index = summaryCache
           .applyTo(reconciled.index)
-          .withUpcoming(published?.upcoming);
+          .withUpcoming(published?.upcoming)
+          .withInDebate(published?.inDebate);
       // Les détails avant l'index, qui renvoie vers eux. Les décisions
       // encore provisoires ont le décompte du site, sans vote par groupe.
       // Les décisions déjà argumentées (#35) gardent leurs arguments.
@@ -242,6 +248,7 @@ Future<JobOutcome> runJob({
         scrutins,
         lastModified: lastModified,
       ).write(store);
+      await ArticleVotesState.fromDump(scrutins, now: now).write(store);
       await live
           .keepOnly({for (final s in reconciled.pending) s.uid})
           .write(store);

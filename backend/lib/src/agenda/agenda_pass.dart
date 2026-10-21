@@ -7,6 +7,7 @@ import '../job.dart' show dossiersStateKey, indexCacheControl;
 import '../object_store.dart';
 import 'agenda_reader.dart';
 import 'agenda_source.dart';
+import 'in_debate.dart';
 
 /// Clé de l'état de l'agenda dans le bucket.
 const agendaStateKey = 'state/agenda.json';
@@ -19,8 +20,10 @@ const upcomingHorizon = Duration(days: 7);
 /// vote d'un texte budgétaire tombe souvent au-delà d'une semaine.
 const upcomingVoteHorizon = Duration(days: 14);
 
-/// Une séance finie depuis plus longtemps n'est plus gardée dans l'état.
-const _stateRetention = Duration(days: 1);
+/// Une séance finie depuis plus longtemps n'est plus gardée dans l'état : le
+/// bloc « En débat » (#55) remonte jusqu'à la dernière séance des 7 derniers
+/// jours.
+const _stateRetention = inDebateWindow;
 
 /// Bilan d'un passage.
 class AgendaReport {
@@ -42,7 +45,11 @@ class AgendaReport {
   /// Bloc publié ; `null` si l'index n'a pas été touché.
   List<UpcomingItem>? upcoming;
 
-  /// L'index a été réécrit (le bloc avait changé).
+  /// Texte en débat publié (#55) ; `null` sans texte en débat ou si l'index
+  /// n'a pas été touché.
+  InDebate? inDebate;
+
+  /// L'index a été réécrit (un bloc avait changé).
   bool written = false;
 
   final warnings = <String>[];
@@ -57,6 +64,10 @@ class AgendaReport {
       '  ${u.startsAt.toIso8601String()} ${u.kind.json}'
           '${u.inProgress ? ' (suite)' : ''} ${u.shortTitle}'
           ' [${u.dossierRef ?? 'sans dossier'}]',
+    if (inDebate case final d?)
+      'En débat : ${d.shortTitle} [${d.dossierRef}], séance ${d.seanceRef}, '
+          '${d.articles.length} articles'
+          '${d.articles.isEmpty ? '' : ' (${d.articles.take(6).map((a) => '${a.number} ${a.outcome.json}').join(', ')}…)'}',
     ...warnings.map((w) => 'Attention : $w'),
   ].join('\n');
 }
@@ -70,8 +81,9 @@ class AgendaReport {
 /// 2. le bloc `upcoming` de l'index est recalculé à chaque passage à partir
 ///    des points de l'état ([buildUpcoming]), même si l'agenda n'a pas
 ///    changé : la fenêtre avance et les titres des décisions publiées
-///    peuvent avoir changé ;
-/// 3. l'index n'est réécrit que si le bloc a changé.
+///    peuvent avoir changé ; le bloc `inDebate` aussi ([buildInDebate]), avec
+///    les votes sur les articles écrits par le job ([ArticleVotesState]) ;
+/// 3. l'index n'est réécrit que si l'un des blocs a changé.
 ///
 /// Une panne de l'agenda (serveur indisponible, archive illisible) n'empêche
 /// rien : avertissement, et bloc recalculé à partir du dernier agenda connu
@@ -126,19 +138,33 @@ Future<AgendaReport> runAgendaPass({
     return report;
   }
 
+  final dossiers = await _readDossiers(store);
   final upcoming = buildUpcoming(
     state.points,
     now: now,
     decisions: index.decisions,
-    dossiers: await _readDossiers(store),
+    dossiers: dossiers,
   );
-  report.upcoming = upcoming;
-  if (_encode(upcoming) != _encode(index.upcoming)) {
+  final articleVotes = await ArticleVotesState.read(store, report.warnings);
+  final inDebate = buildInDebate(
+    state.points,
+    now: now,
+    votes: articleVotes?.votes ?? const [],
+    confirmedUpTo: articleVotes?.lastNumero ?? 0,
+    previous: index.inDebate,
+    decisions: index.decisions,
+    dossiers: dossiers,
+  );
+  report
+    ..upcoming = upcoming
+    ..inDebate = inDebate;
+  if (_encode(upcoming) != _encode(index.upcoming) ||
+      jsonEncode(inDebate?.toJson()) != jsonEncode(index.inDebate?.toJson())) {
     await store.write(
       indexPath,
       const JsonEncoder.withIndent(
         '  ',
-      ).convert(index.withUpcoming(upcoming).toJson()),
+      ).convert(index.withUpcoming(upcoming).withInDebate(inDebate).toJson()),
       cacheControl: indexCacheControl,
     );
     report.written = true;
@@ -161,12 +187,7 @@ String _encode(List<UpcomingItem>? items) =>
 ///   de discussion du même texte font un seul point, en cours
 ///   ([UpcomingItem.inProgress]) si la première séance n'est qu'une « suite
 ///   de la discussion » ;
-/// - titre court : celui de la décision publiée la plus récente du même
-///   dossier (titre du résumé, sinon titre court, [decisions]), sinon le
-///   titre du dossier ([dossiers]), sinon le libellé sans formule de
-///   procédure ([cleanLabel]). Une précision du libellé entre parenthèses
-///   (« (première partie) ») est ajoutée au titre d'un vote. Aucun appel au
-///   modèle.
+/// - titre court : [pointShortTitle]. Aucun appel au modèle.
 List<UpcomingItem> buildUpcoming(
   List<AgendaPoint> points, {
   required DateTime now,
@@ -196,7 +217,11 @@ List<UpcomingItem> buildUpcoming(
         startsAt: p.startsAt,
         seanceRef: p.seanceRef,
         label: p.label,
-        shortTitle: _shortTitle(p, dossierUrl, decisions, dossiers),
+        shortTitle: pointShortTitle(
+          p,
+          decisions: decisions,
+          dossiers: dossiers,
+        ),
         inProgress: p.kind == UpcomingKind.discussion && p.followUp,
         dossierRef: p.dossierRef,
         dossierUrl: dossierUrl,
@@ -206,12 +231,20 @@ List<UpcomingItem> buildUpcoming(
   return items;
 }
 
-String _shortTitle(
-  AgendaPoint p,
-  String? dossierUrl,
-  List<DecisionSummary> decisions,
+/// Titre court du point [p] : celui de la décision publiée la plus récente
+/// du même dossier (titre du résumé, sinon titre court, [decisions]), sinon
+/// le titre du dossier ([dossiers]), sinon le libellé sans formule de
+/// procédure ([cleanLabel]). Une précision du libellé entre parenthèses
+/// (« (première partie) ») est ajoutée au titre d'un vote.
+String pointShortTitle(
+  AgendaPoint p, {
+  List<DecisionSummary> decisions = const [],
   DossierIndex? dossiers,
-) {
+}) {
+  final dossierUrl = switch (p.dossierRef) {
+    final ref? => Dossier(uid: ref, title: '').url,
+    null => null,
+  };
   final label = cleanLabel(p.label);
   // L'index va de la décision la plus récente à la plus ancienne.
   final title =

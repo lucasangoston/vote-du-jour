@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
+import '../agenda/agenda_pass.dart' show AgendaState;
+import '../agenda/in_debate.dart';
 import '../decision_details.dart';
 import '../decision_selector.dart';
 import '../dossier_index.dart';
@@ -120,6 +122,7 @@ class LiveChecked extends LiveOutcome {
     required this.detected,
     required this.provisional,
     required this.published,
+    this.inDebate,
     super.warnings,
   });
 
@@ -141,6 +144,9 @@ class LiveChecked extends LiveOutcome {
   /// L'index a-t-il été réécrit ?
   final bool published;
 
+  /// Texte en débat de l'index (#55).
+  final InDebate? inDebate;
+
   @override
   String toString() {
     final numeros = listed.map((s) => s.numero);
@@ -158,6 +164,8 @@ class LiveChecked extends LiveOutcome {
           for (final d in provisional)
             '  ${d.numero} ${formatDate(d.date)} ${d.result.json} '
                 '${d.displayTitle} (${d.stage})',
+          if (inDebate case final d?)
+            'En débat : ${d.shortTitle}, ${d.articles.length} articles.',
           published ? 'Index republié ($indexPath).' : 'Index inchangé.',
         ].join('\n') +
         _warnings;
@@ -175,8 +183,13 @@ const maxScrutinPagesPerPass = 5;
 /// l'instantané) passent par le sélecteur ; ceux qu'il retient deviennent des
 /// scrutins provisoires, gardés dans l'état ([liveStateKey]) jusqu'à leur
 /// confirmation. L'index est reconstruit par [reconcile] à partir de
-/// l'instantané du jeu de données ([confirmedSnapshotKey]) et n'est réécrit
-/// que si ses décisions changent.
+/// l'instantané du jeu de données ([confirmedSnapshotKey]).
+///
+/// Le bloc « En débat » (#55) est recalculé ([buildInDebate]) avec l'ordre
+/// du jour gardé par le passage de l'agenda ([AgendaState]), les votes sur
+/// les articles du jeu de données ([ArticleVotesState]) et ceux de la liste
+/// du site plus récents ; sans agenda connu, le bloc publié est gardé.
+/// L'index n'est réécrit que si ses décisions ou ce bloc changent.
 ///
 /// Une erreur de lecture du site renvoie [LiveFailed] sans rien écrire.
 Future<LiveOutcome> runLivePass({
@@ -277,9 +290,30 @@ Future<LiveOutcome> runLivePass({
     ..adoptPublished(publishedIndex, now: now);
   // L'ordre du jour (#52) n'est mis à jour que par le job horaire : le
   // passage en direct garde celui de l'index publié.
-  final index = summaries
-      .applyTo(reconciled.index)
-      .withUpcoming(publishedIndex?.upcoming);
+  final summarized = summaries.applyTo(reconciled.index);
+  final agenda = await AgendaState.read(store, warnings);
+  final articleVotes = await ArticleVotesState.read(store, warnings);
+  final inDebate = agenda == null
+      ? publishedIndex?.inDebate
+      : buildInDebate(
+          agenda.points,
+          now: now,
+          votes: articleVotes?.votes ?? const [],
+          confirmedUpTo: articleVotes?.lastNumero ?? upTo,
+          provisional: [
+            for (final s in listed)
+              if (s.result != null)
+                ?ArticleVote.fromScrutin(
+                  s.toScrutin(fallbackDate: parisDay(now)),
+                ),
+          ],
+          previous: publishedIndex?.inDebate,
+          decisions: summarized.decisions,
+          dossiers: dossiers,
+        );
+  final index = summarized
+      .withUpcoming(publishedIndex?.upcoming)
+      .withInDebate(inDebate);
 
   // Détails des décisions provisoires avant l'index qui renvoie vers eux
   // (#6) ; seuls ceux qui ont changé sont réécrits.
@@ -288,7 +322,7 @@ Future<LiveOutcome> runLivePass({
     buildProvisionalDetails(reconciled.pending, index),
   );
 
-  final changed = !_sameDecisions(published, index);
+  final changed = !_samePublished(published, index);
   if (changed) {
     await store.write(
       indexPath,
@@ -318,6 +352,7 @@ Future<LiveOutcome> runLivePass({
         if (d.status == DecisionStatus.provisoire) d,
     ],
     published: changed,
+    inDebate: inDebate,
     warnings: warnings,
   );
 }
@@ -336,15 +371,16 @@ bool _isDecision(SiteScrutin s, VoteResult result) =>
         is Retained ||
     isArticleUniqueVote(s.titre);
 
-/// Les décisions de l'index publié [published] (JSON) sont-elles celles de
-/// [index] ? La date de génération n'est pas comparée.
-bool _sameDecisions(String? published, DecisionIndex index) {
+/// Les décisions et le texte en débat de l'index publié [published] (JSON)
+/// sont-ils ceux de [index] ? La date de génération n'est pas comparée.
+bool _samePublished(String? published, DecisionIndex index) {
   if (published == null) return false;
   try {
     final json = jsonDecode(published);
+    final next = index.toJson();
     return json is Map &&
-        jsonEncode(json['decisions']) ==
-            jsonEncode(index.toJson()['decisions']);
+        jsonEncode(json['decisions']) == jsonEncode(next['decisions']) &&
+        jsonEncode(json['inDebate']) == jsonEncode(next['inDebate']);
   } on FormatException {
     return false;
   }

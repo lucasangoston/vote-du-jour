@@ -1,4 +1,5 @@
 import 'decision.dart';
+import 'in_debate.dart';
 import 'paths.dart';
 import 'upcoming_item.dart';
 
@@ -54,6 +55,7 @@ class DecisionIndex {
     required this.decisions,
     this.source = SourceAttribution.assembleeNationale,
     this.upcoming,
+    this.inDebate,
   });
 
   /// Instant de génération du fichier par le job.
@@ -68,12 +70,42 @@ class DecisionIndex {
   /// pu lire l'agenda ; une liste vide quand rien n'est inscrit.
   final List<UpcomingItem>? upcoming;
 
+  /// Texte en débat (#55) : texte discuté lors de la séance en cours ou de
+  /// la dernière séance des 7 derniers jours, et ses articles votés au
+  /// scrutin public. Champ optionnel : `null` sans texte en débat, dans les
+  /// index publiés avant son ajout, ou tant que le job n'a jamais pu lire
+  /// l'agenda.
+  final InDebate? inDebate;
+
   /// Le même index avec l'ordre du jour [upcoming].
   DecisionIndex withUpcoming(List<UpcomingItem>? upcoming) => DecisionIndex(
     generatedAt: generatedAt,
     decisions: decisions,
     source: source,
     upcoming: upcoming,
+    inDebate: inDebate,
+  );
+
+  /// Le même index avec le texte en débat [inDebate].
+  DecisionIndex withInDebate(InDebate? inDebate) => DecisionIndex(
+    generatedAt: generatedAt,
+    decisions: decisions,
+    source: source,
+    upcoming: upcoming,
+    inDebate: inDebate,
+  );
+
+  /// Le même index avec les décisions [decisions] (ordre du jour et texte en
+  /// débat gardés).
+  DecisionIndex withDecisions(
+    List<DecisionSummary> decisions, {
+    DateTime? generatedAt,
+  }) => DecisionIndex(
+    generatedAt: generatedAt ?? this.generatedAt,
+    decisions: decisions,
+    source: source,
+    upcoming: upcoming,
+    inDebate: inDebate,
   );
 
   /// Lit un index publié.
@@ -81,7 +113,8 @@ class DecisionIndex {
   /// Lève [UnsupportedSchemaException] si le fichier n'est pas en version
   /// [schemaVersion], et [FormatException] s'il est malformé. Les décisions
   /// illisibles (valeur inconnue ajoutée par un job plus récent) sont ignorées,
-  /// comme les points à venir illisibles.
+  /// comme les points à venir illisibles ; un texte en débat malformé vaut
+  /// absence.
   factory DecisionIndex.fromJson(Object? json) {
     if (json is! Map<String, Object?>) {
       throw const FormatException('Index : objet JSON attendu');
@@ -106,6 +139,7 @@ class DecisionIndex {
       upcoming: upcoming is List
           ? [for (final u in upcoming) ?UpcomingItem.tryFromJson(u)]
           : null,
+      inDebate: InDebate.tryFromJson(json['inDebate']),
     );
   }
 
@@ -115,6 +149,7 @@ class DecisionIndex {
     'source': source.toJson(),
     'decisions': [for (final d in decisions) d.toJson()],
     'upcoming': ?upcoming?.map((u) => u.toJson()).toList(),
+    'inDebate': ?inDebate?.toJson(),
   };
 }
 

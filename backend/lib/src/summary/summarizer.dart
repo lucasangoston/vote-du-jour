@@ -338,12 +338,7 @@ Future<void> _publish(
   await store.write(
     indexPath,
     const JsonEncoder.withIndent('  ').convert(
-      DecisionIndex(
-        generatedAt: now,
-        source: updated.source,
-        decisions: updated.decisions,
-        upcoming: updated.upcoming,
-      ).toJson(),
+      updated.withDecisions(updated.decisions, generatedAt: now).toJson(),
     ),
     cacheControl: indexCacheControl,
   );

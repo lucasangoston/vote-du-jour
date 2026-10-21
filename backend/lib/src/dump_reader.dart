@@ -65,6 +65,9 @@ Scrutin parseScrutinJson(String json, {String source = 'scrutin'}) {
         dossier is Map<String, Object?> && dossier['dossierRef'] is String
         ? dossier['dossierRef'] as String
         : null,
+    seanceRef: s['seanceRef'] is String && (s['seanceRef'] as String).isNotEmpty
+        ? s['seanceRef'] as String
+        : null,
     groupVotes: [
       for (final g in r.list(
         r.map(

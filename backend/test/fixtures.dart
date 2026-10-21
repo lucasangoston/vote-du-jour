@@ -8,8 +8,17 @@ const fixtureNumeros = [
   3022, 3054, 4241, 4696, 4758, 4802, 5731, 6346, 7349,
 ];
 
-File fixtureFile(int numero) =>
-    File('test/fixtures/scrutins/VTANR5L17V$numero.json');
+/// Scrutins des séances du 16 au 21 octobre 2026 (articles du PLF et du
+/// PLFSS 2027), enregistrés dans `test/fixtures/en_debat/scrutins/` pour le
+/// ticket #55 (hors de [fixtureNumeros]).
+const inDebateNumeros = [
+  8874, 8875, 8876, 8883, 8885, 8887, 8888, 8889, 8891, 8892, 8895, 8896, //
+  8897, 8905, 8931,
+];
+
+File fixtureFile(int numero) => inDebateNumeros.contains(numero)
+    ? File('test/fixtures/en_debat/scrutins/VTANR5L17V$numero.json')
+    : File('test/fixtures/scrutins/VTANR5L17V$numero.json');
 
 /// Scrutins sur l'article unique d'un texte (et votes sur l'ensemble qui les
 /// suivent), enregistrés dans `test/fixtures/scrutins/` pour le ticket #22.
@@ -57,13 +66,20 @@ List<int> fixtureDossiersArchive({Map<String, String> extra = const {}}) {
 /// Les réunions de `test/fixtures/agenda/reunion/`, réunies dans une archive
 /// au format de l'agenda officiel (`json/reunion/<uid>.json`). [replace]
 /// remplace le contenu d'un fichier (par uid), pour simuler un nouvel agenda.
-List<int> fixtureAgendaArchive({Map<String, String> replace = const {}}) {
+/// [withPastSeances] ajoute les séances passées du 16 au 21 octobre de
+/// `test/fixtures/en_debat/reunion/` (ticket #55).
+List<int> fixtureAgendaArchive({
+  Map<String, String> replace = const {},
+  bool withPastSeances = false,
+}) {
   final archive = Archive();
-  final files =
-      Directory(
-          'test/fixtures/agenda/reunion',
-        ).listSync().whereType<File>().toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
+  final files = [
+    for (final dir in [
+      'test/fixtures/agenda/reunion',
+      if (withPastSeances) 'test/fixtures/en_debat/reunion',
+    ])
+      ...Directory(dir).listSync().whereType<File>(),
+  ]..sort((a, b) => a.path.compareTo(b.path));
   for (final f in files) {
     final name = f.uri.pathSegments.last;
     final uid = name.replaceFirst('.json', '');
