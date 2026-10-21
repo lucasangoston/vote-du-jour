@@ -272,9 +272,14 @@ Future<LiveOutcome> runLivePass({
   // en direct applique seulement ceux du cache, et ceux de l'index publié
   // si le cache est perdu. Il n'écrit jamais le cache.
   final published = await store.read(indexPath);
+  final publishedIndex = _tryIndex(published);
   final summaries = await SummaryCache.read(store, warnings)
-    ..adoptPublished(_tryIndex(published), now: now);
-  final index = summaries.applyTo(reconciled.index);
+    ..adoptPublished(publishedIndex, now: now);
+  // L'ordre du jour (#52) n'est mis à jour que par le job horaire : le
+  // passage en direct garde celui de l'index publié.
+  final index = summaries
+      .applyTo(reconciled.index)
+      .withUpcoming(publishedIndex?.upcoming);
 
   // Détails des décisions provisoires avant l'index qui renvoie vers eux
   // (#6) ; seuls ceux qui ont changé sont réécrits.

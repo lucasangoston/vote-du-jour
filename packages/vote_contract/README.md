@@ -235,3 +235,41 @@ relecture humaine (`DecisionArguments`).
   ou version absente, aucun argument lisible) sont ignorés : le détail reste
   lisible. Un argument illisible est ignoré.
 - Ajout rétrocompatible : les anciennes versions de l'app ignorent le champ.
+
+## Ordre du jour : « À venir » (ticket #52)
+
+Champ optionnel `upcoming` de l'index (`DecisionIndex.upcoming`, liste de
+`UpcomingItem`) : les textes discutés et les votes solennels inscrits à
+l'ordre du jour officiel des prochains jours, du plus proche au plus lointain.
+
+```json
+"upcoming": [
+  {
+    "id": "RUANR5L17S2027IDS30964PT53289",
+    "kind": "vote_solennel",
+    "startsAt": "2026-10-27T14:00:00.000Z",
+    "seanceRef": "RUANR5L17S2027IDS30964",
+    "label": "Vote solennel sur le projet de loi de financement de la sécurité sociale pour 2027",
+    "shortTitle": "Projet de loi de financement de la sécurité sociale pour 2027",
+    "dossierRef": "DLR5L17N54951",
+    "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54951"
+  }
+]
+```
+
+- `kind` : `discussion` (discussion d'un texte) ou `vote_solennel` (vote
+  solennel ou par scrutin public). Un point de nature inconnue (ajoutée par un
+  job plus récent) ou malformé est ignoré.
+- `startsAt` : début de la séance, instant UTC (l'app l'affiche en heure de
+  Paris) ; l'ordre du jour ne donne pas l'heure du point. `seanceRef` : la
+  séance, celle que cite le scrutin (`seanceRef`) une fois le vote passé.
+- `label` : libellé officiel du point ; `shortTitle` : titre à afficher (titre
+  d'une décision déjà publiée du même dossier, sinon du dossier, sinon libellé
+  nettoyé).
+- `inProgress` (optionnel, absent vaut `false`) : discussion commencée avant
+  la période couverte (« Suite de la discussion »).
+- `dossierRef`, `dossierUrl` (optionnels) : dossier législatif, s'il est connu.
+- `upcoming` absent : index antérieur au ticket, ou agenda jamais lu ; liste
+  vide : rien d'inscrit.
+- Ajout rétrocompatible : même `schemaVersion`, les anciennes versions de
+  l'app ignorent le champ.

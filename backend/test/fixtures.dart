@@ -53,3 +53,29 @@ List<int> fixtureDossiersArchive({Map<String, String> extra = const {}}) {
   }
   return ZipEncoder().encodeBytes(archive);
 }
+
+/// Les réunions de `test/fixtures/agenda/reunion/`, réunies dans une archive
+/// au format de l'agenda officiel (`json/reunion/<uid>.json`). [replace]
+/// remplace le contenu d'un fichier (par uid), pour simuler un nouvel agenda.
+List<int> fixtureAgendaArchive({Map<String, String> replace = const {}}) {
+  final archive = Archive();
+  final files =
+      Directory(
+          'test/fixtures/agenda/reunion',
+        ).listSync().whereType<File>().toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
+  for (final f in files) {
+    final name = f.uri.pathSegments.last;
+    final uid = name.replaceFirst('.json', '');
+    archive.addFile(
+      replace[uid] != null
+          ? ArchiveFile.string('json/reunion/$name', replace[uid]!)
+          : ArchiveFile.bytes('json/reunion/$name', f.readAsBytesSync()),
+    );
+  }
+  return ZipEncoder().encodeBytes(archive);
+}
+
+/// Contenu de la réunion [uid] des fixtures de l'agenda.
+String fixtureReunion(String uid) =>
+    File('test/fixtures/agenda/reunion/$uid.json').readAsStringSync();

@@ -55,4 +55,4 @@ jobs:
           R2_PUBLIC_BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
         run: |
           curl -fsS "$R2_PUBLIC_BASE_URL/v1/latest.json" \
-            | python3 -c 'import json,sys; d=json.load(sys.stdin); print("schemaVersion", d["schemaVersion"], "-", len(d["decisions"]), "décisions, générées le", d["generatedAt"])'
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print("schemaVersion", d["schemaVersion"], "-", len(d["decisions"]), "décisions, générées le", d["generatedAt"], "-", len(d.get("upcoming") or []), "points à venir")'

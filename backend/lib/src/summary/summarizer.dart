@@ -342,6 +342,7 @@ Future<void> _publish(
         generatedAt: now,
         source: updated.source,
         decisions: updated.decisions,
+        upcoming: updated.upcoming,
       ).toJson(),
     ),
     cacheControl: indexCacheControl,
