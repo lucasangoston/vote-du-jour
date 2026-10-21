@@ -105,10 +105,11 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
   override suspend fun provideGlance(context: Context, id: GlanceId) {
     provideContent {
       val preferences = currentState<HomeWidgetGlanceState>().preferences
-      val decisions =
+      val snapshot =
           DecisionSnapshot.parse(preferences.getString(DecisionSnapshot.STORAGE_KEY, null))
-              ?.latest(decisionCount)
-              .orEmpty()
+      val decisions = snapshot?.latest(decisionCount).orEmpty()
+      // Calculé à chaque rendu : le worker redessine le widget juste après minuit (#56).
+      val upcoming = snapshot?.upcomingVote()
       Box(
           modifier =
               GlanceModifier.fillMaxSize()
@@ -116,10 +117,18 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
                   .background(WidgetColors.surface)
                   .cornerRadius(22.dp)
                   .padding(horizontal = horizontalPadding, vertical = verticalPadding)
-                  .clickable(actionStartActivity<MainActivity>(context, tapUri(decisions))),
+                  .clickable(
+                      actionStartActivity<MainActivity>(context, tapUri(decisions, upcoming))
+                  ),
           contentAlignment = Alignment.TopStart,
       ) {
-        if (decisions.isEmpty()) EmptyContent() else Content(context, decisions)
+        when {
+          // Sans décision récente, le petit et le moyen widget annoncent le prochain vote
+          // solennel ; le grand l'ajoute sous ses décisions.
+          upcoming != null && !upcomingBelowDecisions -> UpcomingContent(upcoming)
+          decisions.isEmpty() -> EmptyContent()
+          else -> Content(context, decisions, upcoming)
+        }
       }
     }
   }
@@ -134,11 +143,25 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
   @Composable
   protected fun contentHeight(): Dp = LocalSize.current.height - verticalPadding * 2
 
-  /** Lien d'un tap hors des lignes : par défaut, le détail de la dernière décision. */
-  protected open fun tapUri(decisions: List<WidgetDecision>): Uri =
-      decisions.firstOrNull()?.let(::detailUri) ?: LIST_URI
+  /**
+   * Lien d'un tap hors des lignes : par défaut, le détail de la dernière décision, ou la liste
+   * quand le widget annonce le prochain vote.
+   */
+  protected open fun tapUri(decisions: List<WidgetDecision>, upcoming: UpcomingVote?): Uri =
+      decisions.firstOrNull()?.takeIf { upcoming == null }?.let(::detailUri) ?: LIST_URI
 
-  @Composable protected abstract fun Content(context: Context, decisions: List<WidgetDecision>)
+  /** Le prochain vote s'ajoute sous les décisions (grand widget) au lieu de les remplacer. */
+  protected open val upcomingBelowDecisions = false
+
+  @Composable
+  protected abstract fun Content(
+      context: Context,
+      decisions: List<WidgetDecision>,
+      upcoming: UpcomingVote?,
+  )
+
+  /** Annonce du prochain vote solennel, à la place de la dernière décision (#56). */
+  @Composable protected open fun UpcomingContent(vote: UpcomingVote) {}
 }
 
 /**
@@ -148,8 +171,44 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
 class DecisionWidget : BaseDecisionWidget() {
   override val horizontalPadding = 16.dp
 
+  /** Le jour du vote dans la colonne de l'arc, « Prochain vote solennel » et le titre court. */
   @Composable
-  override fun Content(context: Context, decisions: List<WidgetDecision>) {
+  override fun UpcomingContent(vote: UpcomingVote) {
+    val roomy = contentWidth() >= 280.dp && contentHeight() >= 100.dp
+    Row(
+        modifier =
+            GlanceModifier.fillMaxSize().semantics {
+              contentDescription = WidgetText.upcomingDescription(vote)
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Column(
+          modifier = GlanceModifier.width(if (roomy) 92.dp else 64.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(vote.weekdayLabel, style = meta(13.sp), maxLines = 1)
+        Text(
+            vote.dayOfMonthLabel,
+            style = titleStyle(if (roomy) 34.sp else 28.sp),
+            maxLines = 1,
+        )
+        Text(vote.monthLabel, style = meta(13.sp), maxLines = 1)
+      }
+      Spacer(GlanceModifier.width(14.dp))
+      Column(modifier = GlanceModifier.defaultWeight()) {
+        Text(WidgetText.UPCOMING_KICKER, style = meta(), maxLines = 1)
+        Spacer(GlanceModifier.height(5.dp))
+        Text(vote.title, style = titleStyle(14.5.sp), maxLines = 3)
+      }
+    }
+  }
+
+  @Composable
+  override fun Content(
+      context: Context,
+      decisions: List<WidgetDecision>,
+      upcoming: UpcomingVote?,
+  ) {
     val decision = decisions.first()
     // Colonne de la maquette (92 dp) ; plus étroite si le widget est réduit.
     val roomy = contentWidth() >= 280.dp && contentHeight() >= 100.dp
@@ -212,8 +271,31 @@ class DecisionWidget : BaseDecisionWidget() {
  * « provisoire » ou « à main levée »).
  */
 class SmallDecisionWidget : BaseDecisionWidget() {
+  /** « Prochain vote solennel », le jour à la place de l'arc, puis le titre court. */
   @Composable
-  override fun Content(context: Context, decisions: List<WidgetDecision>) {
+  override fun UpcomingContent(vote: UpcomingVote) {
+    // Lignes de titre (18 dp chacune) sous l'annonce et le jour (~46 dp).
+    val titleLines = ((contentHeight() - 52.dp) / 18.dp).toInt().coerceIn(1, 4)
+    Column(
+        modifier =
+            GlanceModifier.fillMaxSize().semantics {
+              contentDescription = WidgetText.upcomingDescription(vote)
+            }
+    ) {
+      Text(WidgetText.UPCOMING_KICKER, style = meta(), maxLines = 1)
+      Spacer(GlanceModifier.height(2.dp))
+      Text(WidgetText.capitalized(vote.dayLabel), style = titleStyle(20.sp), maxLines = 1)
+      Spacer(GlanceModifier.defaultWeight())
+      Text(vote.title, style = titleStyle(14.sp), maxLines = titleLines)
+    }
+  }
+
+  @Composable
+  override fun Content(
+      context: Context,
+      decisions: List<WidgetDecision>,
+      upcoming: UpcomingVote?,
+  ) {
     val decision = decisions.first()
     // Maquette : arc de 58 dp à côté de « Adopté » (~46 dp) ; plus petit si la place manque.
     val arcWidth = (contentWidth() - 48.dp).coerceIn(32.dp, 58.dp)
@@ -255,11 +337,18 @@ class LargeDecisionWidget : BaseDecisionWidget() {
   override val horizontalPadding = 16.dp
   override val verticalPadding = 14.dp
 
-  override fun tapUri(decisions: List<WidgetDecision>): Uri = LIST_URI
+  override fun tapUri(decisions: List<WidgetDecision>, upcoming: UpcomingVote?): Uri = LIST_URI
+
+  override val upcomingBelowDecisions = true
 
   @Composable
-  override fun Content(context: Context, decisions: List<WidgetDecision>) {
-    // Glance limite un Column à 10 enfants : en-tête, marge, puis ligne et filet par décision.
+  override fun Content(
+      context: Context,
+      decisions: List<WidgetDecision>,
+      upcoming: UpcomingVote?,
+  ) {
+    // Glance limite un Column à 10 enfants : en-tête, marge, puis ligne et filet par décision, et
+    // la ligne du prochain vote (#56).
     Column(modifier = GlanceModifier.fillMaxSize()) {
       Row(verticalAlignment = Alignment.CenterVertically) {
         Logo(GlanceModifier.size(22.dp, 12.dp))
@@ -274,9 +363,37 @@ class LargeDecisionWidget : BaseDecisionWidget() {
       Spacer(GlanceModifier.height(6.dp))
       decisions.forEachIndexed { index, decision ->
         DecisionRow(context, decision, GlanceModifier.defaultWeight())
-        if (index < decisions.lastIndex) {
+        if (index < decisions.lastIndex || upcoming != null) {
           Box(GlanceModifier.fillMaxWidth().height(1.dp).background(WidgetColors.rule)) {}
         }
+      }
+      // Hors des liens des décisions : le tap ouvre la liste.
+      upcoming?.let { UpcomingRow(it, GlanceModifier.defaultWeight()) }
+    }
+  }
+
+  /** Le jour à la place de l'arc, le titre court, puis « Prochain vote solennel · mar. 27 oct. ». */
+  @Composable
+  private fun UpcomingRow(vote: UpcomingVote, modifier: GlanceModifier) {
+    Row(
+        modifier =
+            modifier.fillMaxWidth().semantics {
+              contentDescription = WidgetText.upcomingDescription(vote)
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Column(
+          modifier = GlanceModifier.width(48.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(vote.dayOfMonthLabel, style = titleStyle(17.sp), maxLines = 1)
+        Text(vote.monthLabel, style = meta(11.sp), maxLines = 1)
+      }
+      Spacer(GlanceModifier.width(12.dp))
+      Column(modifier = GlanceModifier.defaultWeight()) {
+        Text(vote.title, style = titleStyle(14.sp), maxLines = 2)
+        Spacer(GlanceModifier.height(3.dp))
+        Text(WidgetText.largeUpcomingMeta(vote), style = meta(), maxLines = 1)
       }
     }
   }

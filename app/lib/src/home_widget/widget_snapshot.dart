@@ -26,24 +26,45 @@ import '../vote_mode_label.dart';
 ///       "count": {"pour": 503, "contre": 0, "abstentions": 67},
 ///       "voteMode": "scrutin_public"
 ///     }
+///   ],
+///   "upcomingVotes": [
+///     {
+///       "id": "RUANR5L17S2027IDS30964PT53289",
+///       "startsAt": "2026-10-27T14:00:00.000Z",
+///       "title": "Budget de la Sécurité sociale pour 2027"
+///     }
 ///   ]
 /// }
 /// ```
 class WidgetSnapshot {
-  const WidgetSnapshot({required this.savedAt, required this.decisions});
+  const WidgetSnapshot({
+    required this.savedAt,
+    required this.decisions,
+    this.upcomingVotes = const [],
+  });
 
   /// Construit l'instantané à partir de l'index publié : les [maxDecisions]
-  /// plus récentes (le grand widget en affichera trois).
+  /// plus récentes (le grand widget en affichera trois) et les
+  /// [maxUpcomingVotes] prochains votes solennels de l'ordre du jour (#56).
   factory WidgetSnapshot.fromIndex(
     DecisionIndex index, {
     required DateTime savedAt,
     int maxDecisions = 3,
+    int maxUpcomingVotes = 3,
   }) {
+    final votes = [
+      for (final u in index.upcoming ?? const <UpcomingItem>[])
+        if (u.kind == UpcomingKind.voteSolennel) u,
+    ]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
     return WidgetSnapshot(
       savedAt: savedAt,
       decisions: [
         for (final d in index.decisions.take(maxDecisions))
           WidgetDecision.fromSummary(d),
+      ],
+      upcomingVotes: [
+        for (final u in votes.take(maxUpcomingVotes))
+          WidgetUpcomingVote.fromItem(u),
       ],
     );
   }
@@ -62,6 +83,12 @@ class WidgetSnapshot {
   /// Décisions, de la plus récente à la plus ancienne.
   final List<WidgetDecision> decisions;
 
+  /// Prochains votes solennels, du plus proche au plus lointain (#56). Les
+  /// widgets montrent le premier qui n'est pas passé quand la dernière
+  /// décision a plus de trois jours. Champ optionnel : absent d'un instantané
+  /// antérieur, et omis s'il est vide.
+  final List<WidgetUpcomingVote> upcomingVotes;
+
   /// Lit un instantané ; renvoie `null` s'il est illisible ou d'une autre
   /// version. Les décisions malformées sont ignorées.
   static WidgetSnapshot? tryFromJson(Object? json) {
@@ -70,12 +97,18 @@ class WidgetSnapshot {
     }
     final savedAt = DateTime.tryParse('${json['savedAt']}');
     final decisions = json['decisions'];
+    final upcomingVotes = json['upcomingVotes'];
     if (savedAt == null || decisions is! List) return null;
     return WidgetSnapshot(
       savedAt: savedAt,
       decisions: [
         for (final d in decisions)
           if (d is Map<String, Object?>) ?WidgetDecision.tryFromJson(d),
+      ],
+      upcomingVotes: [
+        if (upcomingVotes is List)
+          for (final u in upcomingVotes)
+            if (u is Map<String, Object?>) ?WidgetUpcomingVote.tryFromJson(u),
       ],
     );
   }
@@ -84,6 +117,53 @@ class WidgetSnapshot {
     'version': version,
     'savedAt': savedAt.toUtc().toIso8601String(),
     'decisions': [for (final d in decisions) d.toJson()],
+    if (upcomingVotes.isNotEmpty)
+      'upcomingVotes': [for (final u in upcomingVotes) u.toJson()],
+  };
+}
+
+/// Un vote solennel inscrit à l'ordre du jour, tel que l'affichent les
+/// widgets (« Prochain vote solennel », « mar. 27 oct. », titre court ; #56).
+class WidgetUpcomingVote {
+  const WidgetUpcomingVote({
+    required this.id,
+    required this.startsAt,
+    required this.title,
+  });
+
+  factory WidgetUpcomingVote.fromItem(UpcomingItem item) => WidgetUpcomingVote(
+    id: item.id,
+    startsAt: item.startsAt,
+    title: _capitalize(item.shortTitle.trim()),
+  );
+
+  /// Identifiant du point de l'ordre du jour.
+  final String id;
+
+  /// Début de la séance (instant UTC). Les widgets affichent le jour en heure
+  /// de Paris et cessent de montrer le vote le lendemain.
+  final DateTime startsAt;
+
+  /// Titre court du texte voté, déjà prêt à afficher.
+  final String title;
+
+  static WidgetUpcomingVote? tryFromJson(Map<String, Object?> json) {
+    final id = json['id'];
+    final startsAt = DateTime.tryParse('${json['startsAt']}');
+    final title = json['title'];
+    if (id is! String ||
+        startsAt == null ||
+        title is! String ||
+        title.trim().isEmpty) {
+      return null;
+    }
+    return WidgetUpcomingVote(id: id, startsAt: startsAt.toUtc(), title: title);
+  }
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'startsAt': startsAt.toUtc().toIso8601String(),
+    'title': title,
   };
 }
 

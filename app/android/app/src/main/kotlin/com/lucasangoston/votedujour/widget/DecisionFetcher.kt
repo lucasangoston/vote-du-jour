@@ -72,6 +72,8 @@ object SnapshotConverter {
   private const val SCHEMA_VERSION = 1
   private const val SNAPSHOT_VERSION = 1
   private const val MAX_DECISIONS = 3
+  private const val MAX_UPCOMING_VOTES = 3
+  private const val VOTE_SOLENNEL = "vote_solennel"
 
   private val TYPES =
       setOf(
@@ -109,11 +111,36 @@ object SnapshotConverter {
       if (decisions.length() == MAX_DECISIONS) break
       items.optJSONObject(i)?.let(::convert)?.let(decisions::put)
     }
-    return JSONObject()
-        .put("version", SNAPSHOT_VERSION)
-        .put("savedAt", savedAt.truncatedTo(ChronoUnit.MILLIS).toString())
-        .put("decisions", decisions)
-        .toString()
+    val snapshot =
+        JSONObject()
+            .put("version", SNAPSHOT_VERSION)
+            .put("savedAt", savedAt.truncatedTo(ChronoUnit.MILLIS).toString())
+            .put("decisions", decisions)
+    // Prochains votes solennels (#56), comme `WidgetSnapshot.fromIndex` : les trois plus proches,
+    // champ omis s'il n'y en a pas.
+    val upcoming = root.optJSONArray("upcoming")
+    val votes =
+        (0 until (upcoming?.length() ?: 0))
+            .mapNotNull { i -> upcoming?.optJSONObject(i)?.let(::convertUpcoming) }
+            .sortedBy { it.startsAt }
+            .take(MAX_UPCOMING_VOTES)
+    if (votes.isNotEmpty()) {
+      snapshot.put("upcomingVotes", JSONArray(votes.map { it.toJson() }))
+    }
+    return snapshot.toString()
+  }
+
+  /**
+   * Vote solennel du bloc `upcoming`, mêmes règles que `UpcomingItem.tryFromJson` : un point
+   * malformé ou d'une autre nature (discussion) est ignoré.
+   */
+  private fun convertUpcoming(u: JSONObject): UpcomingVote? {
+    val id = u.opt("id") as? String ?: return null
+    if (u.opt("kind") != VOTE_SOLENNEL) return null
+    val startsAt = UpcomingVote.instant(u.opt("startsAt") as? String) ?: return null
+    if (u.opt("seanceRef") !is String || u.opt("label") !is String) return null
+    val title = optionalString(u, "shortTitle")?.trim() ?: return null
+    return UpcomingVote(id, startsAt, title.replaceFirstChar { it.uppercase() })
   }
 
   /** Mêmes règles que `DecisionSummary.tryFromJson` : une décision malformée est ignorée. */

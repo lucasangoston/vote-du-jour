@@ -154,6 +154,121 @@ final class SnapshotConverterTests: XCTestCase {
     print("Instantané téléchargé : \(snapshot.decisions.map(\.title))")
   }
 
+  // MARK: - Prochain vote solennel (#56)
+
+  private func upcoming(
+    _ id: String, kind: String = "vote_solennel", startsAt: String, shortTitle: String = "budget",
+    extra: String = ""
+  ) -> String {
+    """
+    {"id":"\(id)","kind":"\(kind)","startsAt":"\(startsAt)","seanceRef":"RUANS1",
+    "label":"Vote solennel","shortTitle":"\(shortTitle)"\(extra)}
+    """
+  }
+
+  private func snapshot(upcoming items: [String]?) throws -> String {
+    let block = items.map { #","upcoming":["# + $0.joined(separator: ",") + "]" } ?? ""
+    let index = #"{"schemaVersion":1,"decisions":["# + decision(8730) + "]" + block + "}"
+    return try XCTUnwrap(
+      SnapshotConverter.snapshot(fromIndex: Data(index.utf8), savedAt: savedAt))
+  }
+
+  func testVotesSolennelsAVenir() throws {
+    let json = try snapshot(upcoming: [
+      upcoming("PT3", startsAt: "2026-11-03T14:00:00Z", shortTitle: "budget 2027"),
+      upcoming("PT1", kind: "discussion", startsAt: "2026-10-22T13:00:00Z"),
+      upcoming(
+        "PT2", startsAt: "2026-10-27T14:00:00.000Z",
+        shortTitle: " Budget de la Sécurité sociale pour 2027 "),
+      // Malformés : nature inconnue, date illisible, titre vide, séance absente.
+      upcoming("PT4", kind: "question", startsAt: "2026-10-28T14:00:00Z"),
+      upcoming("PT5", startsAt: "mardi"),
+      upcoming("PT6", startsAt: "2026-10-28T14:00:00Z", shortTitle: " "),
+      upcoming("PT7", startsAt: "2026-10-28T14:00:00Z").replacingOccurrences(
+        of: #""seanceRef":"RUANS1","#, with: ""),
+    ])
+    let root = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any])
+    let votes = try XCTUnwrap(root["upcomingVotes"] as? [[String: String]])
+    XCTAssertEqual(
+      votes,
+      [
+        [
+          "id": "PT2", "startsAt": "2026-10-27T14:00:00.000Z",
+          "title": "Budget de la Sécurité sociale pour 2027",
+        ],
+        ["id": "PT3", "startsAt": "2026-11-03T14:00:00.000Z", "title": "Budget 2027"],
+      ])
+    // Le widget relit l'instantané produit.
+    let read = try JSONDecoder().decode(DecisionSnapshot.self, from: Data(json.utf8))
+    XCTAssertEqual(read.upcomingVotes.map(\.id), ["PT2", "PT3"])
+    XCTAssertEqual(read.decisions.count, 1)
+  }
+
+  func testSansVoteSolennelChampOmis() throws {
+    for items in [nil, [], [upcoming("PT1", kind: "discussion", startsAt: "2026-10-22T13:00:00Z")]]
+    {
+      let root = try XCTUnwrap(
+        JSONSerialization.jsonObject(with: Data(try snapshot(upcoming: items).utf8))
+          as? [String: Any])
+      XCTAssertNil(root["upcomingVotes"])
+    }
+  }
+
+  func testAncienInstantaneEtVotesIllisibles() throws {
+    let old = #"{"version":1,"savedAt":"2026-10-17T00:00:00.000Z","decisions":[]}"#
+    XCTAssertEqual(
+      try JSONDecoder().decode(DecisionSnapshot.self, from: Data(old.utf8)).upcomingVotes, [])
+    let mixed = """
+      {"version":1,"savedAt":"2026-10-17T00:00:00.000Z","decisions":[],"upcomingVotes":[
+      {"id":"a","startsAt":"demain","title":"t"},{"id":"b","startsAt":"2026-10-27T14:00:00Z","title":" "},
+      {"id":"c","startsAt":"2026-10-27T15:00:00+01:00","title":"t"},"d"]}
+      """
+    let read = try JSONDecoder().decode(DecisionSnapshot.self, from: Data(mixed.utf8))
+    XCTAssertEqual(read.upcomingVotes.map(\.id), ["c"])
+    let invalid = #"{"version":1,"savedAt":"x","decisions":[],"upcomingVotes":"aucun"}"#
+    XCTAssertEqual(
+      try JSONDecoder().decode(DecisionSnapshot.self, from: Data(invalid.utf8)).upcomingVotes, [])
+  }
+
+  private var paris: Calendar {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    return calendar
+  }
+
+  private func at(_ y: Int, _ m: Int, _ d: Int, _ h: Int = 12) -> Date {
+    paris.date(from: DateComponents(year: y, month: m, day: d, hour: h))!
+  }
+
+  func testLibelleDuJourAParis() {
+    let plfss = UpcomingVote(id: "a", startsAt: at(2026, 10, 27, 15), title: "t")
+    XCTAssertEqual(plfss.dayLabel, "mar. 27 oct.")
+    // 23 h 30 UTC le 30 novembre : déjà le 1er décembre à Paris.
+    let late = UpcomingVote(
+      id: "b", startsAt: UpcomingVote.instant("2026-11-30T23:30:00Z")!, title: "t")
+    XCTAssertEqual(late.dayLabel, "mar. 1er déc.")
+  }
+
+  func testAnnonceSeulementSansDecisionRecente() {
+    let votes = [
+      UpcomingVote(id: "passe", startsAt: at(2026, 10, 20, 15), title: "t"),
+      UpcomingVote(id: "plfss", startsAt: at(2026, 10, 27, 15), title: "t"),
+    ]
+    func shown(_ latest: String?, _ now: Date) -> String? {
+      UpcomingVote.shown(among: votes, latestDecisionDay: latest, now: now, calendar: paris)?.id
+    }
+    // Dernière décision le 17 : trois jours le 20, quatre le 21.
+    XCTAssertNil(shown("2026-10-17", at(2026, 10, 20, 23)))
+    XCTAssertEqual(shown("2026-10-17", at(2026, 10, 21, 0)), "plfss")
+    XCTAssertEqual(shown(nil, at(2026, 10, 21)), "plfss")
+    // Le jour du vote, il est encore annoncé ; le lendemain, plus rien.
+    XCTAssertEqual(shown("2026-10-13", at(2026, 10, 20, 23)), "passe")
+    XCTAssertEqual(shown("2026-10-17", at(2026, 10, 27, 23)), "plfss")
+    XCTAssertNil(shown("2026-10-17", at(2026, 10, 28, 0)))
+    XCTAssertNil(UpcomingVote.shown(among: [], latestDecisionDay: nil, now: .now))
+  }
+
   func testAutreVersionOuIllisible() {
     XCTAssertNil(
       SnapshotConverter.snapshot(

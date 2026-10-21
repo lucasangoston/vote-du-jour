@@ -10,6 +10,9 @@ struct DecisionSnapshot: Decodable {
 
   let version: Int
   let decisions: [WidgetDecision]
+  /// Prochains votes solennels, du plus proche au plus lointain (#56). Absent
+  /// d'un instantané antérieur : liste vide.
+  let upcomingVotes: [UpcomingVote]
 
   /// Lit l'instantané partagé ; `nil` si l'app ne l'a pas encore écrit ou s'il
   /// est d'une version inconnue.
@@ -24,11 +27,12 @@ struct DecisionSnapshot: Decodable {
     return snapshot
   }
 
-  private enum CodingKeys: String, CodingKey { case version, decisions }
+  private enum CodingKeys: String, CodingKey { case version, decisions, upcomingVotes }
 
-  init(version: Int, decisions: [WidgetDecision]) {
+  init(version: Int, decisions: [WidgetDecision], upcomingVotes: [UpcomingVote] = []) {
     self.version = version
     self.decisions = decisions
+    self.upcomingVotes = upcomingVotes
   }
 
   init(from decoder: Decoder) throws {
@@ -38,6 +42,126 @@ struct DecisionSnapshot: Decodable {
     // récente de l'app) est ignorée plutôt que de vider le widget.
     let items = try container.decode([FailableDecision].self, forKey: .decisions)
     decisions = items.compactMap(\.value)
+    // Champ optionnel (#56) : absent, malformé ou vote illisible, ignoré.
+    let votes =
+      (try? container.decodeIfPresent([FailableUpcomingVote].self, forKey: .upcomingVotes))
+    upcomingVotes = (votes ?? nil)?.compactMap(\.value) ?? []
+  }
+}
+
+/// Vote solennel inscrit à l'ordre du jour (#56) : `{"id": "…", "startsAt":
+/// "2026-10-27T14:00:00.000Z", "title": "…"}`.
+struct UpcomingVote: Decodable, Equatable {
+  let id: String
+  /// Début de la séance.
+  let startsAt: Date
+  /// Titre court, prêt à afficher.
+  let title: String
+
+  init(id: String, startsAt: Date, title: String) {
+    self.id = id
+    self.startsAt = startsAt
+    self.title = title
+  }
+
+  private enum CodingKeys: String, CodingKey { case id, startsAt, title }
+
+  init(from decoder: Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    id = try c.decode(String.self, forKey: .id)
+    title = try c.decode(String.self, forKey: .title)
+    guard let startsAt = Self.instant(try c.decode(String.self, forKey: .startsAt)),
+      !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    else {
+      throw DecodingError.dataCorruptedError(
+        forKey: .startsAt, in: c, debugDescription: "vote à venir illisible")
+    }
+    self.startsAt = startsAt
+  }
+
+  /// Instant ISO 8601 (`2026-10-27T14:00:00.000Z`, millisecondes facultatives).
+  static func instant(_ value: String) -> Date? {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return formatter.date(from: value) ?? ISO8601DateFormatter().date(from: value)
+  }
+}
+
+extension UpcomingVote {
+  /// Au-delà de ce nombre de jours sans décision, les widgets annoncent le
+  /// prochain vote solennel.
+  static let staleAfterDays = 3
+
+  private static let weekdays = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."]
+  private static let months = [
+    "janv.", "févr.", "mars", "avr.", "mai", "juin",
+    "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+  ]
+
+  private static var paris: Calendar {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    return calendar
+  }
+
+  /// Jour de la séance, à Paris.
+  private var day: DateComponents {
+    Self.paris.dateComponents([.year, .month, .day, .weekday], from: startsAt)
+  }
+
+  /// « mar. 27 oct. » (« 1er » pour le premier du mois), en heure de Paris.
+  var dayLabel: String { "\(weekdayLabel) \(dayOfMonthLabel) \(monthLabel)" }
+
+  /// « mar. »
+  var weekdayLabel: String { Self.weekdays[(day.weekday ?? 1) - 1] }
+
+  /// « 27 » (« 1er »).
+  var dayOfMonthLabel: String { day.day == 1 ? "1er" : String(day.day ?? 0) }
+
+  /// « oct. »
+  var monthLabel: String { Self.months[(day.month ?? 1) - 1] }
+
+  /// Vote à annoncer à l'instant `now` : le premier de `votes` dont le jour
+  /// (à Paris) n'est pas passé, si la dernière décision (`latestDecisionDay`,
+  /// `AAAA-MM-JJ`) a plus de `staleAfterDays` jours ou s'il n'y en a pas.
+  /// Jours comptés comme les dates relatives, dans le fuseau de `calendar`.
+  static func shown(
+    among votes: [UpcomingVote], latestDecisionDay: String?, now: Date,
+    calendar: Calendar = .current
+  ) -> UpcomingVote? {
+    let today = calendar.dateComponents([.year, .month, .day], from: now)
+    if let latest = latestDecisionDay.flatMap(dayComponents),
+      let age = daysBetween(latest, today), age <= staleAfterDays
+    {
+      return nil
+    }
+    return votes.first { vote in (daysBetween(today, vote.day) ?? -1) >= 0 }
+  }
+
+  private static func dayComponents(_ day: String) -> DateComponents? {
+    let parts = day.split(separator: "-").compactMap { Int($0) }
+    guard parts.count == 3, (1...12).contains(parts[1]) else { return nil }
+    return DateComponents(year: parts[0], month: parts[1], day: parts[2])
+  }
+
+  /// Jours de calendrier de `from` à `to` (deux minuits UTC : pas de
+  /// décalage d'heure d'été).
+  private static func daysBetween(_ from: DateComponents, _ to: DateComponents) -> Int? {
+    var utc = Calendar(identifier: .gregorian)
+    utc.timeZone = TimeZone(identifier: "UTC")!
+    guard
+      let start = utc.date(from: DateComponents(year: from.year, month: from.month, day: from.day)),
+      let end = utc.date(from: DateComponents(year: to.year, month: to.month, day: to.day))
+    else { return nil }
+    return utc.dateComponents([.day], from: start, to: end).day
+  }
+}
+
+private struct FailableUpcomingVote: Decodable {
+  let value: UpcomingVote?
+
+  init(from decoder: Decoder) throws {
+    value = try? UpcomingVote(from: decoder)
   }
 }
 

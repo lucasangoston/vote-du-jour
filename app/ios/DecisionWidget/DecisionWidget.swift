@@ -24,8 +24,16 @@ struct DecisionEntry: TimelineEntry {
   /// plus, pour le grand widget ; le petit et le moyen n'affichent que la
   /// première.
   let decisions: [WidgetDecision]
+  /// Prochains votes solennels de l'instantané (#56).
+  var upcomingVotes: [UpcomingVote] = []
 
   var decision: WidgetDecision? { decisions.first }
+
+  /// Vote solennel à annoncer à l'instant de l'entrée : la dernière décision
+  /// a plus de trois jours (ou il n'y en a pas) et le vote n'est pas passé.
+  var upcomingVote: UpcomingVote? {
+    UpcomingVote.shown(among: upcomingVotes, latestDecisionDay: decision?.date, now: date)
+  }
 }
 
 struct DecisionProvider: TimelineProvider {
@@ -35,11 +43,13 @@ struct DecisionProvider: TimelineProvider {
 
   func getSnapshot(in context: Context, completion: @escaping (DecisionEntry) -> Void) {
     // Dans la galerie, montrer un exemple si l'app n'a encore rien écrit.
-    let decisions = DecisionSnapshot.load()?.latest(DecisionSnapshot.largeWidgetCount) ?? []
+    let snapshot = DecisionSnapshot.load()
+    let decisions = snapshot?.latest(DecisionSnapshot.largeWidgetCount) ?? []
     completion(
       DecisionEntry(
         date: .now,
-        decisions: decisions.isEmpty && context.isPreview ? WidgetDecision.samples : decisions))
+        decisions: decisions.isEmpty && context.isPreview ? WidgetDecision.samples : decisions,
+        upcomingVotes: snapshot?.upcomingVotes ?? []))
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<DecisionEntry>) -> Void) {
@@ -64,14 +74,20 @@ struct DecisionWidgetView: View {
 
   @ViewBuilder
   private var content: some View {
-    switch (family, entry.decision) {
-    case (_, nil):
+    // Sans décision récente, le petit et le moyen widget annoncent le
+    // prochain vote solennel ; le grand l'ajoute sous ses décisions.
+    switch (family, entry.decision, entry.upcomingVote) {
+    case (.systemSmall, _, let vote?):
+      SmallUpcomingView(vote: vote)
+    case (.systemMedium, _, let vote?):
+      UpcomingView(vote: vote)
+    case (_, nil, _):
       EmptyDecisionView()
-    case (.systemSmall, let decision?):
+    case (.systemSmall, let decision?, _):
       SmallDecisionView(decision: decision, now: entry.date)
-    case (.systemLarge, _):
-      LargeDecisionsView(decisions: entry.decisions, now: entry.date)
-    case (_, let decision?):
+    case (.systemLarge, _, let vote):
+      LargeDecisionsView(decisions: entry.decisions, upcomingVote: vote, now: entry.date)
+    case (_, let decision?, _):
       DecisionView(decision: decision, now: entry.date)
     }
   }
@@ -86,9 +102,105 @@ struct DecisionWidgetView: View {
   }
 
   /// Tap hors d'une ligne : le grand widget ouvre la liste (chaque ligne a
-  /// son propre lien), les autres le détail de leur décision.
+  /// son propre lien), les autres le détail de leur décision, ou la liste
+  /// quand ils annoncent le prochain vote.
   private var url: URL {
-    family == .systemLarge ? listURL : entry.decision?.detailURL ?? listURL
+    if family == .systemLarge || entry.upcomingVote != nil { return listURL }
+    return entry.decision?.detailURL ?? listURL
+  }
+}
+
+/// « Prochain vote solennel » (#56).
+private let upcomingKicker = "Prochain vote solennel"
+
+/// Petit widget sans décision récente : « Prochain vote solennel », le jour
+/// (« Mar. 27 oct. ») à la place de l'arc, puis le titre court.
+private struct SmallUpcomingView: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 2) {
+      MetaText(text: upcomingKicker)
+        .minimumScaleFactor(0.85)
+      Text(metaLine([vote.dayLabel]))
+        .font(.geist(20, semibold: true, relativeTo: .title3))
+        .tracking(-0.2)
+        .foregroundStyle(Palette.ink)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+      Spacer(minLength: 6)
+      DecisionTitle(text: vote.title, lineLimit: 4, lineSpacing: 0)
+    }
+    .accessibilityElement(children: .combine)
+  }
+}
+
+/// Jour du vote en colonne (« mar. », « 27 », « oct. »), à la place de l'arc
+/// du widget moyen.
+private struct UpcomingDay: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    VStack(spacing: 0) {
+      Text(vote.weekdayLabel)
+        .font(.geist(13, relativeTo: .footnote))
+        .foregroundStyle(Palette.ink2)
+      Text(vote.dayOfMonthLabel)
+        .font(.geist(34, semibold: true, relativeTo: .title))
+        .tracking(-0.68)
+        .foregroundStyle(Palette.ink)
+      Text(vote.monthLabel)
+        .font(.geist(13, relativeTo: .footnote))
+        .foregroundStyle(Palette.ink2)
+    }
+    .lineLimit(1)
+    .accessibilityElement(children: .combine)
+  }
+}
+
+/// Widget moyen sans décision récente : le jour du vote dans la colonne de
+/// l'arc, « Prochain vote solennel » et le titre court à droite.
+private struct UpcomingView: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    HStack(spacing: 14) {
+      UpcomingDay(vote: vote).frame(width: 92)
+      VStack(alignment: .leading, spacing: 5) {
+        MetaText(text: upcomingKicker)
+        DecisionTitle(text: vote.title, size: 14.5, lineLimit: 3)
+      }
+      .frame(maxHeight: .infinity)
+    }
+    .frame(maxHeight: .infinity)
+    .accessibilityElement(children: .combine)
+  }
+}
+
+/// Ligne du grand widget sous les décisions : le jour à la place de l'arc,
+/// le titre court, puis « Prochain vote solennel · mar. 27 oct. ».
+private struct UpcomingRow: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    HStack(spacing: 12) {
+      VStack(spacing: -2) {
+        Text(vote.dayOfMonthLabel)
+          .font(.geist(17, semibold: true, relativeTo: .body))
+          .foregroundStyle(Palette.ink)
+        Text(vote.monthLabel)
+          .font(.geist(11, relativeTo: .caption2))
+          .foregroundStyle(Palette.ink2)
+      }
+      .lineLimit(1)
+      .frame(width: 48)
+      VStack(alignment: .leading, spacing: 3) {
+        DecisionTitle(text: vote.title, lineLimit: 2)
+        MetaText(text: "\(upcomingKicker) · \(vote.dayLabel)")
+      }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .accessibilityElement(children: .combine)
   }
 }
 
@@ -231,6 +343,8 @@ private struct DecisionView: View {
 /// du widget (en-tête, marges) ouvre la liste.
 private struct LargeDecisionsView: View {
   let decisions: [WidgetDecision]
+  /// Prochain vote solennel, ajouté en quatrième ligne (#56).
+  var upcomingVote: UpcomingVote?
   let now: Date
 
   var body: some View {
@@ -256,10 +370,16 @@ private struct LargeDecisionsView: View {
         }
         .frame(maxHeight: .infinity)
         .overlay(alignment: .bottom) {
-          if index + 1 < min(decisions.count, DecisionSnapshot.largeWidgetCount) {
+          if index + 1 < min(decisions.count, DecisionSnapshot.largeWidgetCount)
+            || (upcomingVote != nil && index + 1 == decisions.count)
+          {
             Rectangle().fill(Palette.rule).frame(height: 1)
           }
         }
+      }
+      // Hors des liens des décisions : le tap ouvre la liste.
+      if let upcomingVote {
+        UpcomingRow(vote: upcomingVote).frame(maxHeight: .infinity)
       }
     }
   }
@@ -371,6 +491,15 @@ private let previewTimeline: [DecisionEntry] = [
         explanation: "La première partie est rejetée : tout le texte tombe.")
     ]),
   DecisionEntry(date: .now, decisions: []),
+  // Dernière décision de plus de trois jours, vote solennel à venir (#56).
+  DecisionEntry(
+    date: UpcomingVote.instant("2026-10-21T08:00:00Z")!,
+    decisions: WidgetDecision.samples,
+    upcomingVotes: [
+      UpcomingVote(
+        id: "exemple-vote", startsAt: UpcomingVote.instant("2026-10-27T14:00:00Z")!,
+        title: "Budget de la Sécurité sociale pour 2027")
+    ]),
 ]
 
 #Preview("Petit", as: .systemSmall) {
