@@ -16,7 +16,7 @@ import 'site_source.dart';
 
 /// Plages de la détection en direct, en heure de Paris : jours de la semaine
 /// (1 = lundi) et heures [startHour, endHour[. Par défaut, du lundi au
-/// vendredi de 9 h à minuit, à ajuster avec les mesures du spike #15.
+/// vendredi de 9 h à minuit (plages confirmées par le spike #15).
 class LiveWindow {
   const LiveWindow({
     this.days = const {1, 2, 3, 4, 5},

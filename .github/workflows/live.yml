@@ -4,18 +4,25 @@ name: Détection en direct des décisions
 # publie les décisions provisoires (ticket #10). Le jeu de données du
 # lendemain les confirme (publish.yml).
 #
-# Réglages, à ajuster avec les mesures du spike #15 :
-# - fréquence : le cron ci-dessous (toutes les 10 minutes) ;
+# Réglages (bilan du spike #15 en commentaire du PRD #1) :
+# - fréquence : le cron ci-dessous (toutes les 10 minutes, décalé de la
+#   minute ronde que GitHub sature). GitHub ne déclenche en pratique qu'un
+#   passage toutes les 3 à 5 heures sur ce dépôt (mesuré du 19 au 21/10/2026),
+#   avec des retards de plus d'une heure : le cron fixe un plafond, pas la
+#   cadence réelle. Une lecture par passage (1 GET, 50 derniers scrutins)
+#   reste polie envers le site même si tous les créneaux étaient honorés.
 # - plages : LIVE_DAYS et LIVE_HOURS, en heure de Paris, vérifiées par le job.
 #   Le cron GitHub est en UTC : il doit englober ces plages en heure d'été
 #   (UTC+2) comme en heure d'hiver (UTC+1). 7-22 UTC couvre 9h-24h à Paris
 #   toute l'année (passages de 8h à 23h50 l'hiver, de 9h à 0h50 l'été) ; le
-#   job écarte ceux qui sortent des plages.
+#   job écarte ceux qui sortent des plages. Les votes d'après minuit sont
+#   repris par le jeu de données (régénéré toutes les 6 heures environ, dont
+#   un vers 0h25 à Paris l'été) et publish.yml.
 #   Pour ajouter un jour (séance le samedi…), changer LIVE_DAYS et le cron.
 
 on:
   schedule:
-    - cron: '*/10 7-22 * * 1-5'
+    - cron: '3-59/10 7-22 * * 1-5'
   workflow_dispatch:
     inputs:
       ignore_window:
