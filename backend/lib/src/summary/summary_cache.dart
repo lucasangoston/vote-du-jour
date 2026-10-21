@@ -175,6 +175,7 @@ class SummaryCache {
     generatedAt: index.generatedAt,
     source: index.source,
     decisions: [for (final d in index.decisions) apply(d)],
+    upcoming: index.upcoming,
   );
 
   /// Reprend les résumés de l'index publié [published] absents du cache

@@ -28,6 +28,7 @@ Le job et l'app dépendent du contrat par chemin relatif (`path: ../packages/vot
 Données publiées dans le bucket :
 
 - `v1/latest.json` : les 50 dernières décisions, de la plus récente à la plus ancienne (format décrit dans `packages/vote_contract/README.md`). Un changement cassant du format publiera sous `v2/`.
+- `v1/latest.json` contient aussi le bloc optionnel `upcoming` : l'ordre du jour des prochains jours (#52).
 - `v1/decisions/<id>.json` : le détail de chaque décision de l'index (décompte, vote par groupe ; format dans `packages/vote_contract/README.md`). Seuls les fichiers dont le contenu a changé sont réécrits.
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
 - `state/scrutins-confirmes.json` : scrutins du dernier jeu de données utiles à l'index (retenus ou sur l'article unique), sans vote par groupe, et dernier numéro du jeu de données. Écrit par le job, relu par la détection en direct pour reconstruire l'index sans retélécharger l'archive.
@@ -36,6 +37,7 @@ Données publiées dans le bucket :
 - `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
 - `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service).
 - `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
+- `state/agenda.json` : `ETag` de la dernière archive de l'agenda lue et points retenus de l'ordre du jour des séances pas encore finies (#52), relus quand l'agenda n'a pas changé.
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
@@ -100,6 +102,22 @@ dart run bin/vote_job.dart --live --store=r2
 Le workflow `live.yml` lance un passage toutes les 10 minutes. Les plages se règlent en tête du fichier (`LIVE_DAYS`, `LIVE_HOURS`, en heure de Paris, vérifiées par le job) ; le cron, en UTC, doit les englober en heure d'été comme en heure d'hiver. Il partage le groupe de concurrence `publish` avec `publish.yml` : jamais deux publications simultanées.
 
 Si le site est illisible (panne, structure changée), le passage s'arrête sans rien écrire et l'erreur apparaît en avertissement dans GitHub Actions ; le jeu de données continue d'être publié par `publish.yml`. Le site ne donne ni le type de vote (le garde-fou des scrutins solennels ne s'applique qu'avec le jeu de données), ni le dossier, ni le vote par groupe.
+
+## Ordre du jour : « À venir » (#52)
+
+Après la publication, chaque exécution de `publish.yml` lit l'agenda officiel (`Agenda.json.zip`, ~8,5 Mo, téléchargé seulement s'il a changé : `If-None-Match` avec l'`ETag` de `state/agenda.json`) et publie dans `v1/latest.json` le bloc `upcoming` (format dans `packages/vote_contract/README.md`). Code : `backend/lib/src/agenda/`.
+
+- Séances publiques de l'Assemblée seulement (uid `RUAN…`, organe `PO838901`), séance et point « Confirmé » : un point reporté passe à « Supprimé » et disparaît au passage suivant.
+- Points « Discussion » et « Suite de la discussion » d'un texte, sur 7 jours ; « Vote solennel » et « Vote par scrutin public », sur 14 jours (le vote d'un texte budgétaire tombe souvent au-delà d'une semaine). Un point par texte et par nature : plusieurs séances de discussion du même texte n'en font qu'un, « en cours » si la première n'est qu'une suite.
+- Dossier : celui de l'ordre du jour, sinon retrouvé par le texte nommé dans le libellé (« Vote solennel sur le projet de loi… » ↔ « Suite de la discussion du projet de loi… » d'un autre point), seulement s'il est unique.
+- Titre court sans appel au modèle : titre (du résumé, sinon court) de la dernière décision publiée du même dossier, sinon titre du dossier (`state/dossiers.json`), sinon libellé sans formule de procédure.
+- Heure : début de la séance (l'agenda ne donne pas l'heure du point). Le point reste à venir jusqu'à la fin de la séance (`timeStampFin`, sinon 6 heures après le début).
+- Panne de l'agenda : avertissement, bloc recalculé avec le dernier agenda connu (ou laissé tel quel au premier passage) ; les décisions sont publiées normalement. Le job et le passage en direct (`live.yml`) republient l'index avec le bloc déjà publié, sans lire l'agenda.
+
+```bash
+cd backend
+dart run bin/vote_job.dart --agenda-file Agenda.json.zip   # agenda déjà téléchargé
+```
 
 ## Notifications push des votes importants
 

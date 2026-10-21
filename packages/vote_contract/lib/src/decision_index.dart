@@ -1,5 +1,6 @@
 import 'decision.dart';
 import 'paths.dart';
+import 'upcoming_item.dart';
 
 /// Nombre maximal de décisions dans l'index.
 const int maxIndexDecisions = 50;
@@ -52,6 +53,7 @@ class DecisionIndex {
     required this.generatedAt,
     required this.decisions,
     this.source = SourceAttribution.assembleeNationale,
+    this.upcoming,
   });
 
   /// Instant de génération du fichier par le job.
@@ -60,11 +62,26 @@ class DecisionIndex {
   final List<DecisionSummary> decisions;
   final SourceAttribution source;
 
+  /// Ordre du jour des prochains jours (#52) : textes discutés et votes
+  /// solennels, du plus proche au plus lointain. Champ optionnel : `null`
+  /// dans les index publiés avant son ajout, ou tant que le job n'a jamais
+  /// pu lire l'agenda ; une liste vide quand rien n'est inscrit.
+  final List<UpcomingItem>? upcoming;
+
+  /// Le même index avec l'ordre du jour [upcoming].
+  DecisionIndex withUpcoming(List<UpcomingItem>? upcoming) => DecisionIndex(
+    generatedAt: generatedAt,
+    decisions: decisions,
+    source: source,
+    upcoming: upcoming,
+  );
+
   /// Lit un index publié.
   ///
   /// Lève [UnsupportedSchemaException] si le fichier n'est pas en version
   /// [schemaVersion], et [FormatException] s'il est malformé. Les décisions
-  /// illisibles (valeur inconnue ajoutée par un job plus récent) sont ignorées.
+  /// illisibles (valeur inconnue ajoutée par un job plus récent) sont ignorées,
+  /// comme les points à venir illisibles.
   factory DecisionIndex.fromJson(Object? json) {
     if (json is! Map<String, Object?>) {
       throw const FormatException('Index : objet JSON attendu');
@@ -75,6 +92,7 @@ class DecisionIndex {
     }
     final generatedAt = DateTime.tryParse('${json['generatedAt']}');
     final decisions = json['decisions'];
+    final upcoming = json['upcoming'];
     if (generatedAt == null || decisions is! List) {
       throw const FormatException('Index : generatedAt ou decisions invalide');
     }
@@ -85,6 +103,9 @@ class DecisionIndex {
         for (final d in decisions)
           if (d is Map<String, Object?>) ?DecisionSummary.tryFromJson(d),
       ],
+      upcoming: upcoming is List
+          ? [for (final u in upcoming) ?UpcomingItem.tryFromJson(u)]
+          : null,
     );
   }
 
@@ -93,6 +114,7 @@ class DecisionIndex {
     'generatedAt': generatedAt.toUtc().toIso8601String(),
     'source': source.toJson(),
     'decisions': [for (final d in decisions) d.toJson()],
+    'upcoming': ?upcoming?.map((u) => u.toJson()).toList(),
   };
 }
 

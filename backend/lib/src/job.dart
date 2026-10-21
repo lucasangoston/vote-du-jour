@@ -192,13 +192,15 @@ Future<JobOutcome> runJob({
       // Les décisions déjà résumées gardent leur résumé ; un cache perdu
       // les reprend de l'index encore publié.
       final summaryCache = await SummaryCache.read(store, warnings);
-      if (summaryCache.adoptPublished(
-        await _readPublishedIndex(store),
-        now: now,
-      )) {
+      final published = await _readPublishedIndex(store);
+      if (summaryCache.adoptPublished(published, now: now)) {
         await summaryCache.write(store);
       }
-      final index = summaryCache.applyTo(reconciled.index);
+      // L'ordre du jour publié (#52) est gardé : le passage de l'agenda,
+      // juste après le job, le met à jour.
+      final index = summaryCache
+          .applyTo(reconciled.index)
+          .withUpcoming(published?.upcoming);
       // Les détails avant l'index, qui renvoie vers eux. Les décisions
       // encore provisoires ont le décompte du site, sans vote par groupe.
       // Les décisions déjà argumentées (#35) gardent leurs arguments.

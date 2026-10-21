@@ -12,3 +12,4 @@ export 'src/decision_detail.dart';
 export 'src/decision_index.dart';
 export 'src/paths.dart';
 export 'src/plain_summary.dart';
+export 'src/upcoming_item.dart';
