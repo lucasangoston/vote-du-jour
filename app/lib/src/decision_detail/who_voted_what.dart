@@ -9,13 +9,6 @@ import 'group_ranking.dart';
 /// Intertitre du vote par groupe politique.
 const groupsHeading = 'Qui a voté quoi';
 
-/// Note sous la section.
-const groupsNote =
-    'Groupes classés selon la position de la majorité de leurs membres.';
-
-/// Rangée vide parmi Pour, Contre et Abstention.
-const noGroupLabel = 'Aucun groupe';
-
 /// Libellé d'une rangée de groupes.
 String groupRowLabel(GroupPosition position) => switch (position) {
   GroupPosition.pour => 'Pour',
@@ -35,7 +28,9 @@ String groupPositionLabel(GroupPosition position) => switch (position) {
 };
 
 /// Rangées de « Qui a voté quoi » (sans l'intertitre) : chaque groupe en
-/// vignette (logo, sigle, voix), rangé selon sa position, puis la note.
+/// vignette (logo, sigle, voix), rangé selon sa position. Une position sans
+/// groupe n'a pas de rangée ; la règle de classement est expliquée dans
+/// « À propos ».
 class WhoVotedWhat extends StatelessWidget {
   const WhoVotedWhat(this.groups, {super.key});
 
@@ -45,20 +40,12 @@ class WhoVotedWhat extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      for (final row in rankGroups(groups)) ...[
+      for (final (i, row) in rankGroups(groups).indexed) ...[
+        if (i > 0) const SizedBox(height: 22),
         _RowHeader(row.position),
         const SizedBox(height: 10),
-        if (row.groups.isEmpty) const _EmptyRow() else _TileGrid(row.groups),
-        const SizedBox(height: 22),
+        _TileGrid(row.groups),
       ],
-      Text(
-        groupsNote,
-        style: TextStyle(
-          fontSize: 12.5,
-          height: 1.5,
-          color: context.colors.ink2,
-        ),
-      ),
     ],
   );
 }
@@ -97,23 +84,6 @@ class _RowHeader extends StatelessWidget {
       ),
     );
   }
-}
-
-class _EmptyRow extends StatelessWidget {
-  const _EmptyRow();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    decoration: BoxDecoration(
-      color: context.colors.surface,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Text(
-      noGroupLabel,
-      style: TextStyle(fontSize: 14, color: context.colors.ink2),
-    ),
-  );
 }
 
 /// Grille de trois vignettes par ligne, de même hauteur sur une ligne.

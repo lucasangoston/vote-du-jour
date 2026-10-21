@@ -49,11 +49,10 @@ List<String?> _abbreviations(GroupRow row) => [
 
 void main() {
   group('rankGroups', () {
-    test('scrutin 8706 : Pour, Contre vide, Abstention', () {
+    test('scrutin 8706 : Pour, Abstention (personne contre)', () {
       final rows = rankGroups(_scrutin8706);
       expect(rows.map((r) => r.position), [
         GroupPosition.pour,
-        GroupPosition.contre,
         GroupPosition.abstention,
       ]);
       // Du plus grand nombre de voix au plus petit : GDR (17) avant UDR (16).
@@ -70,8 +69,7 @@ void main() {
         'UDR',
         'NI',
       ]);
-      expect(rows[1].groups, isEmpty);
-      expect(_abbreviations(rows[2]), ['LFI-NFP']);
+      expect(_abbreviations(rows[1]), ['LFI-NFP']);
     });
 
     test('chaque position a sa rangée, aucun groupe ne disparaît', () {
@@ -101,22 +99,16 @@ void main() {
       expect(rows.expand((r) => r.groups), hasLength(groups.length));
     });
 
-    test('rangées vides : Pour, Contre et Abstention restent', () {
+    test('rangées vides : masquées', () {
       final rows = rankGroups([
         _group('A', GroupPosition.nonVotant),
         _group('B', GroupPosition.pour, pour: 1),
       ]);
       expect(rows.map((r) => (r.position, r.groups.length)), [
         (GroupPosition.pour, 1),
-        (GroupPosition.contre, 0),
-        (GroupPosition.abstention, 0),
         (GroupPosition.nonVotant, 1),
       ]);
-      expect(rankGroups(const []).map((r) => r.position), [
-        GroupPosition.pour,
-        GroupPosition.contre,
-        GroupPosition.abstention,
-      ]);
+      expect(rankGroups(const []), isEmpty);
     });
   });
 
@@ -202,11 +194,12 @@ void main() {
         ),
       );
       expect(find.text('Pour'), findsOneWidget);
-      expect(find.text('Contre'), findsOneWidget);
+      // Personne contre : la rangée vide est masquée.
+      expect(find.text('Contre'), findsNothing);
       expect(find.text('Abstention'), findsOneWidget);
       expect(find.text('Partagé'), findsNothing);
       expect(find.text("N'ont pas voté"), findsNothing);
-      expect(find.text('Aucun groupe'), findsOneWidget);
+      expect(find.text('Aucun groupe'), findsNothing);
       expect(find.byType(GroupTile), findsNWidgets(12));
       expect(find.byType(Image), findsNWidgets(11));
       expect(find.text('121'), findsOneWidget);
@@ -214,13 +207,7 @@ void main() {
       expect(find.text('16 · 1 abst.'), findsOneWidget);
       expect(find.text('NI'), findsOneWidget);
       expect(find.text('Non inscrits'), findsOneWidget);
-      expect(
-        find.text(
-          'Groupes classés selon la position de la majorité de leurs '
-          'membres.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Groupes classés'), findsNothing);
       expect(
         find.bySemanticsLabel(
           RegExp('^Groupe LFI-NFP : Abstention, 4 pour, 0 contre'),
@@ -250,7 +237,11 @@ void main() {
       ),
     );
     expect(find.text("N'ont pas voté"), findsOneWidget);
-    expect(find.text('Aucun groupe'), findsNWidgets(2));
+    // Contre et Abstention vides : pas de rangée.
+    expect(find.text('Pour'), findsOneWidget);
+    expect(find.text('Contre'), findsNothing);
+    expect(find.text('Abstention'), findsNothing);
+    expect(find.text('Aucun groupe'), findsNothing);
     expect(find.byType(GroupTile), findsNWidgets(5));
     expect(find.text('71'), findsOneWidget);
     expect(find.text('RN'), findsOneWidget);

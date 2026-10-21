@@ -320,7 +320,7 @@ void main() {
 
   group('page À propos', () {
     Future<void> openAbout(WidgetTester tester) async {
-      await tester.tap(find.byTooltip('À propos et méthode'));
+      await tester.tap(find.byTooltip('À propos'));
       await tester.pumpAndSettle();
       expect(find.byType(AboutPage), findsOneWidget);
     }
@@ -332,10 +332,19 @@ void main() {
       await _pumpApp(tester, messaging);
       await openAbout(tester);
 
-      expect(find.text('Notifications des votes importants'), findsOneWidget);
-      expect(find.textContaining('votes solennels'), findsOneWidget);
-      expect(find.textContaining('motions de censure'), findsOneWidget);
-      expect(find.textContaining('lectures définitives'), findsOneWidget);
+      expect(find.text('Votes importants'), findsOneWidget);
+      expect(
+        find.text(
+          'Solennels, censures, textes de compromis et lectures définitives '
+          '· 1 à 3 par semaine.',
+        ),
+        findsOneWidget,
+      );
+      // Notifications disponibles : la page nomme Firebase.
+      expect(
+        find.textContaining('Firebase Cloud Messaging (Google)'),
+        findsOneWidget,
+      );
       final toggle = find.byType(Switch);
       expect(tester.widget<Switch>(toggle).value, isTrue);
 
@@ -357,7 +366,7 @@ void main() {
 
       // Toute la ligne bascule le réglage.
       await tester.runAsync(() async {
-        await tester.tap(find.text('Notifications des votes importants'));
+        await tester.tap(find.text('Votes importants'));
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await tester.pumpAndSettle();
@@ -370,7 +379,10 @@ void main() {
       await tester.runAsync(notifications.decisionViewed);
       await openAbout(tester);
 
-      expect(find.textContaining('ont été refusées'), findsOneWidget);
+      expect(
+        find.text('Notifications refusées : activez-les dans les Réglages.'),
+        findsOneWidget,
+      );
       final toggle = tester.widget<Switch>(find.byType(Switch));
       expect(toggle.value, isFalse);
       expect(toggle.onChanged, isNull);
@@ -387,7 +399,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       await openAbout(tester);
-      expect(find.text('Notifications des votes importants'), findsNothing);
+      expect(find.text('Votes importants'), findsNothing);
+      expect(find.textContaining('Firebase'), findsNothing);
     });
   });
 }

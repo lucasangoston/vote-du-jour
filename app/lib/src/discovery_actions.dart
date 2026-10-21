@@ -20,13 +20,13 @@ class AddWidgetAction extends StatelessWidget {
   );
 }
 
-/// Ouvre « À propos et méthode ».
+/// Ouvre « À propos ».
 class AboutAction extends StatelessWidget {
   const AboutAction({super.key});
 
   @override
   Widget build(BuildContext context) => LineIconButton(
-    tooltip: 'À propos et méthode',
+    tooltip: 'À propos',
     glyph: LineGlyph.info,
     onPressed: () => Navigator.of(
       context,

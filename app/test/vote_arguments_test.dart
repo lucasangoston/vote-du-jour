@@ -102,14 +102,20 @@ void main() {
         brightness: brightness,
       );
       await tester.scrollUntilVisible(
-        find.textContaining('Résumé des explications de vote'),
+        find.textContaining('Résumé par IA · séance', findRichText: true),
         200,
       );
       expect(find.text('Pourquoi ils ont voté ainsi'), findsOneWidget);
-      expect(find.text('Arguments pour'), findsOneWidget);
-      expect(find.text("Arguments d'abstention"), findsOneWidget);
+      // Titres des cartes (« Pour » est aussi une rangée de « Qui a voté
+      // quoi »).
+      Finder side(String label) => find.descendant(
+        of: find.byType(VoteArguments),
+        matching: find.text(label),
+      );
+      expect(side('Pour'), findsOneWidget);
+      expect(side('Abstention'), findsOneWidget);
       // Camp vide : pas de carte.
-      expect(find.text('Arguments contre'), findsNothing);
+      expect(side('Contre'), findsNothing);
       expect(
         find.textContaining("SOC L'impunité reste massive", findRichText: true),
         findsOneWidget,
@@ -125,8 +131,7 @@ void main() {
       expect(find.text('NI'), findsOneWidget);
       expect(
         find.textContaining(
-          'Résumé des explications de vote des groupes, séance du 13 octobre '
-          '2026 (compte rendu officiel).',
+          'Résumé par IA · séance du 13 oct. (compte rendu)',
           findRichText: true,
         ),
         findsOneWidget,
@@ -151,9 +156,9 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Arguments contre'), findsOneWidget);
-    expect(find.text('Arguments pour'), findsNothing);
-    expect(find.text("Arguments d'abstention"), findsNothing);
+    expect(find.text('Contre'), findsOneWidget);
+    expect(find.text('Pour'), findsNothing);
+    expect(find.text('Abstention'), findsNothing);
     expect(find.byType(Image), findsOneWidget);
   });
 
@@ -168,9 +173,8 @@ void main() {
     expect(find.text('Voir le scrutin'), findsOneWidget);
     expect(find.text('Qui a voté quoi'), findsOneWidget);
     expect(find.text('Pourquoi ils ont voté ainsi'), findsNothing);
-    expect(find.textContaining('Arguments'), findsNothing);
     expect(
-      find.textContaining('explications de vote', findRichText: true),
+      find.textContaining('compte rendu', findRichText: true),
       findsNothing,
     );
   });

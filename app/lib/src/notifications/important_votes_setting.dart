@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'important_votes_notifications.dart';
 
-/// Réglage « Notifications des votes importants » de la page À propos :
+/// Réglage « Votes importants » de la page À propos :
 /// interrupteur et explication. Absent si les notifications ne sont pas
 /// disponibles.
 class ImportantVotesSetting extends StatefulWidget {
@@ -64,7 +64,7 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Notifications des votes importants',
+                        'Votes importants',
                         style: HemicycleText.rowTitle.copyWith(
                           color: colors.ink,
                         ),
@@ -83,10 +83,8 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Text(
-                'Une notification pour les votes solennels, les motions de '
-                'censure et les lectures définitives, une à trois fois par '
-                'semaine environ. Elles passent par Firebase Cloud Messaging '
-                '(Google), sans compte.',
+                'Solennels, censures, textes de compromis et lectures '
+                'définitives · 1 à 3 par semaine.',
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.45,
@@ -99,8 +97,7 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: Text(
-                  'Les notifications ont été refusées. Pour les recevoir, '
-                  'autorisez-les dans les réglages du téléphone.',
+                  'Notifications refusées : activez-les dans les Réglages.',
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.45,

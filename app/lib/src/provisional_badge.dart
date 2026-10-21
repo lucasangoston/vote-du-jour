@@ -8,8 +8,8 @@ class ProvisionalBadge extends StatelessWidget {
   const ProvisionalBadge({super.key});
 
   static const explanation =
-      'Lue sur le site de l\'Assemblée pendant la séance. Elle sera confirmée '
-      'par les données officielles, en général le lendemain.';
+      'Pas encore confirmé par les données officielles (en général le '
+      'lendemain).';
 
   @override
   Widget build(BuildContext context) {
