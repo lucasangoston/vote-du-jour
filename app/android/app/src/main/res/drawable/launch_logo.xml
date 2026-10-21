@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo Perchoir de l'écran de lancement : arcs à l'encre et demi-disque vert de la
+     charte (couleurs claires ou sombres selon le thème). Boîte du logo dans la grille
+     de 120 des maquettes : x 8…112, y 34…86, mise à 120 dp de large. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="60dp"
+    android:viewportWidth="104"
+    android:viewportHeight="52">
+    <group
+        android:translateX="-8"
+        android:translateY="-34">
+        <path
+            android:pathData="M14,86 A46,46 0 0,1 106,86"
+            android:strokeColor="@color/launch_ink"
+            android:strokeLineCap="butt"
+            android:strokeWidth="12" />
+        <path
+            android:pathData="M32,86 A28,28 0 0,1 88,86"
+            android:strokeColor="@color/launch_ink"
+            android:strokeLineCap="butt"
+            android:strokeWidth="12" />
+        <path
+            android:fillColor="@color/launch_accent"
+            android:pathData="M48,86 A12,12 0 0,1 72,86 Z" />
+    </group>
+</vector>
