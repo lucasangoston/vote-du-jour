@@ -246,6 +246,7 @@ void main() {
           clock: () => now,
         );
         expect(report.downloaded, isTrue);
+        expect(report.upToDate, isTrue);
         expect(report.written, isTrue);
         var index = await readIndex();
         expect(index.upcoming, hasLength(4));
@@ -263,6 +264,7 @@ void main() {
         );
         expect(source.requests, [null, '"a"']);
         expect(report.downloaded, isFalse);
+        expect(report.upToDate, isTrue);
         expect(report.written, isFalse);
 
         // Le lendemain soir, sans nouvel agenda : la fenêtre avance.
@@ -330,6 +332,7 @@ void main() {
         clock: () => now,
       );
       expect(report.warnings.single, contains('dernier agenda connu'));
+      expect(report.upToDate, isFalse);
       expect(_encode((await readIndex()).upcoming), _encode(before));
     });
 

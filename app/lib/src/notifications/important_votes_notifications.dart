@@ -25,6 +25,17 @@ String? decisionIdFromNotification(Map<String, Object?> data) {
   return uri == null ? null : decisionIdFromDeepLink(uri);
 }
 
+/// Lien d'une notification sans décision (veille d'un vote solennel, #54) :
+/// `votedujour://decisions` ouvre la liste ; tout autre lien est ignoré.
+bool opensListFromNotification(Map<String, Object?> data) {
+  final link = data['link'];
+  final uri = link is String ? Uri.tryParse(link) : null;
+  return uri != null &&
+      uri.scheme == 'votedujour' &&
+      uri.host == 'decisions' &&
+      uri.pathSegments.every((s) => s.isEmpty);
+}
+
 /// Notifications des votes importants (#34) : réglage persistant, demande
 /// de l'autorisation après une première consultation d'un détail, abonnement
 /// au sujet [importantVotesTopic] et ouverture du détail au tap.
@@ -148,13 +159,16 @@ class ImportantVotesNotifications extends ChangeNotifier {
     }
   }
 
+  /// Ouvre le détail de la décision de la notification, ou revient à la
+  /// liste pour une notification sans décision qui la vise (veille d'un
+  /// vote solennel) ; sinon l'app s'ouvre simplement.
   void _openDecision(PushNotification notification) {
     final id = decisionIdFromNotification(notification.data);
-    if (id == null) return;
+    if (id == null && !opensListFromNotification(notification.data)) return;
     unawaited(
       openWidgetLinkWhenReady(
         _navigatorKey,
-        Uri(scheme: 'votedujour', host: 'decisions', pathSegments: [id]),
+        Uri(scheme: 'votedujour', host: 'decisions', pathSegments: [?id]),
       ),
     );
   }

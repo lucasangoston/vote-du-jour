@@ -142,7 +142,7 @@ Future<void> main(List<String> arguments) async {
   );
   stdout.writeln(outcome);
   final agendaFile = args.option('agenda-file');
-  await _agenda(
+  final agendaUpToDate = await _agenda(
     store,
     agendaFile != null
         ? FileAgendaSource(agendaFile)
@@ -150,7 +150,7 @@ Future<void> main(List<String> arguments) async {
     force: args.flag('force'),
   );
   await _argue(store);
-  await _notify(store);
+  await _notify(store, agendaUpToDate: agendaUpToDate);
   // Le client HTTP par défaut garde des connexions ouvertes.
   exit(0);
 }
@@ -158,13 +158,15 @@ Future<void> main(List<String> arguments) async {
 /// Ordre du jour des prochains jours (#52), après la publication : bloc
 /// `upcoming` de l'index. Une panne de l'agenda est journalisée (en
 /// avertissement dans GitHub Actions) sans faire échouer l'exécution ; le
-/// passage en direct ne lit pas l'agenda.
-Future<void> _agenda(
+/// passage en direct ne lit pas l'agenda. Renvoie vrai si l'agenda a été
+/// relu et le bloc recalculé à ce passage (annonces de la veille, #54).
+Future<bool> _agenda(
   ObjectStore store,
   AgendaSource source, {
   required bool force,
 }) async {
   var warnings = const <String>[];
+  var upToDate = false;
   try {
     final report = await runAgendaPass(
       store: store,
@@ -173,6 +175,7 @@ Future<void> _agenda(
     );
     stdout.writeln(report);
     warnings = report.warnings;
+    upToDate = report.upToDate && report.upcoming != null;
   } on Exception catch (e) {
     warnings = ["passage de l'agenda en échec, bloc « À venir » inchangé ($e)"];
     stdout.writeln('Attention : ${warnings.single}');
@@ -182,6 +185,7 @@ Future<void> _agenda(
       stdout.writeln('::warning title=Agenda::$w');
     }
   }
+  return upToDate;
 }
 
 /// Arguments pour et contre tirés des explications de vote (#35), après la
@@ -215,8 +219,10 @@ Future<void> _argue(ObjectStore store) async {
 /// Notifications push des votes importants (#34), après la publication et
 /// les résumés. Sans le secret `FCM_SERVICE_ACCOUNT` (clé JSON du compte de
 /// service Firebase), la fonction est désactivée. Un échec d'envoi est
-/// journalisé sans faire échouer l'exécution.
-Future<void> _notify(ObjectStore store) async {
+/// journalisé sans faire échouer l'exécution. Les annonces de la veille
+/// d'un vote solennel (#54) attendent un agenda relu à ce passage
+/// ([agendaUpToDate]).
+Future<void> _notify(ObjectStore store, {required bool agendaUpToDate}) async {
   final raw = Platform.environment['FCM_SERVICE_ACCOUNT'] ?? '';
   if (raw.trim().isEmpty) {
     stdout.writeln(
@@ -239,6 +245,7 @@ Future<void> _notify(ObjectStore store) async {
   final report = await runNotificationPass(
     store: store,
     sender: FcmClient(account: account),
+    agendaUpToDate: agendaUpToDate,
   );
   stdout.writeln(report);
   final warnings = report.warnings;

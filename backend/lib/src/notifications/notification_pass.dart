@@ -5,6 +5,7 @@ import 'package:vote_contract/vote_contract.dart';
 import '../dossier_index.dart' show Lecture;
 import '../live/live_state.dart';
 import '../object_store.dart';
+import 'eve_notification.dart';
 import 'fcm_client.dart';
 
 /// Mémoire des notifications envoyées, dans le bucket.
@@ -80,11 +81,19 @@ String _shorten(String s, int max) {
   return t.length <= max ? t : '${t.substring(0, max - 1).trimRight()}…';
 }
 
+/// Une annonce de la veille plus ancienne est oubliée.
+const _eveRetention = Duration(days: 30);
+
 /// Contenu de [notificationsStateKey] : les décisions déjà notifiées, avec
-/// la date d'envoi (ou de mise en service, pour celles déjà publiées avant).
+/// la date d'envoi (ou de mise en service, pour celles déjà publiées avant),
+/// et les votes solennels déjà annoncés la veille.
 class NotificationState {
-  NotificationState({required this.initializedAt, Map<String, String>? sent})
-    : sent = sent ?? {};
+  NotificationState({
+    required this.initializedAt,
+    Map<String, String>? sent,
+    Map<String, String>? eve,
+  }) : sent = sent ?? {},
+       eve = eve ?? {};
 
   /// Premier passage : les décisions publiées à ce moment-là ne sont pas
   /// notifiées.
@@ -92,6 +101,11 @@ class NotificationState {
 
   /// Identifiant de décision → date d'envoi (ISO 8601) ou `initial`.
   final Map<String, String> sent;
+
+  /// Votes solennels annoncés la veille (#54) : clé
+  /// [eveNotificationKey] → date d'envoi (ISO 8601) ou `initial`. Absent
+  /// des mémoires écrites avant #54 : vide.
+  final Map<String, String> eve;
 
   static const _version = 1;
 
@@ -101,6 +115,7 @@ class NotificationState {
     'version': _version,
     'initializedAt': initializedAt.toUtc().toIso8601String(),
     'sent': sent,
+    'eve': eve,
   };
 
   static NotificationState fromJson(Object? json) {
@@ -108,11 +123,16 @@ class NotificationState {
         ? DateTime.tryParse('${json['initializedAt']}')
         : null;
     final sent = json is Map<String, Object?> ? json['sent'] : null;
+    final eve = json is Map<String, Object?>
+        ? json['eve'] ?? const <String, Object?>{}
+        : null;
     if (json is! Map<String, Object?> ||
         json['version'] != _version ||
         initializedAt == null ||
         sent is! Map<String, Object?> ||
-        sent.values.any((v) => v is! String)) {
+        sent.values.any((v) => v is! String) ||
+        eve is! Map<String, Object?> ||
+        eve.values.any((v) => v is! String)) {
       throw const FormatException(
         'Mémoire des notifications : format inattendu',
       );
@@ -120,6 +140,7 @@ class NotificationState {
     return NotificationState(
       initializedAt: initializedAt,
       sent: sent.cast<String, String>(),
+      eve: Map.of(eve.cast<String, String>()),
     );
   }
 
@@ -135,11 +156,16 @@ class NotificationReport {
   /// Décisions notifiées pendant ce passage.
   final sent = <String>[];
 
+  /// Votes solennels du lendemain annoncés pendant ce passage
+  /// (identifiants des points).
+  final eveSent = <String>[];
+
   /// Premier passage : décisions déjà publiées, marquées comme notifiées
   /// sans envoi ; `null` sinon.
   int? initialized;
 
-  /// Décisions importantes reportées au passage suivant (plafond atteint).
+  /// Décisions importantes et annonces de la veille reportées au passage
+  /// suivant (plafond atteint).
   var deferred = 0;
 
   final warnings = <String>[];
@@ -147,11 +173,13 @@ class NotificationReport {
   @override
   String toString() => [
     if (initialized case final n?)
-      'Notifications : mise en service, $n décisions déjà publiées marquées '
-          'comme notifiées, aucun envoi.'
+      'Notifications : mise en service, $n décisions et votes à venir déjà '
+          'publiés marqués comme notifiés, aucun envoi.'
     else
       'Notifications : ${sent.length} envoyées'
           '${sent.isEmpty ? '' : ' (${sent.join(', ')})'}'
+          ', ${eveSent.length} annonces de la veille'
+          '${eveSent.isEmpty ? '' : ' (${eveSent.join(', ')})'}'
           '${deferred == 0 ? '' : ', $deferred reportées au passage suivant'}.',
     ...warnings.map((w) => 'Attention : $w'),
   ].join('\n');
@@ -169,12 +197,23 @@ class NotificationReport {
 /// absente ou illisible), les décisions de l'index sont marquées comme
 /// notifiées sans rien envoyer.
 ///
-/// À lancer après la publication et les résumés, pour que la notification
-/// porte la phrase d'explication ; jamais depuis la détection en direct.
+/// Le même passage annonce, le soir, les votes solennels du lendemain
+/// (#54, [isEveNotificationDue]) d'après le bloc « À venir » de l'index,
+/// recalculé juste avant par le passage de l'agenda : un point supprimé ou
+/// reporté n'y figure plus à cette date. Une annonce par point
+/// ([eveNotificationKey]), avant les décisions (elle ne vaut que ce
+/// soir-là), sous le même plafond. Si l'agenda n'a pas pu être relu à ce
+/// passage ([agendaUpToDate] faux), aucune annonce : le bloc peut être
+/// périmé ; un passage suivant de la soirée s'en charge.
+///
+/// À lancer après la publication, les résumés et l'agenda, pour que la
+/// notification porte la phrase d'explication ; jamais depuis la détection
+/// en direct.
 Future<NotificationReport> runNotificationPass({
   required ObjectStore store,
   required PushSender sender,
   DateTime Function() clock = DateTime.now,
+  bool agendaUpToDate = true,
 }) async {
   final report = NotificationReport();
   final now = clock().toUtc();
@@ -206,10 +245,57 @@ Future<NotificationReport> runNotificationPass({
       sent: {
         for (final d in index.decisions) d.id: NotificationState.initialMark,
       },
+      eve: {
+        for (final u in index.upcoming ?? const <UpcomingItem>[])
+          if (u.kind == UpcomingKind.voteSolennel)
+            eveNotificationKey(u): NotificationState.initialMark,
+      },
     );
     await initial.write(store);
-    report.initialized = initial.sent.length;
+    report.initialized = initial.sent.length + initial.eve.length;
     return report;
+  }
+
+  // Annonces de la veille oubliées après [_eveRetention].
+  final remembered = state.eve.length;
+  state.eve.removeWhere((_, at) {
+    final date = at == NotificationState.initialMark
+        ? state!.initializedAt
+        : DateTime.tryParse(at);
+    return date == null || now.difference(date) > _eveRetention;
+  });
+  if (state.eve.length != remembered) await state.write(store);
+
+  final eve = [
+    for (final u in index.upcoming ?? const <UpcomingItem>[])
+      if (isEveNotificationDue(u, now) &&
+          !state.eve.containsKey(eveNotificationKey(u)))
+        u,
+  ]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+  if (eve.isNotEmpty && !agendaUpToDate) {
+    report.warnings.add(
+      'agenda non relu à ce passage : ${eve.length} annonces de la veille '
+      'reportées',
+    );
+    eve.clear();
+  }
+
+  var attempts = 0;
+  for (final u in eve) {
+    if (attempts >= maxNotificationsPerPass) {
+      report.deferred++;
+      continue;
+    }
+    attempts++;
+    try {
+      await sender.send(eveNotificationFor(u, topic: importantVotesTopic));
+    } on Object catch (e) {
+      report.warnings.add('annonce de la veille ${u.id} non envoyée ($e)');
+      continue;
+    }
+    state.eve[eveNotificationKey(u)] = now.toIso8601String();
+    await state.write(store);
+    report.eveSent.add(u.id);
   }
 
   // Type de vote (solennel…) des scrutins du jeu de données.
@@ -236,7 +322,6 @@ Future<NotificationReport> runNotificationPass({
         return byDate != 0 ? byDate : (a.numero ?? 0).compareTo(b.numero ?? 0);
       });
 
-  var attempts = 0;
   for (final d in candidates) {
     if (attempts >= maxNotificationsPerPass) {
       report.deferred++;

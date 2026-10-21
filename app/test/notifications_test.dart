@@ -154,6 +154,20 @@ void main() {
     });
   });
 
+  group('opensListFromNotification', () {
+    test('lien vers la liste seulement', () {
+      const eve = {'upcomingId': 'P1', 'link': 'votedujour://decisions'};
+      expect(decisionIdFromNotification(eve), isNull);
+      expect(opensListFromNotification(eve), isTrue);
+      expect(opensListFromNotification(_notification.data), isFalse);
+      expect(opensListFromNotification({}), isFalse);
+      expect(
+        opensListFromNotification({'link': 'https://example.test/'}),
+        isFalse,
+      );
+    });
+  });
+
   group('réglage', () {
     test('autorisation accordée : abonné par défaut au lancement', () async {
       final messaging = FakePushMessaging(current: PushPermission.granted);
@@ -280,6 +294,27 @@ void main() {
         )!.settings.name,
         decisionRouteName('VTANR5L17V6346'),
       );
+    });
+
+    testWidgets('veille d\'un vote solennel : revient à la liste', (
+      tester,
+    ) async {
+      final messaging = FakePushMessaging(current: PushPermission.granted);
+      await _pumpApp(tester, messaging);
+      messaging.openedController.add(_notification);
+      await tester.pumpAndSettle();
+      expect(find.byType(DecisionDetailPage), findsOneWidget);
+
+      messaging.openedController.add(
+        const PushNotification(
+          title: 'Vote solennel demain',
+          body: 'À partir de 15h : Projet de loi de finances pour 2027',
+          data: {'upcomingId': 'P1', 'link': 'votedujour://decisions'},
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(DecisionDetailPage), findsNothing);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('app fermée : ouvre le détail au lancement', (tester) async {

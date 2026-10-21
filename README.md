@@ -35,7 +35,7 @@ Données publiées dans le bucket :
 - `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin, texte déposé de chaque dossier), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
 - `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
-- `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service).
+- `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service) et, sous `eve`, votes solennels déjà annoncés la veille (« séance dossier » → date d'envoi, oubliés après 30 jours).
 - `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
 - `state/agenda.json` : `ETag` de la dernière archive de l'agenda lue et points retenus de l'ordre du jour des séances pas encore finies (#52), relus quand l'agenda n'a pas changé.
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
@@ -129,6 +129,14 @@ Après la publication et les résumés, chaque exécution de `publish.yml` envoi
 - au plus 3 envois par passage, les plus anciennes d'abord ; les suivantes partent au passage suivant (une heure plus tard) ;
 - mémoire `state/notifications.json`, écrite après chaque envoi réussi : une décision n'est jamais notifiée deux fois ; un envoi en échec est retenté au passage suivant. Au premier passage, les décisions déjà publiées sont marquées sans envoi.
 - Envoi par l'API FCM HTTP v1 : jeton OAuth2 obtenu avec un JWT RS256 signé par la clé du compte de service. Sans le secret `FCM_SERVICE_ACCOUNT`, la fonction est désactivée (une ligne dans le journal) ; un échec d'envoi est journalisé en avertissement sans faire échouer l'exécution. Le passage en direct (`live.yml`) n'envoie jamais de notification.
+
+Le même passage annonce, la veille au soir, les votes solennels du lendemain (#54, `eve_notification.dart`) :
+
+- passage dont l'heure de Paris est entre 18h et 23h59, point « Vote solennel » du bloc `upcoming` dont la séance a lieu le lendemain (heure de Paris) ;
+- état relu juste avant : le bloc vient d'être recalculé par le passage de l'agenda (seuls les points « Confirmé » y sont ; un point supprimé ou déplacé n'y est plus à cette date). Si l'agenda n'a pas pu être relu à ce passage, aucune annonce (un passage suivant de la soirée s'en charge) ;
+- message : titre « Vote solennel demain », corps « À partir de 15h : <titre court> » (heure de Paris du début de la séance), données `upcomingId` et `link` (`votedujour://decisions`, la liste) ;
+- une annonce par séance et dossier, avant les décisions, sous le même plafond de 3 envois par passage ; au premier passage, les points déjà à venir sont marqués sans envoi ;
+- limite : le cron de GitHub est irrégulier (#51) ; sans aucun passage entre 18h et minuit, l'annonce n'est pas envoyée (jamais le jour même).
 
 ## App
 
