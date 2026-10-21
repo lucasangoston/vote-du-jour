@@ -169,6 +169,118 @@ void main() {
     });
   });
 
+  group('prochains votes solennels (#56)', () {
+    UpcomingItem item(
+      String id,
+      UpcomingKind kind,
+      DateTime startsAt,
+      String shortTitle,
+    ) => UpcomingItem(
+      id: id,
+      kind: kind,
+      startsAt: startsAt,
+      seanceRef: 'RUANR5L17S2027IDS30964',
+      label: 'Vote solennel sur le projet de loi',
+      shortTitle: shortTitle,
+    );
+
+    test('garde les votes solennels, du plus proche au plus lointain', () {
+      final snapshot = WidgetSnapshot.fromIndex(
+        index.withUpcoming([
+          item(
+            'PT3',
+            UpcomingKind.voteSolennel,
+            DateTime.utc(2026, 11, 3, 14),
+            'budget 2027',
+          ),
+          item(
+            'PT1',
+            UpcomingKind.discussion,
+            DateTime.utc(2026, 10, 22, 13),
+            'Fin de vie',
+          ),
+          item(
+            'PT2',
+            UpcomingKind.voteSolennel,
+            DateTime.utc(2026, 10, 27, 14),
+            ' Budget de la Sécurité sociale pour 2027 ',
+          ),
+        ]),
+        savedAt: DateTime.utc(2026, 10, 21),
+      );
+
+      final json = jsonDecode(jsonEncode(snapshot.toJson())) as Map;
+      expect(json['upcomingVotes'], [
+        {
+          'id': 'PT2',
+          'startsAt': '2026-10-27T14:00:00.000Z',
+          'title': 'Budget de la Sécurité sociale pour 2027',
+        },
+        {
+          'id': 'PT3',
+          'startsAt': '2026-11-03T14:00:00.000Z',
+          'title': 'Budget 2027',
+        },
+      ]);
+      final read = WidgetSnapshot.tryFromJson(json)!;
+      expect(read.toJson(), snapshot.toJson());
+    });
+
+    test('sans vote solennel, le champ est omis (format antérieur)', () {
+      for (final upcoming in [
+        null,
+        <UpcomingItem>[],
+        [
+          item(
+            'PT1',
+            UpcomingKind.discussion,
+            DateTime.utc(2026, 10, 22),
+            'Fin de vie',
+          ),
+        ],
+      ]) {
+        final json = WidgetSnapshot.fromIndex(
+          index.withUpcoming(upcoming),
+          savedAt: DateTime.utc(2026, 10, 21),
+        ).toJson();
+        expect(json.containsKey('upcomingVotes'), isFalse);
+      }
+    });
+
+    test('lit un ancien instantané et ignore les votes malformés', () {
+      final old = WidgetSnapshot.tryFromJson({
+        'version': 1,
+        'savedAt': '2026-10-17T00:00:00.000Z',
+        'decisions': <Object?>[],
+      })!;
+      expect(old.upcomingVotes, isEmpty);
+
+      final read = WidgetSnapshot.tryFromJson({
+        'version': 1,
+        'savedAt': '2026-10-17T00:00:00.000Z',
+        'decisions': <Object?>[],
+        'upcomingVotes': [
+          {'id': 'a', 'startsAt': 'demain', 'title': 't'},
+          {'id': 'b', 'startsAt': '2026-10-27T14:00:00Z', 'title': ' '},
+          {'id': 'c', 'startsAt': '2026-10-27T15:00:00+01:00', 'title': 't'},
+          'd',
+        ],
+      })!;
+      expect(read.upcomingVotes.map((u) => (u.id, u.startsAt)), [
+        ('c', DateTime.utc(2026, 10, 27, 14)),
+      ]);
+      expect(
+        WidgetSnapshot.tryFromJson({
+          'version': 1,
+          'savedAt': '2026-10-17T00:00:00.000Z',
+          'decisions': <Object?>[],
+          'upcomingVotes': 'aucun',
+        })!.upcomingVotes,
+        isEmpty,
+      );
+    });
+  });
+
   test('lit un instantané antérieur à #29, sans décompte ni mode', () {
     final read = WidgetSnapshot.tryFromJson({
       'version': 1,

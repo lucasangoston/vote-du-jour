@@ -85,13 +85,41 @@ enum SnapshotConverter {
     let decisions = items.lazy.compactMap { ($0 as? [String: Any]).flatMap(convert) }.prefix(3)
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    let snapshot: [String: Any] = [
+    var snapshot: [String: Any] = [
       "version": DecisionSnapshot.supportedVersion,
       "savedAt": formatter.string(from: savedAt),
       "decisions": Array(decisions),
     ]
+    // Prochains votes solennels (#56), comme `WidgetSnapshot.fromIndex` : les
+    // trois plus proches, champ omis s'il n'y en a pas.
+    let votes = ((root["upcoming"] as? [Any]) ?? [])
+      .compactMap { ($0 as? [String: Any]).flatMap(convertUpcoming) }
+      .sorted { $0.startsAt < $1.startsAt }
+      .prefix(3)
+    if !votes.isEmpty {
+      snapshot["upcomingVotes"] = votes.map { vote in
+        ["id": vote.id, "startsAt": formatter.string(from: vote.startsAt), "title": vote.title]
+      }
+    }
     guard let json = try? JSONSerialization.data(withJSONObject: snapshot) else { return nil }
     return String(data: json, encoding: .utf8)
+  }
+
+  /// Vote solennel du bloc `upcoming`, mêmes règles que
+  /// `UpcomingItem.tryFromJson` : un point malformé ou d'une autre nature
+  /// (discussion) est ignoré.
+  private static func convertUpcoming(_ u: [String: Any]) -> UpcomingVote? {
+    guard
+      let id = u["id"] as? String,
+      u["kind"] as? String == "vote_solennel",
+      let startsAt = (u["startsAt"] as? String).flatMap(UpcomingVote.instant),
+      u["seanceRef"] is String,
+      u["label"] is String,
+      let shortTitle = optionalString(u["shortTitle"])
+    else { return nil }
+    let title = shortTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+    return UpcomingVote(
+      id: id, startsAt: startsAt, title: title.prefix(1).uppercased() + title.dropFirst())
   }
 
   /// Mêmes règles que `DecisionSummary.tryFromJson` : une décision malformée est

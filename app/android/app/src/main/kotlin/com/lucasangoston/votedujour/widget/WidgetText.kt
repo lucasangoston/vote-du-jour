@@ -45,4 +45,18 @@ object WidgetText {
               RelativeDate.label(decision.date, today),
           )
           .joinToString(". ")
+
+  /** Annonce du prochain vote solennel (#56). */
+  const val UPCOMING_KICKER = "Prochain vote solennel"
+
+  /** Initiale en majuscule : « Mar. 27 oct. » en début de ligne. */
+  fun capitalized(text: String): String = text.replaceFirstChar { it.uppercase() }
+
+  /** Grand widget, sous le titre : « Prochain vote solennel · mar. 27 oct. ». */
+  fun largeUpcomingMeta(vote: UpcomingVote): String = "$UPCOMING_KICKER$SEPARATOR${vote.dayLabel}"
+
+  /** Lecture d'écran : « Prochain vote solennel. Mar. 27 oct. Budget … ». */
+  fun upcomingDescription(vote: UpcomingVote): String =
+      listOf(UPCOMING_KICKER, capitalized(vote.dayLabel).removeSuffix("."), vote.title)
+          .joinToString(". ")
 }

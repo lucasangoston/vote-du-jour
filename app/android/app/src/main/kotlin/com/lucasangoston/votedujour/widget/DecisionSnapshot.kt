@@ -9,12 +9,20 @@ import org.json.JSONObject
  * Instantané écrit par l'app (`lib/src/home_widget/widget_snapshot.dart`) dans les préférences de
  * home_widget. Les champs optionnels absents ne sont pas affichés.
  */
-data class DecisionSnapshot(val decisions: List<WidgetDecision>) {
+data class DecisionSnapshot(
+    val decisions: List<WidgetDecision>,
+    /** Prochains votes solennels, du plus proche au plus lointain (#56) ; vide si absent. */
+    val upcomingVotes: List<UpcomingVote> = emptyList(),
+) {
   /**
    * Les [count] décisions les plus récentes, de la plus récente à la plus ancienne (l'instantané
    * est déjà dans cet ordre). Moins s'il en contient moins ; aucune pour un [count] négatif ou nul.
    */
   fun latest(count: Int): List<WidgetDecision> = decisions.take(count.coerceAtLeast(0))
+
+  /** Vote solennel à annoncer aujourd'hui (voir [UpcomingVote.shown]). */
+  fun upcomingVote(today: LocalDate = LocalDate.now()): UpcomingVote? =
+      UpcomingVote.shown(upcomingVotes, decisions.firstOrNull()?.date, today)
 
   companion object {
     const val STORAGE_KEY = "decisions_snapshot"
@@ -27,10 +35,17 @@ data class DecisionSnapshot(val decisions: List<WidgetDecision>) {
         val root = JSONObject(json)
         if (root.optInt("version") != SUPPORTED_VERSION) return null
         val items = root.getJSONArray("decisions")
+        // Champ optionnel (#56) : absent ou malformé, aucun vote annoncé.
+        val votes = root.optJSONArray("upcomingVotes")
         DecisionSnapshot(
-            (0 until items.length()).mapNotNull { i ->
-              items.optJSONObject(i)?.let(WidgetDecision::parse)
-            }
+            decisions =
+                (0 until items.length()).mapNotNull { i ->
+                  items.optJSONObject(i)?.let(WidgetDecision::parse)
+                },
+            upcomingVotes =
+                (0 until (votes?.length() ?: 0)).mapNotNull { i ->
+                  votes?.optJSONObject(i)?.let(UpcomingVote::parse)
+                },
         )
       } catch (e: Exception) {
         null

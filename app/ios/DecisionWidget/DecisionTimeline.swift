@@ -11,13 +11,17 @@ enum DecisionTimeline {
     // Les jours sans séance, l'index publié garde les décisions précédentes :
     // le widget affiche toujours les dernières. Toutes les tailles partagent
     // cette timeline : le grand widget en affiche trois, les autres une.
-    let decisions = DecisionSnapshot.load()?.latest(DecisionSnapshot.largeWidgetCount) ?? []
-    var entries = [DecisionEntry(date: now, decisions: decisions)]
+    let snapshot = DecisionSnapshot.load()
+    let decisions = snapshot?.latest(DecisionSnapshot.largeWidgetCount) ?? []
+    // Le prochain vote solennel (#56) est choisi par entrée : à minuit, la
+    // dernière décision peut passer les trois jours, ou le vote être passé.
+    let votes = snapshot?.upcomingVotes ?? []
+    var entries = [DecisionEntry(date: now, decisions: decisions, upcomingVotes: votes)]
     if let midnight = calendar.nextDate(
       after: now, matching: DateComponents(hour: 0, minute: 0, second: 0),
       matchingPolicy: .nextTime)
     {
-      entries.append(DecisionEntry(date: midnight, decisions: decisions))
+      entries.append(DecisionEntry(date: midnight, decisions: decisions, upcomingVotes: votes))
     }
     return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadInterval)))
   }
