@@ -29,6 +29,10 @@ class AgendaReport {
   /// L'agenda a été téléchargé (il avait changé).
   bool downloaded = false;
 
+  /// L'agenda a été relu à ce passage (téléchargé, ou inchangé d'après son
+  /// `ETag`) : les points de l'état sont à jour. Faux après une panne.
+  bool upToDate = false;
+
   /// Points retenus dans l'état (séances pas encore finies).
   int points = 0;
 
@@ -96,6 +100,7 @@ Future<AgendaReport> runAgendaPass({
         ..unreadable = read.unreadable;
       state = AgendaState(etag: etag, fetchedAt: now, points: read.points);
     }
+    report.upToDate = true;
   } on Object catch (e) {
     report.warnings.add(
       previous == null
