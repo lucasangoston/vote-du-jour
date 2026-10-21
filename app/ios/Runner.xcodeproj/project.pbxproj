@@ -36,6 +36,8 @@
 		A12E0C0F1A2B3C4D5E6F701B /* Geist-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701A /* Geist-SemiBold.ttf */; };
 		A12E0C0F1A2B3C4D5E6F701D /* GeistMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701C /* GeistMono-Regular.ttf */; };
 		A12E0C0F1A2B3C4D5E6F701F /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */; };
+		A12E0C0F1A2B3C4D5E6F7021 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7020 /* PrivacyInfo.xcprivacy */; };
+		A12E0C0F1A2B3C4D5E6F7023 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7022 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +118,8 @@
 		A12E0C0F1A2B3C4D5E6F701A /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Geist-SemiBold.ttf; sourceTree = "<group>"; };
 		A12E0C0F1A2B3C4D5E6F701C /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistMono-Regular.ttf; sourceTree = "<group>"; };
 		A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7020 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7022 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,6 +165,7 @@
 				A12E0C0F1A2B3C4D5E6F7017 /* Fonts */,
 				2D84410258265CFF9C57F2CA /* Info.plist */,
 				DD45EEFB39A6CDC5893A2728 /* DecisionWidget.entitlements */,
+				A12E0C0F1A2B3C4D5E6F7022 /* PrivacyInfo.xcprivacy */,
 			);
 			name = DecisionWidget;
 			path = DecisionWidget;
@@ -213,6 +218,7 @@
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				A7AC10E62465EE4C8A26CB6D /* Runner.entitlements */,
+				A12E0C0F1A2B3C4D5E6F7020 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -350,6 +356,7 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				F1B2C3D4E5F6A7B8C9D0E1F3 /* GoogleService-Info.plist in Resources */,
+				A12E0C0F1A2B3C4D5E6F7021 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,6 +368,7 @@
 				A12E0C0F1A2B3C4D5E6F701B /* Geist-SemiBold.ttf in Resources */,
 				A12E0C0F1A2B3C4D5E6F701D /* GeistMono-Regular.ttf in Resources */,
 				A12E0C0F1A2B3C4D5E6F701F /* OFL.txt in Resources */,
+				A12E0C0F1A2B3C4D5E6F7023 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,7 +508,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -528,7 +536,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -581,7 +589,7 @@
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Profile;
@@ -633,7 +641,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Profile;
@@ -739,7 +747,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -793,7 +801,7 @@
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
