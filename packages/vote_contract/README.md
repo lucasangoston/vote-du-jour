@@ -273,3 +273,36 @@ l'ordre du jour officiel des prochains jours, du plus proche au plus lointain.
   vide : rien d'inscrit.
 - Ajout rétrocompatible : même `schemaVersion`, les anciennes versions de
   l'app ignorent le champ.
+
+## Texte en débat : « En débat » (ticket #55)
+
+Champ optionnel `inDebate` de l'index (`DecisionIndex.inDebate`, `InDebate`) :
+le texte discuté lors de la séance en cours ou de la dernière séance des 7
+derniers jours, et ses articles votés au scrutin public.
+
+```json
+"inDebate": {
+  "dossierRef": "DLR5L17N54629",
+  "shortTitle": "Projet de loi de finances pour 2027 (première partie)",
+  "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54629",
+  "seanceRef": "RUANR5L17S2027IDS30951",
+  "startsAt": "2026-10-19T19:30:00.000Z",
+  "articles": [
+    {"number": "40", "outcome": "rejete", "date": "2026-10-19", "scrutinRef": "VTANR5L17V8892"},
+    {"number": "39", "outcome": "supprime", "date": "2026-10-19", "scrutinRef": "VTANR5L17V8889"},
+    {"number": "38", "outcome": "adopte", "date": "2026-10-19", "scrutinRef": "VTANR5L17V8888"}
+  ]
+}
+```
+
+- `shortTitle` : même règle que `upcoming`. `seanceRef`, `startsAt` : séance
+  en cours ou dernière séance (instant UTC de son début).
+- `articles` : un par article (son dernier vote), du plus récent au plus
+  ancien ; liste vide si aucun article n'a encore été voté. `number` : tel
+  qu'écrit dans l'intitulé (« 4 », « liminaire », « 3 bis A », « premier »).
+  `outcome` : `adopte`, `rejete`, ou `supprime` (amendement de suppression
+  adopté). Un article de sort inconnu ou malformé est ignoré.
+- `inDebate` absent : aucun texte en débat dans les 7 derniers jours, ou index
+  antérieur au ticket. Un bloc malformé vaut absence.
+- Ajout rétrocompatible : même `schemaVersion`, les anciennes versions de
+  l'app ignorent le champ.

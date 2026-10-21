@@ -4,6 +4,7 @@ library;
 export 'src/agenda/agenda_pass.dart';
 export 'src/agenda/agenda_reader.dart';
 export 'src/agenda/agenda_source.dart';
+export 'src/agenda/in_debate.dart';
 export 'src/arguments/arguments_matcher.dart';
 export 'src/arguments/arguments_pass.dart';
 export 'src/arguments/arguments_prompt.dart';

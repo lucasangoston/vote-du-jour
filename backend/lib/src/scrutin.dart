@@ -14,6 +14,7 @@ class Scrutin {
     required this.decompte,
     required this.dossierRef,
     required this.groupVotes,
+    this.seanceRef,
   });
 
   /// Identifiant officiel, par exemple `VTANR5L17V7946`.
@@ -42,6 +43,10 @@ class Scrutin {
   final String? dossierRef;
 
   final List<GroupVote> groupVotes;
+
+  /// Séance du vote (`RUANR5L17S2027IDS30951`), la réunion de l'agenda ;
+  /// absente sur le site de l'Assemblée.
+  final String? seanceRef;
 }
 
 /// Décompte des voix.

@@ -28,7 +28,7 @@ Le job et l'app dépendent du contrat par chemin relatif (`path: ../packages/vot
 Données publiées dans le bucket :
 
 - `v1/latest.json` : les 50 dernières décisions, de la plus récente à la plus ancienne (format décrit dans `packages/vote_contract/README.md`). Un changement cassant du format publiera sous `v2/`.
-- `v1/latest.json` contient aussi le bloc optionnel `upcoming` : l'ordre du jour des prochains jours (#52).
+- `v1/latest.json` contient aussi le bloc optionnel `upcoming` : l'ordre du jour des prochains jours (#52), et le bloc optionnel `inDebate` : le texte en débat et ses articles votés au scrutin public (#55).
 - `v1/decisions/<id>.json` : le détail de chaque décision de l'index (décompte, vote par groupe ; format dans `packages/vote_contract/README.md`). Seuls les fichiers dont le contenu a changé sont réécrits.
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
 - `state/scrutins-confirmes.json` : scrutins du dernier jeu de données utiles à l'index (retenus ou sur l'article unique), sans vote par groupe, et dernier numéro du jeu de données. Écrit par le job, relu par la détection en direct pour reconstruire l'index sans retélécharger l'archive.
@@ -37,7 +37,8 @@ Données publiées dans le bucket :
 - `state/resumes.json` : cache des résumés, par décision (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
 - `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service) et, sous `eve`, votes solennels déjà annoncés la veille (« séance dossier » → date d'envoi, oubliés après 30 jours).
 - `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
-- `state/agenda.json` : `ETag` de la dernière archive de l'agenda lue et points retenus de l'ordre du jour des séances pas encore finies (#52), relus quand l'agenda n'a pas changé.
+- `state/agenda.json` : `ETag` de la dernière archive de l'agenda lue et points retenus de l'ordre du jour des séances pas finies depuis plus de 7 jours (#52, #55), relus quand l'agenda n'a pas changé.
+- `state/articles.json` : votes sur les articles (et amendements de suppression adoptés) des 30 derniers jours du dernier jeu de données des scrutins, avec dossier et séance, et dernier numéro du jeu de données (#55). Écrit par le job, relu par les passages de l'agenda et en direct.
 - `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
 
 ## Job de publication
@@ -118,6 +119,15 @@ Après la publication, chaque exécution de `publish.yml` lit l'agenda officiel 
 cd backend
 dart run bin/vote_job.dart --agenda-file Agenda.json.zip   # agenda déjà téléchargé
 ```
+
+## Texte en débat : « En débat » (#55)
+
+Le passage de l'agenda publie aussi dans `v1/latest.json` le bloc `inDebate` (format dans `packages/vote_contract/README.md`). Code : `backend/lib/src/agenda/in_debate.dart`.
+
+- Texte : dossier du point « Discussion » ou « Suite de la discussion » de la séance de l'Assemblée en cours ou de la dernière, commencée dans les 7 derniers jours ; si la séance en inscrit plusieurs, celui dont un article a été voté en dernier, sinon le premier. Aucun texte : pas de bloc.
+- Articles : scrutins du dossier (`objet.dossierLegislatif`) dont l'intitulé commence par « l'article… » (adopté ou rejeté), et amendements « … de suppression de l'article N » adoptés (article supprimé). Les autres amendements, les amendements de suppression rejetés et l'article unique (vote sur l'ensemble) sont exclus. Même lecture que le dernier vote ; un article par numéro (son dernier vote), du plus récent au plus ancien. Les votes à main levée ne sont pas connus.
+- Détection en direct : les articles de la liste du site plus récents que le jeu de données (sans dossier) sont rattachés au texte en débat par le texte nommé dans l'intitulé ; le bloc publié les garde jusqu'à ce que le jeu de données les confirme.
+- Titre court : même règle que « À venir ».
 
 ## Notifications push des votes importants
 

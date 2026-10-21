@@ -12,6 +12,7 @@ import 'hemicycle/vote_arc.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'theme.dart';
+import 'in_debate_section.dart';
 import 'upcoming_section.dart';
 import 'vote_mode_label.dart';
 
@@ -124,14 +125,18 @@ class _DecisionListPageState extends State<DecisionListPage> {
         ),
       ];
     }
-    // Ordre du jour de l'Assemblée, avant les décisions (#53) ; rien sans
-    // point à venir.
+    // Ordre du jour de l'Assemblée, avant les décisions (#53), puis le texte
+    // en débat (#55) ; rien sans point à venir ni texte en débat.
     final upcoming = SliverToBoxAdapter(
       child: UpcomingSection(items: index.upcoming),
+    );
+    final inDebate = SliverToBoxAdapter(
+      child: InDebateSection(inDebate: index.inDebate),
     );
     if (index.decisions.isEmpty) {
       return [
         upcoming,
+        inDebate,
         const SliverFillRemaining(
           hasScrollBody: false,
           child: _Message(text: 'Aucune décision publiée pour le moment.'),
@@ -141,6 +146,7 @@ class _DecisionListPageState extends State<DecisionListPage> {
     final now = DateTime.now();
     return [
       upcoming,
+      inDebate,
       for (final day in groupByDay(index.decisions)) ...[
         SliverToBoxAdapter(
           child: _DayHeading(dayGroupLabel(day.first.date, now: now)),
