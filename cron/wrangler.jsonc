@@ -1,0 +1,15 @@
+// Worker « perchoir-declencheur » (ticket #51) : lance les workflows GitHub à
+// heure fixe, le cron de GitHub Actions étant trop irrégulier (spike #15).
+{
+  "name": "perchoir-declencheur",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "triggers": {
+    // En UTC. Détection en direct : toutes les 10 minutes de 7h à 22h50 UTC
+    // (9h-24h à Paris l'été, 8h-23h50 l'hiver), du lundi au vendredi ; le job
+    // écarte les passages hors de LIVE_DAYS et LIVE_HOURS (live.yml).
+    // Publication : toutes les heures.
+    "crons": ["3-59/10 7-22 * * 1-5", "17 * * * *"]
+  }
+}
