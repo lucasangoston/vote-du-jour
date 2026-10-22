@@ -9,20 +9,27 @@ import 'fixtures.dart';
 import 'job_test.dart' show FakeDumpSource, fakeDossiers;
 import 'site_reader_test.dart' show sitePage;
 
-/// Site simulé : sert une page de liste et, éventuellement, des pages de
+/// Site simulé : sert une page de liste (la page 1, et les suivantes de
+/// [nextLists] ; à défaut, la même) et, éventuellement, des pages de
 /// scrutin ; compte les requêtes.
 class FakeSite implements SiteSource {
-  FakeSite(this.list, {this.pages = const {}});
+  FakeSite(this.list, {this.pages = const {}, this.nextLists});
 
   String list;
   final Map<int, String> pages;
+
+  /// Pages 2, 3… de la liste ; `null` : toutes identiques à [list].
+  final List<String>? nextLists;
   final scrutinRequests = <int>[];
-  var listRequests = 0;
+  final listPagesRequested = <int>[];
+  int get listRequests => listPagesRequested.length;
 
   @override
-  Future<String> fetchList() async {
-    listRequests++;
-    return list;
+  Future<String> fetchList({int page = 1}) async {
+    listPagesRequested.add(page);
+    if (page == 1 || nextLists == null) return list;
+    if (page - 2 < nextLists!.length) return nextLists![page - 2];
+    throw HttpException('HTTP 503 (page $page)');
   }
 
   @override
@@ -37,10 +44,13 @@ void main() {
   late LocalDirectoryStore store;
   // Mardi 20 octobre 2026, 17 h à Paris.
   final now = DateTime.utc(2026, 10, 20, 15);
+  // Pauses entre les pages de la liste (aucune attente réelle).
+  final pauses = <Duration>[];
 
   setUp(() {
     dir = Directory.systemTemp.createTempSync('live_pass_test');
     store = LocalDirectoryStore(dir.path);
+    pauses.clear();
   });
   tearDown(() => dir.deleteSync(recursive: true));
 
@@ -61,8 +71,16 @@ void main() {
     clock: () => now,
   );
 
-  Future<LiveOutcome> pass(FakeSite site, {DateTime? at}) =>
-      runLivePass(site: site, store: store, clock: () => at ?? now);
+  Future<LiveOutcome> pass(FakeSite site, {DateTime? at}) => runLivePass(
+    site: site,
+    store: store,
+    clock: () => at ?? now,
+    sleep: (d) async => pauses.add(d),
+  );
+
+  /// État de la détection où [lastSeen] est le dernier scrutin vu.
+  Future<void> seen(int lastSeen) =>
+      LiveState(lastSeenNumero: lastSeen, checkedAt: now).write(store);
 
   List<(int?, DecisionStatus)> top(DecisionIndex index, int n) => [
     for (final d in index.decisions.take(n)) (d.numero, d.status),
@@ -83,7 +101,9 @@ void main() {
     await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
     expect(await store.read(confirmedSnapshotKey), isNotNull);
 
-    // Pendant la séance : 8705 et 8706 apparaissent sur le site.
+    // Pendant la séance : 8705 et 8706 apparaissent sur le site, juste après
+    // le dernier scrutin vu.
+    await seen(8704);
     final site = FakeSite(sitePage('liste_scrutins_solennels.html'));
     final outcome = await pass(site) as LiveChecked;
     expect(site.listRequests, 1);
@@ -169,18 +189,100 @@ void main() {
     },
   );
 
-  test('séance budgétaire : 50 amendements, aucune décision', () async {
-    await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
-    final before = await store.read(indexPath);
-    final site = FakeSite(sitePage('liste_scrutins.html'));
-    final outcome = await pass(site) as LiveChecked;
-    expect(outcome.newSinceDump, 50);
-    expect(outcome.detected, isEmpty);
-    expect(outcome.published, isFalse);
-    expect(site.scrutinRequests, isEmpty);
-    expect(await store.read(indexPath), before);
-    // Scrutins 7350 à 8827 jamais vus : signalé.
-    expect(outcome.warnings.single, contains('7350 à 8827'));
+  group('pagination de la liste', () {
+    Future<LiveState> readState() async =>
+        LiveState.fromJson(jsonDecode((await store.read(liveStateKey))!));
+
+    test('une page suffit : elle rejoint le dernier scrutin vu', () async {
+      await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
+      await seen(8850);
+      final site = FakeSite(
+        sitePage('liste_scrutins.html'),
+        nextLists: const [],
+      );
+      final outcome = await pass(site) as LiveChecked;
+      expect(site.listPagesRequested, [1]);
+      expect(pauses, isEmpty);
+      expect(outcome.listPages, 1);
+      expect(outcome.warnings, isEmpty);
+      expect((await readState()).lastSeenNumero, 8877);
+    });
+
+    test(
+      'deux pages : la première ne contient que des scrutins non vus',
+      () async {
+        await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
+        await seen(8704);
+        // Page 1 : 50 amendements (8828 à 8877), tous postérieurs au dernier
+        // scrutin vu ; page 2 (simulée) : 8705 et 8706, votes sur
+        // l'ensemble.
+        final site = FakeSite(
+          sitePage('liste_scrutins.html'),
+          nextLists: [sitePage('liste_scrutins_solennels.html')],
+        );
+        final outcome = await pass(site) as LiveChecked;
+        expect(site.listPagesRequested, [1, 2]);
+        expect(pauses, [listPageDelay]);
+        expect(
+          listPageDelay,
+          greaterThanOrEqualTo(const Duration(seconds: 30)),
+        );
+        expect(outcome.listPages, 2);
+        expect(outcome.listed, hasLength(52));
+        expect(outcome.detected.map((s) => s.numero), [8705, 8706]);
+        expect(outcome.published, isTrue);
+        expect(outcome.warnings, isEmpty);
+        expect((await readState()).lastSeenNumero, 8877);
+      },
+    );
+
+    test('plafond atteint : les scrutins manquants sont signalés', () async {
+      // Séance budgétaire, aucun passage depuis le jeu de données (n° 7349) :
+      // la liste n'atteint jamais le dernier scrutin connu.
+      await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
+      final before = await store.read(indexPath);
+      final site = FakeSite(sitePage('liste_scrutins.html'));
+      final outcome = await pass(site) as LiveChecked;
+      expect(site.listPagesRequested, [1, 2, 3, 4]);
+      expect(pauses, hasLength(3));
+      expect(outcome.listPages, maxListPagesPerPass);
+      // Mêmes scrutins sur chaque page simulée : doublons écartés.
+      expect(outcome.listed, hasLength(50));
+      expect(outcome.newSinceDump, 50);
+      expect(outcome.detected, isEmpty);
+      expect(outcome.published, isFalse);
+      expect(site.scrutinRequests, isEmpty);
+      expect(await store.read(indexPath), before);
+      expect(
+        outcome.warnings.single,
+        allOf(contains('7350 à 8827'), contains('4 pages')),
+      );
+      expect((await readState()).lastSeenNumero, 8877);
+    });
+
+    test('page suivante illisible : le trou est relu ensuite', () async {
+      await publishDump('Mon, 19 Oct 2026 10:25:00 GMT');
+      await seen(8704);
+      final site = FakeSite(
+        sitePage('liste_scrutins.html'),
+        nextLists: const [],
+      );
+      final outcome = await pass(site) as LiveChecked;
+      expect(site.listPagesRequested, [1, 2]);
+      expect(outcome.warnings.single, contains('page 2 de la liste'));
+      expect((await readState()).lastSeenNumero, 8704);
+    });
+
+    test('URL d\'une page de la liste', () {
+      expect(
+        siteListPageUrl(siteListUrl, 3),
+        'https://www.assemblee-nationale.fr/dyn/17/scrutins?page=3&limit=50',
+      );
+      expect(
+        siteListPageUrl('https://example.org/scrutins?limit=50', 2),
+        'https://example.org/scrutins?limit=50&page=2',
+      );
+    });
   });
 
   test('sort absent de la liste : lu sur la page du scrutin', () async {

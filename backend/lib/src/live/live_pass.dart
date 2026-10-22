@@ -117,6 +117,7 @@ class LiveFailed extends LiveOutcome {
 class LiveChecked extends LiveOutcome {
   const LiveChecked({
     required this.listed,
+    this.listPages = 1,
     required this.confirmedUpTo,
     required this.newSinceDump,
     required this.detected,
@@ -126,8 +127,11 @@ class LiveChecked extends LiveOutcome {
     super.warnings,
   });
 
-  /// Scrutins lus sur la page de liste.
+  /// Scrutins lus sur les pages de liste, du plus récent au plus ancien.
   final List<SiteScrutin> listed;
+
+  /// Nombre de pages de liste lues.
+  final int listPages;
 
   /// Dernier numéro du jeu de données.
   final int confirmedUpTo;
@@ -152,7 +156,7 @@ class LiveChecked extends LiveOutcome {
     final numeros = listed.map((s) => s.numero);
     return [
           '${listed.length} scrutins lus sur le site '
-              '(n° ${numeros.reduce((a, b) => a < b ? a : b)} à '
+              '($listPages page${listPages > 1 ? 's' : ''} de liste, n°${numeros.reduce((a, b) => a < b ? a : b)} à '
               '${numeros.reduce((a, b) => a > b ? a : b)}), '
               '$newSinceDump après le jeu de données (n° $confirmedUpTo).',
           '${detected.length} nouveaux scrutins provisoires retenus'
@@ -176,8 +180,29 @@ class LiveChecked extends LiveOutcome {
 /// donne pas le sort d'un scrutin susceptible d'être une décision.
 const maxScrutinPagesPerPass = 5;
 
+/// Nombre maximal de pages de la liste des scrutins (50 par page) lues par
+/// passage : 200 scrutins, bien plus que ce qu'une séance de budget vote en
+/// dix minutes (33 vus entre deux passages espacés de plusieurs heures).
+const maxListPagesPerPass = 4;
+
+/// Pause entre deux pages de la liste. Le robots.txt du site demande
+/// `Crawl-delay: 30` : on le respecte à la lettre. La pause ne coûte que
+/// lors des rares passages qui lisent plus d'une page (au plus 1 min 30 pour
+/// 4 pages, dans les 8 minutes du job).
+const listPageDelay = Duration(seconds: 30);
+
 /// Un passage de la détection en direct : un GET de la liste des scrutins du
 /// site, plus un GET par nouveau scrutin dont la liste ne donne pas le sort.
+///
+/// Pagination : tant que la page lue ne contient que des scrutins jamais vus
+/// (le plus ancien est au-delà du suivant du dernier scrutin connu : dernier
+/// numéro de l'état, [LiveState.lastSeenNumero], ou du jeu de données), la
+/// page suivante est lue, après une pause de [pageDelay], jusqu'à
+/// [maxListPages] pages. Au-delà, les scrutins manquants sont signalés et
+/// seront publiés avec le jeu de données. L'erreur de lecture d'une page
+/// suivante n'est qu'un avertissement : le passage continue avec les pages
+/// lues, et l'état garde le dernier numéro connu pour relire le trou au
+/// passage suivant.
 ///
 /// Les scrutins absents du jeu de données (numéro supérieur au dernier de
 /// l'instantané) passent par le sélecteur ; ceux qu'il retient deviennent des
@@ -197,7 +222,11 @@ Future<LiveOutcome> runLivePass({
   required ObjectStore store,
   DateTime Function() clock = DateTime.now,
   int maxScrutinPages = maxScrutinPagesPerPass,
+  int maxListPages = maxListPagesPerPass,
+  Duration pageDelay = listPageDelay,
+  Future<void> Function(Duration)? sleep,
 }) async {
+  final pause = sleep ?? (d) => Future<void>.delayed(d);
   final warnings = <String>[];
   final now = clock().toUtc();
 
@@ -211,22 +240,44 @@ Future<LiveOutcome> runLivePass({
   }
   final state = await LiveState.read(store, warnings);
 
-  final List<SiteScrutin> listed;
-  try {
-    listed = parseScrutinList(await site.fetchList());
-  } on Object catch (e) {
-    return LiveFailed(e, warnings: warnings);
-  }
-
   final upTo = snapshot.lastNumero;
   final reference = [upTo, ?state.lastSeenNumero].reduce(_max);
+
+  // Pages de la liste, du plus récent au plus ancien ; un scrutin voté entre
+  // deux lectures décale la liste : les doublons sont écartés.
+  final listed = <SiteScrutin>[];
+  final listedNumeros = <int>{};
+  var listPages = 0;
+  var readFailed = false;
+  while (true) {
+    final List<SiteScrutin> page;
+    try {
+      if (listPages > 0) await pause(pageDelay);
+      page = parseScrutinList(await site.fetchList(page: listPages + 1));
+    } on Object catch (e) {
+      if (listPages == 0) return LiveFailed(e, warnings: warnings);
+      warnings.add(
+        'page ${listPages + 1} de la liste illisible, relue au passage '
+        'suivant ($e)',
+      );
+      readFailed = true;
+      break;
+    }
+    listPages++;
+    for (final s in page) {
+      if (listedNumeros.add(s.numero)) listed.add(s);
+    }
+    final pageOldest = page.map((s) => s.numero).reduce(_min);
+    if (pageOldest <= reference + 1 || listPages >= maxListPages) break;
+  }
+
   final oldest = listed.map((s) => s.numero).reduce(_min);
   final newest = listed.map((s) => s.numero).reduce(_max);
-  if (oldest > reference + 1) {
+  if (oldest > reference + 1 && !readFailed) {
     warnings.add(
-      'scrutins ${reference + 1} à ${oldest - 1} absents de la liste du site '
-      '(trop de scrutins depuis le passage précédent) : ils seront publiés '
-      'avec le jeu de données',
+      'scrutins ${reference + 1} à ${oldest - 1} absents des $listPages '
+      'pages lues de la liste du site (trop de scrutins depuis le passage '
+      'précédent) : ils seront publiés avec le jeu de données',
     );
   }
 
@@ -332,7 +383,9 @@ Future<LiveOutcome> runLivePass({
   }
   final pendingUids = {for (final s in reconciled.pending) s.uid};
   await LiveState(
-    lastSeenNumero: _max(reference, newest),
+    // Page suivante illisible : le dernier numéro connu ne bouge pas, pour
+    // relire le trou au passage suivant.
+    lastSeenNumero: readFailed ? reference : _max(reference, newest),
     checkedAt: now,
     provisional: [
       for (final p
@@ -344,6 +397,7 @@ Future<LiveOutcome> runLivePass({
 
   return LiveChecked(
     listed: listed,
+    listPages: listPages,
     confirmedUpTo: upTo,
     newSinceDump: listed.where((s) => s.numero > upTo).length,
     detected: detected,
