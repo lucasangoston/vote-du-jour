@@ -55,7 +55,12 @@ void main() {
     store.writes.clear();
 
     final site = FakeSite(sitePage('liste_scrutins_solennels.html'));
-    await runLivePass(site: site, store: store, clock: () => now);
+    await runLivePass(
+      site: site,
+      store: store,
+      clock: () => now,
+      pageDelay: Duration.zero,
+    );
 
     final provisional = (await detail('VTANR5L17V8706'))!;
     expect(provisional.decision.status, DecisionStatus.provisoire);
@@ -83,6 +88,7 @@ void main() {
       site: site,
       store: store,
       clock: () => now.add(const Duration(minutes: 10)),
+      pageDelay: Duration.zero,
     );
     expect(store.writes.where((k) => k.startsWith('v1/decisions/')), isEmpty);
 
@@ -114,7 +120,12 @@ void main() {
     store.writes.clear();
 
     final site = FakeSite(sitePage('liste_scrutins_solennels.html'));
-    await runLivePass(site: site, store: store, clock: () => now);
+    await runLivePass(
+      site: site,
+      store: store,
+      clock: () => now,
+      pageDelay: Duration.zero,
+    );
 
     final index = DecisionIndex.fromJson(
       jsonDecode((await store.read(indexPath))!),

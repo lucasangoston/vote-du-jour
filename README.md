@@ -90,7 +90,7 @@ Après les résumés, le job tire des explications de vote des groupes les argum
 
 ## Détection en direct
 
-Pendant les séances, le job lit la liste des 50 derniers scrutins du site de l'Assemblée (`https://www.assemblee-nationale.fr/dyn/17/scrutins?limit=50`, un GET par passage, User-Agent `vote-du-jour/1.0`), plus la page d'un nouveau scrutin seulement si la liste n'en donne pas le sort. Les scrutins plus récents que le jeu de données passent par le même sélecteur et le même rattachement aux dossiers ; ceux qui sont retenus sont publiés avec `status: provisoire`. Le jeu de données du lendemain les confirme (`status: confirmee`, même `id`) ; un scrutin provisoire qu'il ne contient pas encore reste publié comme provisoire.
+Pendant les séances, le job lit la liste des 50 derniers scrutins du site de l'Assemblée (`https://www.assemblee-nationale.fr/dyn/17/scrutins?page=1&limit=50`, un GET par passage d'ordinaire, User-Agent `vote-du-jour/1.0`). Si cette page ne contient que des scrutins jamais vus (son plus ancien est au-delà du suivant du dernier scrutin connu, dans `state/live.json` ou le jeu de données), il lit la page suivante après une pause de 30 s (le `Crawl-delay` du robots.txt du site), jusqu'à 4 pages (200 scrutins) ; au-delà, les scrutins manquants sont signalés et arrivent avec le jeu de données. Il lit aussi la page d'un nouveau scrutin seulement si la liste n'en donne pas le sort. Les scrutins plus récents que le jeu de données passent par le même sélecteur et le même rattachement aux dossiers ; ceux qui sont retenus sont publiés avec `status: provisoire`. Le jeu de données du lendemain les confirme (`status: confirmee`, même `id`) ; un scrutin provisoire qu'il ne contient pas encore reste publié comme provisoire.
 
 ```bash
 cd backend

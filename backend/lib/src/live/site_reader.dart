@@ -122,9 +122,9 @@ class SiteScrutin {
       'SiteScrutin($numero, ${result?.json}, ${date == null ? '?' : formatDate(date!)}, $titre)';
 }
 
-/// Scrutins de la page « liste des scrutins »
-/// (`https://www.assemblee-nationale.fr/dyn/17/scrutins?limit=50`), du plus
-/// récent au plus ancien.
+/// Scrutins d'une page de la « liste des scrutins »
+/// (`https://www.assemblee-nationale.fr/dyn/17/scrutins?page=1&limit=50`),
+/// du plus récent au plus ancien.
 ///
 /// Lève une [FormatException] si la page ne contient aucun scrutin ou si un
 /// bloc de scrutin n'a plus la forme attendue : la structure du site a

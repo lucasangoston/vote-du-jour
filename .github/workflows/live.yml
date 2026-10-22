@@ -5,12 +5,16 @@ name: Détection en direct des décisions
 # lendemain les confirme (publish.yml).
 #
 # Réglages (bilan du spike #15 en commentaire du PRD #1) :
-# - fréquence : le cron ci-dessous (toutes les 10 minutes, décalé de la
-#   minute ronde que GitHub sature). GitHub ne déclenche en pratique qu'un
-#   passage toutes les 3 à 5 heures sur ce dépôt (mesuré du 19 au 21/10/2026),
-#   avec des retards de plus d'une heure : le cron fixe un plafond, pas la
-#   cadence réelle. Une lecture par passage (1 GET, 50 derniers scrutins)
-#   reste polie envers le site même si tous les créneaux étaient honorés.
+# - fréquence : toutes les 10 minutes, par le déclencheur Cloudflare (Cron
+#   Trigger d'un Worker, dossier cron/) qui appelle workflow_dispatch (#51).
+#   Le cron GitHub ci-dessous (mêmes 10 minutes, décalé de la minute ronde
+#   que GitHub sature) reste en filet de sécurité : seul, il ne déclenche
+#   qu'un passage toutes les 3 à 5 heures (mesuré du 19 au 21/10/2026), avec
+#   des retards de plus d'une heure. La concurrence ci-dessous évite deux
+#   passages simultanés si les deux déclencheurs tombent ensemble.
+# - lecture du site : 1 GET par passage (50 derniers scrutins) d'ordinaire ;
+#   si la page ne contient que des scrutins jamais vus, les pages suivantes,
+#   30 s d'intervalle (Crawl-delay du robots.txt), au plus 4 pages (#51).
 # - plages : LIVE_DAYS et LIVE_HOURS, en heure de Paris, vérifiées par le job.
 #   Le cron GitHub est en UTC : il doit englober ces plages en heure d'été
 #   (UTC+2) comme en heure d'hiver (UTC+1). 7-22 UTC couvre 9h-24h à Paris
