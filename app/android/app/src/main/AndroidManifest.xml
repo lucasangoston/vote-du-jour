@@ -3,7 +3,7 @@
     <!-- Notifications des votes importants (#34), Android 13 et plus. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
-        android:label="Perchoir"
+        android:label="Le Perchoir"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

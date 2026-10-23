@@ -1,4 +1,4 @@
-# Publier Perchoir sur les stores
+# Publier Le Perchoir sur les stores
 
 Toutes les commandes `flutter` se lancent depuis `app/`.
 
