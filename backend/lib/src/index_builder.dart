@@ -20,10 +20,15 @@ import 'scrutin.dart';
 /// [dossiers] fournit le titre court, l'étape et les textes adoptés à main
 /// levée ; sans lui, les libellés sont tirés de l'intitulé du scrutin et
 /// aucun vote à main levée n'est publié.
+///
+/// [arcs] donne l'arc dans l'ordre de l'hémicycle de chaque scrutin, par
+/// identifiant ([hemicycleArcs], #67) ; un scrutin absent (lu sur le site,
+/// sans vote par groupe) est publié sans arc.
 DecisionIndex buildDecisionIndex(
   Iterable<Scrutin> scrutins, {
   required DateTime generatedAt,
   DossierIndex? dossiers,
+  Map<String, List<HemicycleSegment>> arcs = const {},
   int limit = maxIndexDecisions,
 }) {
   final retainedScrutins = <_RetainedScrutin>[];
@@ -60,7 +65,7 @@ DecisionIndex buildDecisionIndex(
   final decisions = <DecisionSummary>[
     for (final r in retainedScrutins)
       if (!_followedByWholeVote(r, retainedScrutins))
-        _summary(r.scrutin, r.type, r.result, r.link),
+        _summary(r.scrutin, r.type, r.result, r.link, arcs[r.scrutin.uid]),
   ];
   // Textes adoptés à main levée, sauf s'ils ont eu un scrutin public le même
   // jour (voir ci-dessus).
@@ -105,6 +110,7 @@ DecisionSummary _summary(
   DecisionType type,
   VoteResult result,
   DossierLink? link,
+  List<HemicycleSegment>? arc,
 ) {
   final labels = labelDecision(type: type, titre: s.titre, link: link);
   return DecisionSummary(
@@ -120,6 +126,7 @@ DecisionSummary _summary(
     stage: labels.stage,
     dossierUrl: labels.dossierUrl,
     count: voteCountOf(s.decompte).tally,
+    arc: arc,
   );
 }
 

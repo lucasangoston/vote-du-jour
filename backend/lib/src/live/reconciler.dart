@@ -31,13 +31,15 @@ class Reconciliation {
 ///
 /// Les deux sources passent ensemble par [buildDecisionIndex] : mêmes règles
 /// de sélection (article unique compris), même rattachement aux dossiers,
-/// même ordre.
+/// même ordre. [arcs] (#67) ne concerne que les scrutins du jeu de données :
+/// une décision provisoire n'a pas de vote par groupe, donc pas d'arc.
 Reconciliation reconcile({
   required Iterable<Scrutin> confirmed,
   int? confirmedUpTo,
   Iterable<Scrutin> provisional = const [],
   required DateTime generatedAt,
   DossierIndex? dossiers,
+  Map<String, List<HemicycleSegment>> arcs = const {},
   int limit = maxIndexDecisions,
 }) {
   final confirmedList = confirmed.toList();
@@ -56,6 +58,7 @@ Reconciliation reconcile({
     [...confirmedList, ...pending],
     generatedAt: generatedAt,
     dossiers: dossiers,
+    arcs: arcs,
     limit: limit,
   );
   if (pending.isEmpty) return Reconciliation(index: index, pending: pending);

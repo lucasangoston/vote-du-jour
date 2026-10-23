@@ -31,20 +31,40 @@ data class ArcStyle(val widthDp: Float, val stroke: Float, val dotStroke: Float 
 }
 
 /**
- * Dessine les calques de [VoteArc] en Bitmap : Glance ne sait pas tracer de chemins. Chaque calque
- * est un masque blanc, teinté au rendu par une couleur jour / nuit (le widget suit le mode sombre
- * sans être redessiné, voir `ArcImage` dans DecisionWidget.kt).
+ * Dessine les calques de [VoteArc] en Bitmap : Glance ne sait pas tracer de chemins. Un masque
+ * blanc par couleur (trois au plus, même pour un arc de l'hémicycle en nombreux tronçons), teinté
+ * au rendu par une couleur jour / nuit (le widget suit le mode sombre sans être redessiné, voir
+ * `ArcImage` dans DecisionWidget.kt).
  */
 object VoteArcRenderer {
+  /**
+   * Chevauchement d'un tronçon sur le suivant, en fraction du demi-cercle (0,3°) : pas de jour
+   * anticrénelé entre deux couleurs.
+   */
+  private const val OVERLAP = 0.3 / 180
+
   /** Masques à superposer, du fond vers le dessus, avec leur couleur. */
   fun layers(context: Context, arc: VoteArc, style: ArcStyle): List<Pair<ArcColor, Bitmap>> {
     val density = context.resources.displayMetrics.density
     return when (arc) {
-      is VoteArc.Segmented -> arc.layers.map { it.color to solid(style, density, it.start) }
-      is VoteArc.Solid -> listOf(arc.color to solid(style, density, 0.0))
+      is VoteArc.Segmented ->
+          spans(arc).entries.map { (color, spans) -> color to solid(style, density, spans) }
+      is VoteArc.Solid -> listOf(arc.color to solid(style, density, listOf(0.0 to 1.0)))
       is VoteArc.Dotted -> listOf(arc.color to dotted(style, density))
     }
   }
+
+  /**
+   * Portions visibles de chaque couleur, de [ArcLayer.start] au début du calque suivant (qui le
+   * recouvre), prolongées de [OVERLAP] sous ce calque ; couleurs dans l'ordre d'apparition.
+   */
+  fun spans(arc: VoteArc.Segmented): Map<ArcColor, List<Pair<Double, Double>>> =
+      arc.layers
+          .mapIndexed { i, layer ->
+            val next = arc.layers.getOrNull(i + 1)?.start
+            layer.color to (layer.start to (next?.plus(OVERLAP)?.coerceAtMost(1.0) ?: 1.0))
+          }
+          .groupBy({ it.first }, { it.second })
 
   private fun canvas(style: ArcStyle, density: Float): Pair<Bitmap, Canvas> {
     val width = (style.widthDp * density).roundToInt().coerceAtLeast(1)
@@ -55,8 +75,8 @@ object VoteArcRenderer {
     return bitmap to canvas
   }
 
-  /** Portion pleine de [start] à l'extrémité droite, bouts droits. */
-  private fun solid(style: ArcStyle, density: Float, start: Double): Bitmap {
+  /** Portions pleines [spans] (début, fin), bouts droits. */
+  private fun solid(style: ArcStyle, density: Float, spans: List<Pair<Double, Double>>): Bitmap {
     val (bitmap, canvas) = canvas(style, density)
     val paint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -68,9 +88,13 @@ object VoteArcRenderer {
     val r = ArcStyle.RADIUS
     val oval =
         RectF(ArcStyle.CENTER_X - r, ArcStyle.CENTER_Y - r, ArcStyle.CENTER_X + r, ArcStyle.CENTER_Y + r)
-    val startFraction = start.coerceIn(0.0, 1.0).toFloat()
-    // 180° : extrémité gauche ; le sens horaire passe par le haut.
-    canvas.drawArc(oval, 180f + 180f * startFraction, 180f * (1f - startFraction), false, paint)
+    for ((start, end) in spans) {
+      val from = start.coerceIn(0.0, 1.0).toFloat()
+      val to = end.coerceIn(0.0, 1.0).toFloat()
+      if (to <= from) continue
+      // 180° : extrémité gauche ; le sens horaire passe par le haut.
+      canvas.drawArc(oval, 180f + 180f * from, 180f * (to - from), false, paint)
+    }
     return bitmap
   }
 

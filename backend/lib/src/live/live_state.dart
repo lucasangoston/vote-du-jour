@@ -138,18 +138,21 @@ class LiveState {
 
 /// Contenu de [confirmedSnapshotKey] : les scrutins du dernier jeu de données
 /// qu'utilise [buildDecisionIndex] (retenus, ou sur l'article unique d'un
-/// texte), sans le vote par groupe.
+/// texte), sans le vote par groupe mais avec l'arc qui en est tiré (#67).
 class ConfirmedSnapshot {
   const ConfirmedSnapshot({
     required this.lastNumero,
     required this.scrutins,
     this.lastModified,
+    this.arcs = const {},
   });
 
-  /// Garde de [all] (tout le jeu de données) les scrutins utiles à l'index.
+  /// Garde de [all] (tout le jeu de données) les scrutins utiles à l'index,
+  /// et leur arc dans l'ordre de l'hémicycle ([arcs]).
   factory ConfirmedSnapshot.fromDump(
     Iterable<Scrutin> all, {
     String? lastModified,
+    Map<String, List<HemicycleSegment>> arcs = const {},
   }) {
     var lastNumero = 0;
     final kept = <Scrutin>[];
@@ -166,6 +169,7 @@ class ConfirmedSnapshot {
       lastNumero: lastNumero,
       scrutins: kept,
       lastModified: lastModified,
+      arcs: {for (final s in kept) s.uid: ?arcs[s.uid]},
     );
   }
 
@@ -177,13 +181,19 @@ class ConfirmedSnapshot {
   /// `Last-Modified` du jeu de données.
   final String? lastModified;
 
+  /// Arc dans l'ordre de l'hémicycle de chaque scrutin (#67), calculé par le
+  /// job avec le vote par groupe : le passage en direct le republie tel quel.
+  /// Absent d'un instantané antérieur : l'index se publie sans arc jusqu'à la
+  /// prochaine publication du jeu de données.
+  final Map<String, List<HemicycleSegment>> arcs;
+
   static const _version = 1;
 
   Map<String, Object?> toJson() => {
     'version': _version,
     'lastModified': ?lastModified,
     'lastNumero': lastNumero,
-    'scrutins': [for (final s in scrutins) _scrutinToJson(s)],
+    'scrutins': [for (final s in scrutins) _scrutinToJson(s, arcs[s.uid])],
   };
 
   static ConfirmedSnapshot fromJson(Object? json) {
@@ -193,12 +203,18 @@ class ConfirmedSnapshot {
         json['scrutins'] is! List) {
       throw const FormatException('Instantané des scrutins : format inattendu');
     }
+    final scrutins = json['scrutins'] as List;
     return ConfirmedSnapshot(
       lastNumero: json['lastNumero'] as int,
       lastModified: json['lastModified'] is String
           ? json['lastModified'] as String
           : null,
-      scrutins: [for (final s in json['scrutins'] as List) _scrutinFromJson(s)],
+      scrutins: [for (final s in scrutins) _scrutinFromJson(s)],
+      arcs: {
+        for (final s in scrutins)
+          if (s is Map<String, Object?> && s['uid'] is String)
+            s['uid'] as String: ?HemicycleSegment.tryParseList(s['arc']),
+      },
     );
   }
 
@@ -224,7 +240,7 @@ class ConfirmedSnapshot {
   );
 }
 
-Map<String, Object?> _scrutinToJson(Scrutin s) => {
+Map<String, Object?> _scrutinToJson(Scrutin s, List<HemicycleSegment>? arc) => {
   'uid': s.uid,
   'numero': s.numero,
   'date': formatDate(s.date),
@@ -239,6 +255,7 @@ Map<String, Object?> _scrutinToJson(Scrutin s) => {
     s.decompte.nonVotants,
   ],
   'dossierRef': ?s.dossierRef,
+  'arc': ?arc?.map((a) => a.toJson()).toList(),
 };
 
 Scrutin _scrutinFromJson(Object? json) {

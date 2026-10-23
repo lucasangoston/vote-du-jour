@@ -36,6 +36,51 @@ void main() {
       ]);
     });
 
+    test("arc dans l'ordre de l'hémicycle (#67) : tronçons de gauche à "
+        'droite, proportionnels aux voix', () {
+      // Scrutin 8706 : LFI-NFP s'abstient, tout à gauche.
+      final plan = VoteArcPlan.of(
+        result: VoteResult.adopte,
+        count: const VoteTally(pour: 503, contre: 0, abstentions: 67),
+        arc: const [
+          HemicycleSegment(ArcPosition.abstention, 66),
+          HemicycleSegment(ArcPosition.pour, 382),
+          HemicycleSegment(ArcPosition.abstention, 1),
+          HemicycleSegment(ArcPosition.pour, 121),
+        ],
+      );
+      expect(plan.dotted, isFalse);
+      expect(plan.segments, [
+        const ArcSegment(ArcTone.abstention, 0, 66 / 570),
+        const ArcSegment(ArcTone.pour, 66 / 570, 448 / 570),
+        const ArcSegment(ArcTone.abstention, 448 / 570, 449 / 570),
+        const ArcSegment(ArcTone.pour, 449 / 570, 1),
+      ]);
+    });
+
+    test("arc de l'hémicycle : rejeté, contre à gauche et pour à droite", () {
+      final plan = VoteArcPlan.of(
+        result: VoteResult.rejete,
+        count: const VoteTally(pour: 151, contre: 187, abstentions: 0),
+        arc: const [
+          HemicycleSegment(ArcPosition.contre, 187),
+          HemicycleSegment(ArcPosition.pour, 151),
+        ],
+      );
+      expect(plan.segments.map((s) => s.tone), [ArcTone.contre, ArcTone.pour]);
+      expect(plan.segments.last.end, 1);
+    });
+
+    test("main levée : l'arc de l'hémicycle éventuel est ignoré", () {
+      final plan = VoteArcPlan.of(
+        result: VoteResult.adopte,
+        voteMode: VoteMode.mainLevee,
+        arc: const [HemicycleSegment(ArcPosition.contre, 3)],
+      );
+      expect(plan.dotted, isTrue);
+      expect(plan.segments, [const ArcSegment(ArcTone.pour, 0, 1)]);
+    });
+
     test('main levée : pointillés de la couleur du résultat', () {
       final plan = VoteArcPlan.of(
         result: VoteResult.adopte,

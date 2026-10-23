@@ -9,22 +9,25 @@ import 'package:vote_job/vote_job.dart';
 import 'fixtures.dart';
 import 'job_test.dart' show FakeDumpSource;
 
-/// Les organes de `test/fixtures/organes/`, réunis dans une archive au format
-/// du jeu de données officiel (`json/organe/<uid>.json`).
+/// Les organes et acteurs de `test/fixtures/organes/`, réunis dans une
+/// archive au format du jeu de données officiel (`json/organe/<uid>.json`,
+/// `json/acteur/<uid>.json`).
 List<int> organesArchive() {
   final archive = Archive();
-  final files =
-      Directory(
-          'test/fixtures/organes/organe',
-        ).listSync().whereType<File>().toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
-  for (final f in files) {
-    archive.addFile(
-      ArchiveFile.bytes(
-        'json/organe/${f.uri.pathSegments.last}',
-        f.readAsBytesSync(),
-      ),
-    );
+  for (final dir in ['organe', 'acteur']) {
+    final files =
+        Directory(
+            'test/fixtures/organes/$dir',
+          ).listSync().whereType<File>().toList()
+          ..sort((a, b) => a.path.compareTo(b.path));
+    for (final f in files) {
+      archive.addFile(
+        ArchiveFile.bytes(
+          'json/$dir/${f.uri.pathSegments.last}',
+          f.readAsBytesSync(),
+        ),
+      );
+    }
   }
   return ZipEncoder().encodeBytes(archive);
 }

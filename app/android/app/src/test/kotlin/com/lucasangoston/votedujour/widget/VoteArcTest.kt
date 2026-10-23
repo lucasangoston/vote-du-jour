@@ -36,6 +36,46 @@ class VoteArcTest {
   }
 
   @Test
+  fun arc_de_l_hemicycle_de_gauche_a_droite() {
+    // Scrutin 8706 : LFI-NFP s'abstient, tout à gauche (#67).
+    val arc =
+        VoteArc.of(
+            VoteResult.ADOPTE,
+            VoteCount(503, 0, 67),
+            mainLevee = false,
+            hemicycle =
+                listOf(
+                    HemicyclePart(ArcColor.ABSTENTION, 66),
+                    HemicyclePart(ArcColor.POUR, 382),
+                    HemicyclePart(ArcColor.ABSTENTION, 1),
+                    HemicyclePart(ArcColor.POUR, 121),
+                ),
+        )
+    val layers = arc.layers()
+    assertEquals(
+        listOf(ArcColor.ABSTENTION, ArcColor.POUR, ArcColor.ABSTENTION, ArcColor.POUR),
+        layers.map { it.color },
+    )
+    assertEquals(listOf(0.0, 66.0 / 570, 448.0 / 570, 449.0 / 570), layers.map { it.start })
+
+    // Un masque par couleur : chaque portion va jusqu'au calque suivant, un peu dessous.
+    val spans = VoteArcRenderer.spans(arc as VoteArc.Segmented)
+    assertEquals(listOf(ArcColor.ABSTENTION, ArcColor.POUR), spans.keys.toList())
+    val abstention = spans.getValue(ArcColor.ABSTENTION)
+    assertEquals(2, abstention.size)
+    assertEquals(0.0, abstention[0].first, 1e-9)
+    assertEquals(66.0 / 570, abstention[0].second, 0.01)
+    assertEquals(1.0, spans.getValue(ArcColor.POUR).last().second, 1e-9)
+
+    // Main levée : pointillés, l'arc éventuel est ignoré ; arc vide : par sens.
+    assertEquals(
+        VoteArc.Dotted(ArcColor.POUR),
+        VoteArc.of(VoteResult.ADOPTE, null, true, listOf(HemicyclePart(ArcColor.CONTRE, 3))),
+    )
+    assertEquals(VoteArc.Solid(ArcColor.CONTRE), VoteArc.of(VoteResult.REJETE, null, false, emptyList()))
+  }
+
+  @Test
   fun main_levee_pointilles_couleur_du_resultat() {
     assertEquals(
         VoteArc.Dotted(ArcColor.POUR),

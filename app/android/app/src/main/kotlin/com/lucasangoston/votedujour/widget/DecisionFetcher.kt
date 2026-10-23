@@ -205,6 +205,9 @@ object SnapshotConverter {
     // omis, la décision reste lisible.
     out.put("voteMode", voteMode)
     VoteCount.parse(d.optJSONObject("count"))?.let { out.put("count", it.toJson()) }
+    // Arc dans l'ordre de l'hémicycle (#67) : un arc malformé est ignoré, le widget dessine alors
+    // l'arc par sens.
+    HemicyclePart.parseList(d.optJSONArray("arc"))?.let { out.put("arc", HemicyclePart.toJson(it)) }
     return out
   }
 

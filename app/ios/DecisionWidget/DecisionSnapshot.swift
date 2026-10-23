@@ -179,10 +179,14 @@ struct WidgetDecision: Decodable {
   let count: VoteCount?
   /// Mode de vote, s'il est connu (instantanés récents, #29).
   let voteMode: VoteMode?
+  /// Arc dans l'ordre de l'hémicycle (#67), s'il est publié ; sinon l'arc se
+  /// dessine par sens à partir de `count`.
+  let arc: [HemicyclePart]?
 
   init(
     id: String, result: Result, date: String, title: String, stage: String?,
-    explanation: String?, count: VoteCount? = nil, voteMode: VoteMode? = nil
+    explanation: String?, count: VoteCount? = nil, voteMode: VoteMode? = nil,
+    arc: [HemicyclePart]? = nil
   ) {
     self.id = id
     self.result = result
@@ -192,10 +196,11 @@ struct WidgetDecision: Decodable {
     self.explanation = explanation
     self.count = count
     self.voteMode = voteMode
+    self.arc = arc
   }
 
   private enum CodingKeys: String, CodingKey {
-    case id, result, date, title, stage, explanation, count, voteMode
+    case id, result, date, title, stage, explanation, count, voteMode, arc
   }
 
   init(from decoder: Decoder) throws {
@@ -211,6 +216,9 @@ struct WidgetDecision: Decodable {
     count = (try? c.decodeIfPresent(VoteCount.self, forKey: .count)) ?? nil
     voteMode =
       ((try? c.decodeIfPresent(String.self, forKey: .voteMode)) ?? nil).flatMap(VoteMode.init)
+    // Arc de l'hémicycle (#67) : un arc illisible est ignoré (arc par sens).
+    let parts = (try? c.decodeIfPresent([ArcPartJSON].self, forKey: .arc)) ?? nil
+    arc = HemicyclePart.parse(parts?.map(\.object))
   }
 
   var day: Date? {
@@ -345,5 +353,23 @@ extension DecisionSnapshot {
   /// moins ; aucune pour un `count` négatif ou nul.
   func latest(_ count: Int) -> [WidgetDecision] {
     Array(decisions.prefix(max(0, count)))
+  }
+}
+
+/// Tronçon de l'arc tel qu'il figure dans l'instantané, relu sans règle :
+/// `HemicyclePart.parse` les applique.
+private struct ArcPartJSON: Decodable {
+  let object: [String: Any]
+
+  private enum CodingKeys: String, CodingKey { case position, n }
+
+  init(from decoder: Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    var object: [String: Any] = [:]
+    if let position = try? c.decode(String.self, forKey: .position) {
+      object["position"] = position
+    }
+    if let n = try? c.decode(Int.self, forKey: .n) { object["n"] = NSNumber(value: n) }
+    self.object = object
   }
 }

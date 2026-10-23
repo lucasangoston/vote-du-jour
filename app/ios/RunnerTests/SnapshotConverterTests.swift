@@ -137,6 +137,40 @@ final class SnapshotConverterTests: XCTestCase {
     XCTAssertEqual(widget.voteMode, .scrutinPublic)
   }
 
+  /// Arc dans l'ordre de l'hémicycle (#67) : recopié tel quel, relu par le
+  /// widget ; un arc malformé est ignoré, la décision reste lisible.
+  func testArcDeLHemicycle() throws {
+    let arc8706 =
+      #","count":{"pour":503,"contre":0,"abstentions":67},"arc":[{"position":"abstention","n":66},"#
+      + #"{"position":"pour","n":382},{"position":"abstention","n":1},{"position":"pour","n":121}]"#
+    let decisions = try convert([
+      decision(8706, arc8706),
+      // Sens inconnu (job plus récent) : tout l'arc est ignoré.
+      decision(8705, #","arc":[{"position":"partage","n":3},{"position":"pour","n":2}]"#),
+      // Nombre non entier, nul ou liste vide : ignoré.
+      decision(8704, #","arc":[{"position":"pour","n":1.5}]"#),
+    ])
+    let arc = try XCTUnwrap(decisions[0]["arc"] as? [[String: Any]])
+    XCTAssertEqual(arc.map { $0["position"] as? String }, ["abstention", "pour", "abstention", "pour"])
+    XCTAssertEqual(arc.map { $0["n"] as? Int }, [66, 382, 1, 121])
+    XCTAssertNil(decisions[1]["arc"])
+    XCTAssertNil(decisions[2]["arc"])
+    XCTAssertNil(try convert([decision(8703, #","arc":[{"position":"pour","n":0}]"#)])[0]["arc"])
+    XCTAssertNil(try convert([decision(8702, #","arc":[]"#)])[0]["arc"])
+
+    let index = #"{"schemaVersion":1,"decisions":["# + decision(8706, arc8706) + "]}"
+    let json = try XCTUnwrap(
+      SnapshotConverter.snapshot(fromIndex: Data(index.utf8), savedAt: savedAt))
+    let snapshot = try JSONDecoder().decode(DecisionSnapshot.self, from: Data(json.utf8))
+    let widget = try XCTUnwrap(snapshot.decisions.first)
+    XCTAssertEqual(
+      widget.arc,
+      [
+        HemicyclePart(.abstention, 66), HemicyclePart(.pour, 382), HemicyclePart(.abstention, 1),
+        HemicyclePart(.pour, 121),
+      ])
+  }
+
   /// Téléchargement réel de `latest.json` vers le groupe d'apps, comme le fait
   /// la timeline. Réseau requis : lancé seulement avec
   /// `TEST_RUNNER_VDJ_NETWORK_TESTS=1 xcodebuild test …`.

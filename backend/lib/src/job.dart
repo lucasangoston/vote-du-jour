@@ -9,6 +9,7 @@ import 'dossier_index.dart';
 import 'dump_reader.dart';
 import 'dump_source.dart';
 import 'group_directory.dart';
+import 'hemicycle_arc.dart';
 import 'index_builder.dart';
 import 'live/live_state.dart';
 import 'live/reconciler.dart';
@@ -157,7 +158,8 @@ Future<JobOutcome> runJob({
       ? null
       : await _fetchDossiers(dossiers, dossierState, warnings);
   final dossierIndex = dossierUpdate?.index ?? dossierState?.index;
-  // Noms des groupes politiques, pour les fichiers de détail.
+  // Noms des groupes politiques, pour les fichiers de détail, et leur place
+  // dans l'hémicycle, pour l'arc du vote (#67).
   final groups = await loadGroupDirectory(
     source: organes,
     store: store,
@@ -185,6 +187,8 @@ Future<JobOutcome> runJob({
     case DumpDownloaded(:final bytes, :final lastModified):
       final scrutins = readScrutinsArchive(bytes);
       final now = clock().toUtc();
+      // Arc dans l'ordre de l'hémicycle (#67), tiré du vote par groupe.
+      final arcs = hemicycleArcs(scrutins, groups.directory);
       // Les décisions provisoires détectées en direct (#10) que le jeu de
       // données ne contient pas encore restent publiées.
       final live = await LiveState.read(store, warnings);
@@ -193,6 +197,7 @@ Future<JobOutcome> runJob({
         provisional: live.provisionalScrutins,
         generatedAt: now,
         dossiers: dossierIndex,
+        arcs: arcs,
       );
       // Les décisions déjà résumées gardent leur résumé ; un cache perdu
       // les reprend de l'index encore publié.
@@ -247,6 +252,7 @@ Future<JobOutcome> runJob({
       await ConfirmedSnapshot.fromDump(
         scrutins,
         lastModified: lastModified,
+        arcs: arcs,
       ).write(store);
       await ArticleVotesState.fromDump(scrutins, now: now).write(store);
       await live

@@ -273,6 +273,7 @@ class DecisionRow extends StatelessWidget {
               result: decision.result,
               count: decision.count,
               voteMode: decision.voteMode,
+              arc: decision.arc,
             ),
           ),
           const SizedBox(width: 14),

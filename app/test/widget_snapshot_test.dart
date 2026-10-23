@@ -118,6 +118,11 @@ void main() {
           explanation: 'La première partie est rejetée, le texte tombe.',
           count: const VoteTally(pour: 144, contre: 199, abstentions: 5),
           voteMode: VoteMode.scrutinPublic,
+          arc: const [
+            HemicycleSegment(ArcPosition.contre, 199),
+            HemicycleSegment(ArcPosition.abstention, 5),
+            HemicycleSegment(ArcPosition.pour, 144),
+          ],
         ),
       ],
     );
@@ -302,4 +307,46 @@ void main() {
       (null, null),
     ]);
   });
+
+  test(
+    "arc dans l'ordre de l'hémicycle : format fixé pour les widgets (#67)",
+    () {
+      final summary = DecisionSummary(
+        id: 'VTANR5L17V8706',
+        numero: 8706,
+        type: DecisionType.ensembleTexte,
+        status: DecisionStatus.confirmee,
+        result: VoteResult.adopte,
+        date: DateTime.utc(2026, 10, 13),
+        officialTitle: 'Juges spécialisés',
+        sourceUrl: 'https://www.assemblee-nationale.fr/dyn/17/scrutins/8706',
+        count: const VoteTally(pour: 503, contre: 0, abstentions: 67),
+        arc: const [
+          HemicycleSegment(ArcPosition.abstention, 66),
+          HemicycleSegment(ArcPosition.pour, 382),
+          HemicycleSegment(ArcPosition.abstention, 1),
+          HemicycleSegment(ArcPosition.pour, 121),
+        ],
+      );
+      final json =
+          jsonDecode(jsonEncode(WidgetDecision.fromSummary(summary).toJson()))
+              as Map<String, Object?>;
+      expect(json['arc'], [
+        {'position': 'abstention', 'n': 66},
+        {'position': 'pour', 'n': 382},
+        {'position': 'abstention', 'n': 1},
+        {'position': 'pour', 'n': 121},
+      ]);
+      expect(WidgetDecision.tryFromJson(json)!.arc, summary.arc);
+      // Arc malformé : ignoré, la décision reste lisible (arc par sens).
+      final read = WidgetDecision.tryFromJson({
+        ...json,
+        'arc': [
+          {'position': 'partage', 'n': 3},
+        ],
+      })!;
+      expect(read.arc, isNull);
+      expect(read.count, summary.count);
+    },
+  );
 }
