@@ -1,4 +1,4 @@
-# Fiche Google Play : Perchoir
+# Fiche Google Play : Le Perchoir
 
 Textes à coller dans la Play Console (langue par défaut : français – fr-FR).
 Les longueurs entre parenthèses sont comptées en caractères Unicode par
@@ -6,10 +6,10 @@ Les longueurs entre parenthèses sont comptées en caractères Unicode par
 
 ## Fiche principale
 
-- **Nom de l'application** (8) [30] :
+- **Nom de l'application** (11) [30] :
 
   ```text
-  Perchoir
+  Le Perchoir
   ```
 
 - **Description courte** (76) [80] :
@@ -25,12 +25,12 @@ Les longueurs entre parenthèses sont comptées en caractères Unicode par
 - **Règles de confidentialité** :
   https://lucasangoston.github.io/vote-du-jour/confidentialite.html
 
-## Description complète (2233) [4000]
+## Description complète (2239) [4000]
 
 Même texte que l'App Store.
 
 ```text
-Perchoir résume les décisions de l'Assemblée nationale : chaque vote sur l'ensemble d'un texte, chaque motion de censure, chaque résolution, en quelques mots.
+Le Perchoir résume les décisions de l'Assemblée nationale : chaque vote sur l'ensemble d'un texte, chaque motion de censure, chaque résolution, en quelques mots.
 
 POUR CHAQUE DÉCISION
 • Un titre clair et une ligne d'explication
@@ -59,7 +59,7 @@ SOURCES ET RÉSUMÉS PAR IA
 Les données viennent de l'open data de l'Assemblée nationale (Licence Ouverte Etalab). Les titres, explications, points clés et arguments sont rédigés automatiquement par une IA (Claude, d'Anthropic), avec une consigne de neutralité, à partir des textes et des comptes rendus des débats, sans relecture humaine. Ils peuvent contenir des erreurs : seuls le texte officiel et le résultat du vote font foi. Chaque décision renvoie vers les pages officielles.
 
 APPLICATION NON OFFICIELLE
-Perchoir est une application indépendante. Elle n'est liée ni à l'Assemblée nationale, ni au Gouvernement, ni à un parti politique.
+Le Perchoir est une application indépendante. Elle n'est liée ni à l'Assemblée nationale, ni au Gouvernement, ni à un parti politique.
 
 Une question, une erreur dans un résumé ? lucasangostonpro@gmail.com
 ```

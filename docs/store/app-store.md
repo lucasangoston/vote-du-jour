@@ -1,4 +1,4 @@
-# Fiche App Store : Perchoir
+# Fiche App Store : Le Perchoir
 
 Textes à coller dans App Store Connect (langue principale : français). Les
 longueurs entre parenthèses sont comptées en caractères Unicode par
@@ -6,10 +6,10 @@ longueurs entre parenthèses sont comptées en caractères Unicode par
 
 ## Informations de l'app
 
-- **Nom** (8) [30] :
+- **Nom** (11) [30] :
 
   ```text
-  Perchoir
+  Le Perchoir
   ```
 
 - **Sous-titre** (24) [30] :
@@ -38,10 +38,10 @@ Modifiable sans nouvelle version.
 Chaque décision de l'Assemblée nationale en bref : le résultat, qui a voté quoi et les arguments pour et contre. Sans compte, sans publicité.
 ```
 
-## Description (2233) [4000]
+## Description (2239) [4000]
 
 ```text
-Perchoir résume les décisions de l'Assemblée nationale : chaque vote sur l'ensemble d'un texte, chaque motion de censure, chaque résolution, en quelques mots.
+Le Perchoir résume les décisions de l'Assemblée nationale : chaque vote sur l'ensemble d'un texte, chaque motion de censure, chaque résolution, en quelques mots.
 
 POUR CHAQUE DÉCISION
 • Un titre clair et une ligne d'explication
@@ -70,7 +70,7 @@ SOURCES ET RÉSUMÉS PAR IA
 Les données viennent de l'open data de l'Assemblée nationale (Licence Ouverte Etalab). Les titres, explications, points clés et arguments sont rédigés automatiquement par une IA (Claude, d'Anthropic), avec une consigne de neutralité, à partir des textes et des comptes rendus des débats, sans relecture humaine. Ils peuvent contenir des erreurs : seuls le texte officiel et le résultat du vote font foi. Chaque décision renvoie vers les pages officielles.
 
 APPLICATION NON OFFICIELLE
-Perchoir est une application indépendante. Elle n'est liée ni à l'Assemblée nationale, ni au Gouvernement, ni à un parti politique.
+Le Perchoir est une application indépendante. Elle n'est liée ni à l'Assemblée nationale, ni au Gouvernement, ni à un parti politique.
 
 Une question, une erreur dans un résumé ? lucasangostonpro@gmail.com
 ```
@@ -169,7 +169,7 @@ Champ « Notes » (en anglais pour l'équipe de review). Pas de compte de
 démonstration : aucune connexion.
 
 ```text
-Perchoir is an independent, unofficial app that summarizes the decisions of the French National Assembly (Assemblée nationale). It is not affiliated with the Assembly, the Government or any political party; this is stated in the app (About screen) and in the description.
+Le Perchoir is an independent, unofficial app that summarizes the decisions of the French National Assembly (Assemblée nationale). It is not affiliated with the Assembly, the Government or any political party; this is stated in the app (About screen) and in the description.
 
 No account or login is required. All features are available immediately.
 
@@ -179,7 +179,7 @@ AI-generated content: titles, one-line explanations, key points and arguments fo
 
 Notifications (optional): after the user opens a decision for the first time, the app asks for notification permission. If granted, the device subscribes to a single Firebase Cloud Messaging topic ("votes-importants": solemn votes, motions of censure, final readings, and the evening before a scheduled solemn vote), about 1 to 3 per week. They can be turned off in About > "Votes importants". No push token is sent to our server.
 
-Home screen widget: long-press the Home Screen > Edit > Add Widget > "Perchoir" (small, medium and large sizes).
+Home screen widget: long-press the Home Screen > Edit > Add Widget > "Le Perchoir" (small, medium and large sizes).
 
 Content: the list starts with "À venir" (upcoming items of the official agenda, also from Assemblée nationale open data), then past decisions. Votes take place only when the Assembly sits; outside session weeks the list shows the latest decisions with their dates.
 
