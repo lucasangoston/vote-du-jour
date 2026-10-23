@@ -309,4 +309,103 @@ void main() {
       expect(_readerBefore8(json), isNotNull);
     });
   });
+
+  group('arc dans l\'ordre de l\'hémicycle (#67)', () {
+    // Scrutin 8706 : LFI-NFP, tout à gauche, s'abstient ; le reste vote pour.
+    const arc = [
+      {'position': 'abstention', 'n': 67},
+      {'position': 'pour', 'n': 503},
+    ];
+
+    test('absent (index antérieur) : pas d\'arc', () {
+      final d = DecisionSummary.tryFromJson(_legacyScrutin)!;
+      expect(d.arc, isNull);
+      expect(d.toJson(), isNot(contains('arc')));
+    });
+
+    test('aller-retour, ordre gardé', () {
+      final d = DecisionSummary.tryFromJson({..._legacyScrutin, 'arc': arc})!;
+      expect(d.arc, const [
+        HemicycleSegment(ArcPosition.abstention, 67),
+        HemicycleSegment(ArcPosition.pour, 503),
+      ]);
+      final json = _roundTrip(d.toJson()) as Map<String, Object?>;
+      expect(json['arc'], arc);
+      expect(DecisionSummary.tryFromJson(json)!.arc, d.arc);
+    });
+
+    test('un tronçon illisible rend l\'arc illisible, pas la décision', () {
+      for (final bad in [
+        [
+          {'position': 'partage', 'n': 3},
+          ...arc,
+        ],
+        [
+          {'position': 'pour', 'n': 0},
+        ],
+        [
+          {'position': 'pour', 'n': -2},
+        ],
+        [
+          {'position': 'pour', 'n': '503'},
+        ],
+        [
+          {'position': 'pour'},
+        ],
+        ['pour'],
+        <Object?>[],
+        {'position': 'pour', 'n': 1},
+      ]) {
+        final d = DecisionSummary.tryFromJson({..._legacyScrutin, 'arc': bad});
+        expect(d, isNotNull, reason: '$bad');
+        expect(d!.arc, isNull, reason: '$bad');
+      }
+    });
+
+    test('conservé par withSummary et withCount, remplacé par withArc', () {
+      final d = DecisionSummary.tryFromJson({..._legacyScrutin, 'arc': arc})!;
+      expect(d.withSummary(null).arc, d.arc);
+      expect(d.withCount(null).arc, d.arc);
+      expect(d.withArc(null).arc, isNull);
+      expect(d.withArc(null).toJson(), isNot(contains('arc')));
+    });
+
+    test('merge : tronçons vides retirés, voisins de même sens fusionnés', () {
+      expect(
+        HemicycleSegment.merge(const [
+          HemicycleSegment(ArcPosition.abstention, 60),
+          HemicycleSegment(ArcPosition.pour, 0),
+          HemicycleSegment(ArcPosition.abstention, 7),
+          HemicycleSegment(ArcPosition.pour, 17),
+          HemicycleSegment(ArcPosition.pour, 486),
+          HemicycleSegment(ArcPosition.contre, 2),
+          HemicycleSegment(ArcPosition.pour, 1),
+        ]),
+        const [
+          HemicycleSegment(ArcPosition.abstention, 67),
+          HemicycleSegment(ArcPosition.pour, 503),
+          HemicycleSegment(ArcPosition.contre, 2),
+          HemicycleSegment(ArcPosition.pour, 1),
+        ],
+      );
+      expect(HemicycleSegment.merge(const []), isEmpty);
+    });
+
+    test('lu sans erreur par une app antérieure', () {
+      final json = DecisionSummary.tryFromJson({
+        ..._legacyScrutin,
+        'arc': arc,
+      })!.toJson();
+      expect(_readerBefore8(json), isNotNull);
+      final index = DecisionIndex(
+        generatedAt: DateTime.utc(2026, 10, 23),
+        decisions: [DecisionSummary.tryFromJson(json)!],
+      );
+      // Même version de schéma : un ancien lecteur lit l'index.
+      expect(
+        DecisionIndex.fromJson(_roundTrip(index.toJson())).decisions.single.arc,
+        hasLength(2),
+      );
+    });
+  });
 }

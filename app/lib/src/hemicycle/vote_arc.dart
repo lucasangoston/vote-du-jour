@@ -41,11 +41,14 @@ class VoteArcPlan {
   final List<ArcSegment> segments;
   final bool dotted;
 
-  /// Règles de la charte (#29) :
+  /// Règles de la charte (#29, #67) :
   ///
-  /// - scrutin public avec décompte : demi-cercle rempli de gauche à droite,
-  ///   pour puis abstentions puis contre, proportionnel à pour + contre +
-  ///   abstentions ;
+  /// - scrutin public avec arc dans l'ordre de l'hémicycle ([arc]) : les
+  ///   tronçons de gauche à droite, groupes de gauche à gauche, chacun
+  ///   proportionnel à ses voix ;
+  /// - scrutin public avec décompte seulement (décision provisoire, index
+  ///   ancien) : demi-cercle rempli de gauche à droite, pour puis abstentions
+  ///   puis contre, proportionnel à pour + contre + abstentions ;
   /// - vote à main levée : arc en pointillés ronds, couleur du résultat ;
   /// - sans décompte (index ancien, décompte vide) : arc plein, couleur du
   ///   résultat.
@@ -53,6 +56,7 @@ class VoteArcPlan {
     required VoteResult result,
     VoteTally? count,
     VoteMode? voteMode,
+    List<HemicycleSegment>? arc,
   }) {
     final tone = switch (result) {
       VoteResult.adopte => ArcTone.pour,
@@ -60,6 +64,22 @@ class VoteArcPlan {
     };
     if (voteMode == VoteMode.mainLevee) {
       return VoteArcPlan([ArcSegment(tone, 0, 1)], dotted: true);
+    }
+    final arcTotal = arc?.fold(0, (total, s) => total + s.n) ?? 0;
+    if (arc != null && arcTotal > 0) {
+      final segments = <ArcSegment>[];
+      var votes = 0;
+      for (final s in arc) {
+        final start = votes / arcTotal;
+        votes += s.n;
+        final tone = switch (s.position) {
+          ArcPosition.pour => ArcTone.pour,
+          ArcPosition.abstention => ArcTone.abstention,
+          ArcPosition.contre => ArcTone.contre,
+        };
+        segments.add(ArcSegment(tone, start, votes / arcTotal));
+      }
+      return VoteArcPlan(segments);
     }
     if (count == null || count.total <= 0) {
       return VoteArcPlan([ArcSegment(tone, 0, 1)]);
@@ -85,6 +105,7 @@ class VoteArc extends StatelessWidget {
     required this.result,
     this.count,
     this.voteMode,
+    this.arc,
     this.width = 280,
     this.radius = 52,
     this.stroke = 9,
@@ -96,6 +117,7 @@ class VoteArc extends StatelessWidget {
     required this.result,
     this.count,
     this.voteMode,
+    this.arc,
   }) : width = 40,
        radius = 50,
        stroke = 16;
@@ -103,6 +125,9 @@ class VoteArc extends StatelessWidget {
   final VoteResult result;
   final VoteTally? count;
   final VoteMode? voteMode;
+
+  /// Arc dans l'ordre de l'hémicycle (#67), s'il est publié.
+  final List<HemicycleSegment>? arc;
 
   /// Largeur en points ; la hauteur suit (66 / 120).
   final double width;
@@ -121,6 +146,7 @@ class VoteArc extends StatelessWidget {
       result: result,
       count: count,
       voteMode: voteMode,
+      arc: arc,
     );
     return Semantics(
       container: true,

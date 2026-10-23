@@ -16,3 +16,25 @@ Source : Assemblée nationale, open data. Licence Ouverte / Open Licence (Etalab
 
 L'archive des seuls députés en exercice (AMO10) ne contient pas les groupes
 dissous : c'est pourquoi le job lit AMO20.
+
+Ajoutés pour le ticket #67 (arc dans l'ordre de l'hémicycle), même archive
+téléchargée le 23/10/2026, dans `acteur/` : un député en exercice par groupe,
+celui dont le siège (`mandature.placeHemicycle`) est le plus proche de la place
+moyenne de son groupe, plus `PA840721` (UDR, ancien membre de `PO845520` et de
+`PO847173`, groupes dissous).
+
+| Acteur | Groupe | Siège |
+| --- | --- | --- |
+| PA842187 | LFI-NFP | 595 |
+| PA796106 | GDR | 585 |
+| PA795636 | EcoS | 514 |
+| PA841681 | SOC | 462 |
+| PA267042 | LIOT | 454 |
+| PA795258 | Dem | 348 |
+| PA840119 | NI | 322 |
+| PA793924 | EPR | 309 |
+| PA794838 | HOR | 242 |
+| PA643089 | DR | 186 |
+| PA330240 | UDR | 99 |
+| PA840721 | UDR | 104 |
+| PA795966 | RN | 76 |

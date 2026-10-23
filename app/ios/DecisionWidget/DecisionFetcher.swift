@@ -158,6 +158,9 @@ enum SnapshotConverter {
     // Décompte de l'arc du vote (#29) : un décompte malformé est ignoré, le
     // widget dessine alors l'arc plein couleur du résultat.
     if let count = VoteCount(json: d["count"]) { out["count"] = count.json }
+    // Arc dans l'ordre de l'hémicycle (#67) : un arc malformé est ignoré, le
+    // widget dessine alors l'arc par sens.
+    if let arc = HemicyclePart.parse(d["arc"]) { out["arc"] = arc.map(\.json) }
     // Phrase du résumé, affichée par le widget moyen.
     if let explanation = summary?.explanation {
       out["explanation"] = explanation.trimmingCharacters(in: .whitespacesAndNewlines)

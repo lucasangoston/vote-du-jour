@@ -122,6 +122,49 @@ Textes adoptés à main levée (ticket #8) :
   les votes à main levée (`id` décroissant) : l'open data ne donne pas
   l'heure.
 
+## Arc dans l'ordre de l'hémicycle (ticket #67)
+
+Champ optionnel `arc` d'une décision (`DecisionSummary.arc`, liste de
+`HemicycleSegment`), dans l'index et donc dans `decision` du fichier de
+détail : l'arc du vote tel que dessiné par l'app et les widgets, de gauche à
+droite, groupes de gauche à gauche.
+
+```json
+"count": { "pour": 503, "contre": 0, "abstentions": 67 },
+"arc": [
+  { "position": "abstention", "n": 66 },
+  { "position": "pour", "n": 382 },
+  { "position": "abstention", "n": 1 },
+  { "position": "pour", "n": 121 }
+]
+```
+
+- Chaque groupe politique occupe une part proportionnelle à ses voix
+  exprimées (pour, abstentions, contre ; sans les non-votants), découpée selon
+  les votes de ses membres. `position` : `pour`, `abstention` ou `contre` ;
+  `n` : nombre de voix, strictement positif. Deux tronçons voisins de même
+  sens sont fusionnés.
+- Ordre des groupes : place moyenne de leurs députés dans l'hémicycle
+  (`placeHemicycle` des mandats de l'archive AMO20 ; les sièges sont numérotés
+  de la droite vers la gauche, voir le plan de l'hémicycle du site de
+  l'Assemblée), table de repli par sigle sinon ; non-inscrits selon leur place
+  moyenne, à droite sans place connue, comme un groupe inconnu
+  (`backend/lib/src/hemicycle_arc.dart`).
+- Dans un groupe, l'abstention reste entre pour et contre ; le sens (pour,
+  abstention, contre ou l'inverse) place les voix à côté des voisins qui
+  votent comme elles, pour un arc en aussi peu de morceaux que possible.
+- Absent pour un vote à main levée, une décision provisoire (le site ne donne
+  pas le vote par groupe) et dans les index plus anciens : l'arc se dessine
+  alors par sens à partir de `count` (pour, abstentions, contre). Un seul
+  tronçon illisible (sens inconnu, `n` nul, négatif ou non entier) rend tout
+  l'arc illisible : il est ignoré, la décision reste lisible.
+- La somme des tronçons de chaque sens est celle de `count` (vérifié sur
+  tous les scrutins de la législature au 23/10/2026) ; les lecteurs dessinent
+  l'arc proportionnellement à son propre total et le libellé accessible garde
+  les totaux de `count`.
+- Ajout rétrocompatible : même `schemaVersion`, les anciennes versions de
+  l'app ignorent le champ.
+
 ## Fichier de détail (ticket #6)
 
 Chaque décision de l'index a un fichier `v1/decisions/<id>.json`

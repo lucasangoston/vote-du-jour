@@ -24,6 +24,12 @@ import '../vote_mode_label.dart';
 ///       "stage": "1re lecture à l'AN",
 ///       "explanation": "Le texte prévoit …",
 ///       "count": {"pour": 503, "contre": 0, "abstentions": 67},
+///       "arc": [
+///         {"position": "abstention", "n": 66},
+///         {"position": "pour", "n": 382},
+///         {"position": "abstention", "n": 1},
+///         {"position": "pour", "n": 121}
+///       ],
 ///       "voteMode": "scrutin_public"
 ///     }
 ///   ],
@@ -178,11 +184,12 @@ class WidgetDecision {
     this.explanation,
     this.count,
     this.voteMode,
+    this.arc,
   });
 
   /// Les mentions « à main levée » et « provisoire » sont ajoutées à l'étape,
-  /// que les widgets antérieurs à #29 affichent déjà ; [voteMode] et [count]
-  /// servent à dessiner l'arc du vote.
+  /// que les widgets antérieurs à #29 affichent déjà ; [voteMode], [count] et
+  /// [arc] servent à dessiner l'arc du vote.
   factory WidgetDecision.fromSummary(DecisionSummary d) => WidgetDecision(
     id: d.id,
     result: d.result,
@@ -196,6 +203,7 @@ class WidgetDecision {
     explanation: d.explanation?.trim(),
     count: d.count,
     voteMode: d.voteMode,
+    arc: d.arc,
   );
 
   /// Identifiant de la décision (deep link vers le détail) : celui du
@@ -230,6 +238,12 @@ class WidgetDecision {
   /// instantané antérieur.
   final VoteMode? voteMode;
 
+  /// Arc dans l'ordre de l'hémicycle (#67) : tronçons de gauche à droite,
+  /// mêmes règles que `arc` dans l'index. Absent (décision provisoire, index
+  /// ou instantané antérieur, arc malformé) : les widgets dessinent l'arc par
+  /// sens à partir de [count].
+  final List<HemicycleSegment>? arc;
+
   static WidgetDecision? tryFromJson(Map<String, Object?> json) {
     final id = json['id'];
     final result = VoteResult.tryParse(json['result']);
@@ -249,6 +263,7 @@ class WidgetDecision {
       explanation: explanation is String ? explanation : null,
       count: VoteTally.tryFromJson(json['count']),
       voteMode: VoteMode.tryParse(json['voteMode']),
+      arc: HemicycleSegment.tryParseList(json['arc']),
     );
   }
 
@@ -260,6 +275,7 @@ class WidgetDecision {
     'stage': ?stage,
     'explanation': ?explanation,
     'count': ?count?.toJson(),
+    'arc': ?arc?.map((s) => s.toJson()).toList(),
     'voteMode': ?voteMode?.json,
   };
 }

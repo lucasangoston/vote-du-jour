@@ -63,6 +63,14 @@ Ajoutés pour le ticket #10 (détection en direct), archive téléchargée le
 | 8705 | la proposition de loi (première lecture) | scrutin solennel ; aussi lu sur le site (`../site/`) |
 | 8706 | la proposition de loi organique (première lecture) | idem : provisoire puis confirmé |
 
+Ajoutés pour le ticket #67 (arc dans l'ordre de l'hémicycle), archive
+téléchargée le 23/10/2026 (hors de `fixtureNumeros`) :
+
+| Scrutin | Catégorie | Particularité |
+| --- | --- | --- |
+| 8610 | la proposition de résolution | rejetée : la gauche et le centre contre, DR, UDR et RN pour |
+| 8611 | la proposition de résolution | rejetée : DR partagé (9 pour, 5 abstentions, 1 contre) |
+
 `../titres_non_classes.csv` : les 47 intitulés réels que la règle initiale du
 PRD ne classait pas (numéro, date, code du type de vote, sort, titre), produits
 par le spike #15 (outil jetable, supprimé depuis ; voir PR #16)

@@ -1,3 +1,4 @@
+import 'hemicycle_arc.dart';
 import 'plain_summary.dart';
 
 /// Nature d'une décision retenue parmi les scrutins.
@@ -100,6 +101,7 @@ class DecisionSummary {
     this.voteMode = VoteMode.scrutinPublic,
     this.summary,
     this.count,
+    this.arc,
   }) : assert(
          numero != null || voteMode != VoteMode.scrutinPublic,
          'un scrutin public a un numéro',
@@ -173,6 +175,14 @@ class DecisionSummary {
   /// ajout.
   final VoteTally? count;
 
+  /// Arc du vote dans l'ordre de l'hémicycle (#67) : tronçons de gauche à
+  /// droite, groupe par groupe à sa place dans l'hémicycle, chacun découpé
+  /// selon les votes de ses membres. Absent pour un vote à main levée, une
+  /// décision provisoire (le site ne donne pas le vote par groupe), dans les
+  /// index publiés avant son ajout ou s'il est malformé : l'arc se dessine
+  /// alors par sens, depuis [count].
+  final List<HemicycleSegment>? arc;
+
   /// Titre à afficher : celui du résumé, sinon [shortTitle], sinon
   /// [officialTitle].
   String get displayTitle => summary?.title ?? shortTitle ?? officialTitle;
@@ -196,6 +206,7 @@ class DecisionSummary {
     voteMode: voteMode,
     summary: summary,
     count: count,
+    arc: arc,
   );
 
   /// La même décision avec le décompte [count] (ou sans décompte).
@@ -214,6 +225,27 @@ class DecisionSummary {
     voteMode: voteMode,
     summary: summary,
     count: count,
+    arc: arc,
+  );
+
+  /// La même décision avec l'arc [arc] (ou sans arc dans l'ordre de
+  /// l'hémicycle).
+  DecisionSummary withArc(List<HemicycleSegment>? arc) => DecisionSummary(
+    id: id,
+    numero: numero,
+    type: type,
+    status: status,
+    result: result,
+    date: date,
+    officialTitle: officialTitle,
+    sourceUrl: sourceUrl,
+    shortTitle: shortTitle,
+    stage: stage,
+    dossierUrl: dossierUrl,
+    voteMode: voteMode,
+    summary: summary,
+    count: count,
+    arc: arc,
   );
 
   /// Lit une décision ; renvoie `null` si elle utilise une valeur d'énumération
@@ -263,6 +295,7 @@ class DecisionSummary {
       dossierUrl: _optionalString(json['dossierUrl']),
       summary: PlainSummary.tryFromJson(json['summary']),
       count: VoteTally.tryFromJson(json['count']),
+      arc: HemicycleSegment.tryParseList(json['arc']),
     );
   }
 
@@ -283,6 +316,7 @@ class DecisionSummary {
     'dossierUrl': ?dossierUrl,
     'summary': ?summary?.toJson(withPoints: summaryPoints),
     'count': ?count?.toJson(),
+    'arc': ?arc?.map((s) => s.toJson()).toList(),
   };
 }
 

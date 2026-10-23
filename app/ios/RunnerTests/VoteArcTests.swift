@@ -60,6 +60,45 @@ final class VoteArcTests: XCTestCase {
     XCTAssertEqual(arc(.rejete, nil, mainLevee: true), .dotted(.contre))
   }
 
+  func testArcDeLHemicycleDeGaucheADroite() {
+    // Scrutin 8706 : LFI-NFP s'abstient, tout à gauche (#67).
+    let parts = [
+      HemicyclePart(.abstention, 66), HemicyclePart(.pour, 382), HemicyclePart(.abstention, 1),
+      HemicyclePart(.pour, 121),
+    ]
+    assertSegments(
+      VoteArc(
+        result: .adopte, count: VoteCount(pour: 503, contre: 0, abstentions: 67),
+        mainLevee: false, hemicycle: parts),
+      [
+        (.abstention, 0, 0.1158), (.pour, 0.1158, 0.7860), (.abstention, 0.7860, 0.7877),
+        (.pour, 0.7877, 1),
+      ])
+    // Rejeté (8610) : contre à gauche, pour à droite.
+    assertSegments(
+      VoteArc(
+        result: .rejete, count: nil, mainLevee: false,
+        hemicycle: [HemicyclePart(.contre, 187), HemicyclePart(.pour, 151)]),
+      [(.contre, 0, 0.5533), (.pour, 0.5533, 1)])
+    // Main levée : pointillés, l'arc éventuel est ignoré.
+    XCTAssertEqual(
+      VoteArc(result: .adopte, count: nil, mainLevee: true, hemicycle: parts), .dotted(.pour))
+    // Sans arc : par sens.
+    XCTAssertEqual(
+      VoteArc(result: .rejete, count: nil, mainLevee: false, hemicycle: []), .solid(.contre))
+  }
+
+  func testInstantaneAvecArc() throws {
+    let d = try XCTUnwrap(
+      try decode(#","arc":[{"position":"contre","n":187},{"position":"pour","n":151}]"#))
+    XCTAssertEqual(d.arc, [HemicyclePart(.contre, 187), HemicyclePart(.pour, 151)])
+    // Ancien instantané, arc illisible : ignoré, la décision reste lisible.
+    XCTAssertNil(try XCTUnwrap(try decode("")).arc)
+    XCTAssertNil(try XCTUnwrap(try decode(#","arc":[{"position":"pour","n":-1}]"#)).arc)
+    XCTAssertNil(try XCTUnwrap(try decode(#","arc":["pour"]"#)).arc)
+    XCTAssertNil(try XCTUnwrap(try decode(#","arc":{"position":"pour","n":1}"#)).arc)
+  }
+
   func testDecisionMainLeveeParVoteModeOuParMention() {
     let parMode = WidgetDecision(
       id: "a", result: .adopte, date: "2026-10-07", title: "t", stage: "1re lecture",

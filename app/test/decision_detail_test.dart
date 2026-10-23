@@ -118,6 +118,8 @@ void main() {
     expect(find.text('141'), findsOneWidget);
     expect(find.text('abstentions'), findsOneWidget);
     expect(find.textContaining('ont voté'), findsNothing);
+    // Sans arc dans l'ordre de l'hémicycle (#67) : pas de repères.
+    expect(find.text('Gauche'), findsNothing);
     // Méta, titre court.
     expect(find.text('Scrutin n° 6346'), findsOneWidget);
     expect(find.text('9 avr. 2026'), findsOneWidget);
@@ -286,5 +288,49 @@ void main() {
     );
     expect(decisionIdFromDeepLink(Uri.parse('https://example.test/x')), isNull);
     expect(decisionRouteName('VTANR5L17V6346'), '/decisions/VTANR5L17V6346');
+  });
+
+  testWidgets("arc dans l'ordre de l'hémicycle : repères Gauche et Droite, "
+      'libellé accessible inchangé (#67)', (tester) async {
+    final hemicycle = _detail.withDecision(
+      _summary.withArc(const [
+        HemicycleSegment(ArcPosition.abstention, 12),
+        HemicycleSegment(ArcPosition.pour, 141),
+      ]),
+    );
+    final client = MockClient(
+      (request) async =>
+          http.Response.bytes(utf8.encode(jsonEncode(hemicycle.toJson())), 200),
+    );
+    final navigatorKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: const Scaffold(body: Text('Liste')),
+        onGenerateRoute: (settings) => generateDecisionRoute(
+          settings,
+          repository: DecisionDetailRepository(
+            baseUrl: 'https://example.test',
+            client: client,
+          ),
+        ),
+      ),
+    );
+    openWidgetLink(
+      navigatorKey.currentState!,
+      Uri.parse('votedujour://decisions/VTANR5L17V6346?homeWidget'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gauche'), findsOneWidget);
+    expect(find.text('Droite'), findsOneWidget);
+    expect(
+      tester.getCenter(find.text('Gauche')).dx,
+      lessThan(tester.getCenter(find.text('Droite')).dx),
+    );
+    expect(
+      find.bySemanticsLabel('Adopté : 141 pour, 0 contre, 12 abstentions'),
+      findsOneWidget,
+    );
   });
 }

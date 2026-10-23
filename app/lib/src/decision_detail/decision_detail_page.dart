@@ -190,8 +190,13 @@ const mainLeveeNotice = 'À main levée · sans décompte des voix';
 /// Vote par groupe d'une décision provisoire, pas encore publié.
 const provisionalGroupsNotice = 'Vote par groupe publié après confirmation.';
 
+/// Repères sous le grand arc dans l'ordre de l'hémicycle (#67).
+const leftLabel = 'Gauche';
+const rightLabel = 'Droite';
+
 /// Carte du vote : grand arc, mot du résultat au centre, puis les trois
-/// chiffres (ou la mention « à main levée »).
+/// chiffres (ou la mention « à main levée »). Un arc dans l'ordre de
+/// l'hémicycle (#67) porte en dessous les repères « Gauche » et « Droite ».
 class _VoteCard extends StatelessWidget {
   const _VoteCard({required this.decision, this.count});
 
@@ -207,6 +212,7 @@ class _VoteCard extends StatelessWidget {
     final tally = count?.tally ?? decision.count;
     final color = resultColor(context, decision.result);
     final mainLevee = decision.voteMode == VoteMode.mainLevee;
+    final hemicycle = !mainLevee && decision.arc != null;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       decoration: BoxDecoration(
@@ -227,6 +233,7 @@ class _VoteCard extends StatelessWidget {
                       result: decision.result,
                       count: tally,
                       voteMode: decision.voteMode,
+                      arc: decision.arc,
                       width: width,
                     ),
                     Positioned(
@@ -259,6 +266,30 @@ class _VoteCard extends StatelessWidget {
                   ],
                 ),
               ),
+              // Repères discrets, sous les extrémités de l'arc ; le libellé
+              // accessible de l'arc donne déjà les totaux.
+              if (hemicycle)
+                ExcludeSemantics(
+                  child: SizedBox(
+                    width: width,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          for (final label in [leftLabel, rightLabel])
+                            Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.ink2,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               if (mainLevee)
                 Padding(
                   padding: const EdgeInsets.only(top: 14),
@@ -269,7 +300,7 @@ class _VoteCard extends StatelessWidget {
                   ),
                 )
               else if (tally != null) ...[
-                const SizedBox(height: 18),
+                SizedBox(height: hemicycle ? 12 : 18),
                 Row(
                   children: [
                     _Figure(tally.pour, 'pour', colors.pour),

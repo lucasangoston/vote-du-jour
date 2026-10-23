@@ -126,6 +126,11 @@ data class WidgetDecision(
     val count: VoteCount? = null,
     /** Mode de vote ; absent dans un instantané plus ancien. */
     val voteMode: VoteMode? = null,
+    /**
+     * Arc dans l'ordre de l'hémicycle (#67), de gauche à droite ; absent (décision provisoire,
+     * instantané ancien, arc illisible) : arc par sens à partir de [count].
+     */
+    val hemicycle: List<HemicyclePart>? = null,
 ) {
   /** « 13 octobre 2026 » (« 1er » pour le premier du mois). */
   val dateLabel: String
@@ -150,7 +155,7 @@ data class WidgetDecision(
 
   /** Arc du vote dessiné par les widgets. */
   val arc: VoteArc
-    get() = VoteArc.of(result, count, isMainLevee)
+    get() = VoteArc.of(result, count, isMainLevee, hemicycle)
 
   companion object {
     private val MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH)
@@ -177,6 +182,7 @@ data class WidgetDecision(
               // Champs optionnels : un décompte ou un mode illisible n'écarte pas la décision.
               count = VoteCount.parse(json.optJSONObject("count")),
               voteMode = VoteMode.parse(json.opt("voteMode")),
+              hemicycle = HemicyclePart.parseList(json.optJSONArray("arc")),
           )
         } catch (e: Exception) {
           null

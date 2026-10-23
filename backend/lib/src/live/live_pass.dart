@@ -331,6 +331,8 @@ Future<LiveOutcome> runLivePass({
     provisional: [for (final p in known.values) p.toScrutin()],
     generatedAt: now,
     dossiers: dossiers,
+    // Arcs calculés par le job avec le vote par groupe (#67).
+    arcs: snapshot.arcs,
   );
   // Les résumés (#9) sont rédigés par le job horaire, pas ici : le passage
   // en direct applique seulement ceux du cache, et ceux de l'index publié

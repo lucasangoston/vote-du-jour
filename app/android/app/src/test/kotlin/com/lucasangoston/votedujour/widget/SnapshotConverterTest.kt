@@ -151,6 +151,45 @@ class SnapshotConverterTest {
   }
 
   @Test
+  fun recopie_l_arc_de_l_hemicycle() {
+    // Scrutin 8706 : LFI-NFP s'abstient, tout à gauche (#67).
+    val arc =
+        ""","arc":[{"position":"abstention","n":66},{"position":"pour","n":382},""" +
+            """{"position":"abstention","n":1},{"position":"pour","n":121}]"""
+    val index =
+        """{"schemaVersion":1,"decisions":[
+        ${decision(8706, arc)},
+        ${decision(8705, ""","arc":[{"position":"partage","n":3}]""")},
+        ${decision(8704, ""","arc":[{"position":"pour","n":1.5}]""")}]}"""
+
+    val snapshotJson = SnapshotConverter.fromIndex(index, savedAt)!!
+    val decisions = JSONObject(snapshotJson).getJSONArray("decisions")
+
+    decisions.getJSONObject(0).getJSONArray("arc").let {
+      assertEquals(4, it.length())
+      assertEquals("abstention", it.getJSONObject(0).getString("position"))
+      assertEquals(382, it.getJSONObject(1).getInt("n"))
+    }
+    // Arc malformé (sens inconnu, nombre non entier) : omis, la décision reste.
+    assertEquals(false, decisions.getJSONObject(1).has("arc"))
+    assertEquals(false, decisions.getJSONObject(2).has("arc"))
+
+    val parsed = DecisionSnapshot.parse(snapshotJson)!!.decisions
+    assertEquals(
+        listOf(
+            HemicyclePart(ArcColor.ABSTENTION, 66),
+            HemicyclePart(ArcColor.POUR, 382),
+            HemicyclePart(ArcColor.ABSTENTION, 1),
+            HemicyclePart(ArcColor.POUR, 121),
+        ),
+        parsed[0].hemicycle,
+    )
+    assertEquals(ArcColor.ABSTENTION, (parsed[0].arc as VoteArc.Segmented).layers.first().color)
+    assertNull(parsed[1].hemicycle)
+    assertEquals(VoteArc.Solid(ArcColor.POUR), parsed[1].arc)
+  }
+
+  @Test
   fun refuse_une_autre_version_ou_un_index_illisible() {
     assertNull(SnapshotConverter.fromIndex("""{"schemaVersion":2,"decisions":[]}""", savedAt))
     assertNull(SnapshotConverter.fromIndex("pas du json", savedAt))
