@@ -11,8 +11,8 @@ import 'package:votedujour/src/decisions_repository.dart';
 
 void main() {
   testWidgets(
-    'affiche le titre court et le type utile, sans l\'étape, et lit encore '
-    'un index sans ces champs',
+    'affiche le titre court, sans étape, type ni mode de vote (#75), et lit '
+    'encore un index sans ces champs',
     (tester) async {
       final client = MockClient((request) async {
         final json = {
@@ -97,30 +97,49 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('narcotrafic (première'), findsNothing);
-      // L'étape reste au détail ; seul le type qui change la lecture est
-      // dans la liste.
+      // L'étape, le type et le mode de vote restent au détail (#75).
       expect(find.text("1re lecture à l'AN"), findsNothing);
       expect(find.text('Accord multilatéral GloBE'), findsOneWidget);
-      expect(
-        find.text('à main levée'),
-        findsOneWidget,
-        reason: 'seule la décision à main levée porte la mention',
-      );
+      expect(find.text('à main levée'), findsNothing);
       expect(find.text('Adopté'), findsNWidgets(3));
-      expect(find.text('Résolution'), findsOneWidget);
+      expect(find.text('Résolution'), findsNothing);
       expect(find.text('Résolution (sans valeur de loi)'), findsNothing);
       expect(find.text("L'ensemble d'un ancien index."), findsOneWidget);
       expect(find.textContaining('loi votée'), findsNothing);
     },
   );
 
-  test('type dans la liste : seulement ceux qui changent la lecture', () {
-    expect(listTypeLabel(DecisionType.ensembleTexte), isNull);
-    expect(listTypeLabel(DecisionType.autre), isNull);
-    expect(listTypeLabel(DecisionType.resolution), 'Résolution');
-    expect(listTypeLabel(DecisionType.motionDeCensure), 'Motion de censure');
-    expect(listTypeLabel(DecisionType.rejetPrealable), 'Rejet préalable');
-  });
+  test(
+    'filtres : textes, résolutions, motions et votes sur le Gouvernement',
+    () {
+      for (final type in DecisionType.values) {
+        expect(DecisionFilter.tout.accepts(type), isTrue);
+        // Chaque type tombe dans un seul filtre.
+        expect(
+          [
+            DecisionFilter.textes,
+            DecisionFilter.resolutions,
+            DecisionFilter.motions,
+          ].where((f) => f.accepts(type)),
+          hasLength(1),
+          reason: '$type',
+        );
+      }
+      expect(DecisionFilter.textes.accepts(DecisionType.ensembleTexte), isTrue);
+      expect(
+        DecisionFilter.resolutions.accepts(DecisionType.resolution),
+        isTrue,
+      );
+      expect(
+        DecisionFilter.motions.accepts(DecisionType.motionDeCensure),
+        isTrue,
+      );
+      expect(
+        DecisionFilter.motions.accepts(DecisionType.rejetPrealable),
+        isTrue,
+      );
+    },
+  );
 
   test('méta du détail : date et étape abrégées', () {
     expect(formatShortFrenchDate(DateTime.utc(2026, 10, 13)), '13 oct. 2026');

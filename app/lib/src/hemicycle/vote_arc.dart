@@ -111,17 +111,6 @@ class VoteArc extends StatelessWidget {
     this.stroke = 9,
   });
 
-  /// Petit arc des lignes de la liste (40 × 22).
-  const VoteArc.mini({
-    super.key,
-    required this.result,
-    this.count,
-    this.voteMode,
-    this.arc,
-  }) : width = 40,
-       radius = 50,
-       stroke = 16;
-
   final VoteResult result;
   final VoteTally? count;
   final VoteMode? voteMode;
@@ -166,6 +155,106 @@ class VoteArc extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Part du camp gagnant parmi les votants (#75) : pour / votants si adopté,
+/// contre / votants si rejeté. Main levée ou sans décompte : 1, jauge pleine.
+double gaugeShare({
+  required VoteResult result,
+  VoteTally? count,
+  VoteMode? voteMode,
+}) {
+  if (voteMode == VoteMode.mainLevee || count == null || count.total <= 0) {
+    return 1;
+  }
+  final won = switch (result) {
+    VoteResult.adopte => count.pour,
+    VoteResult.rejete => count.contre,
+  };
+  return won / count.total;
+}
+
+/// Jauge des lignes de la liste (#75), 40 × 22 : le petit arc d'une seule
+/// couleur, rempli de gauche à droite de la part du camp gagnant (vert si
+/// adopté, rouge si rejeté), le reste de l'arc en teinte neutre.
+class VoteGauge extends StatelessWidget {
+  const VoteGauge({super.key, required this.result, this.count, this.voteMode});
+
+  final VoteResult result;
+  final VoteTally? count;
+  final VoteMode? voteMode;
+
+  /// Largeur en points ; la hauteur suit ([VoteArc.aspect]).
+  static const width = 40.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Semantics(
+      container: true,
+      label: voteArcLabel(result: result, count: count, voteMode: voteMode),
+      child: CustomPaint(
+        size: const Size(width, width * VoteArc.aspect),
+        painter: VoteGaugePainter(
+          share: gaugeShare(result: result, count: count, voteMode: voteMode),
+          color: switch (result) {
+            VoteResult.adopte => colors.pour,
+            VoteResult.rejete => colors.contre,
+          },
+          track: gaugeTrack(colors),
+        ),
+      ),
+    );
+  }
+}
+
+/// Teinte neutre du reste de la jauge : l'encre à 30 % sur la surface.
+Color gaugeTrack(HemicycleColors colors) =>
+    Color.lerp(colors.surface, colors.ink, 0.3)!;
+
+/// Dessine la jauge dans la boîte de 120 × 66 unités des maquettes (rayon 50,
+/// trait de 16).
+class VoteGaugePainter extends CustomPainter {
+  VoteGaugePainter({
+    required this.share,
+    required this.color,
+    required this.track,
+  });
+
+  /// Part remplie, de 0 à 1.
+  final double share;
+  final Color color;
+  final Color track;
+
+  static const radius = 50.0;
+  static const stroke = 16.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final unit = size.width / 120;
+    final rect = Rect.fromCircle(
+      center: Offset(60 * unit, 60 * unit),
+      radius: radius * unit,
+    );
+    Paint paintOf(Color c) => Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke * unit
+      ..strokeCap = StrokeCap.butt
+      ..color = c;
+    // Comme les maquettes : pas de reste visible à 100 % (arrondi compris).
+    if (share >= 0.999) {
+      canvas.drawArc(rect, math.pi, math.pi, false, paintOf(color));
+      return;
+    }
+    canvas.drawArc(rect, math.pi, math.pi, false, paintOf(track));
+    if (share > 0) {
+      canvas.drawArc(rect, math.pi, share * math.pi, false, paintOf(color));
+    }
+  }
+
+  @override
+  bool shouldRepaint(VoteGaugePainter old) =>
+      old.share != share || old.color != color || old.track != track;
 }
 
 /// Description de l'arc pour les lecteurs d'écran.
