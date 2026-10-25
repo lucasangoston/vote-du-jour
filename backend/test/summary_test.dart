@@ -62,20 +62,54 @@ Map<String, Object?> validResponse({
 /// introuvables (HTTP 404), comme un texte déposé trop récemment.
 class FakeTexts implements LegislativeTextSource {
   final requested = <String>[];
-  final online = <String>{'PIONANR5L17B0284', 'PRJLANR5L17B3060'};
+  final online = <String>{
+    'PIONANR5L17B0284',
+    'PRJLANR5L17B3060',
+    'PRJLANR5L17B3211',
+  };
 
   @override
   Future<TextFetch> fetch(String textUid) async {
     requested.add(textUid);
     if (!online.contains(textUid)) return const TextUnavailable('HTTP 404');
-    final file = File('test/fixtures/textes/$textUid.html');
-    if (!file.existsSync()) return const TextUnavailable('HTTP 404');
-    return TextFound(file.readAsStringSync());
+    final html = fixtureText(textUid);
+    if (html == null) return const TextUnavailable('HTTP 404');
+    return TextFound(html);
   }
 }
 
-String _fixture(String uid) =>
-    File('test/fixtures/textes/$uid.html').readAsStringSync();
+/// Page enregistrée du texte [uid], compressée ou non (`.html.gz` pour les
+/// plus lourdes) ; `null` si elle n'est pas en fixture.
+String? fixtureText(String uid) {
+  final file = File('test/fixtures/textes/$uid.html');
+  if (file.existsSync()) return file.readAsStringSync();
+  final gz = File('test/fixtures/textes/$uid.html.gz');
+  if (!gz.existsSync()) return null;
+  return utf8.decode(gzip.decode(gz.readAsBytesSync()));
+}
+
+String _fixture(String uid) => fixtureText(uid)!;
+
+/// Dossier du PLFSS 2027 (#73), texte déposé `PRJLANR5L17B3211`.
+const plfssDossier = 'DLR5L17N54951';
+
+/// Les dossiers des fixtures et celui du PLFSS 2027.
+List<int> dossiersWithPlfss() => fixtureDossiersArchive(
+  extra: {
+    'json/dossierParlementaire/$plfssDossier.json': File(
+      'test/fixtures/en_debat/dossiers/$plfssDossier.json',
+    ).readAsStringSync(),
+  },
+);
+
+/// Le PLFSS 2027 en débat, tel que le publie le passage de l'agenda.
+InDebate _debate({String dossier = plfssDossier}) => InDebate(
+  dossierRef: dossier,
+  shortTitle: 'Projet de loi de financement de la sécurité sociale pour 2027',
+  dossierUrl: Dossier(uid: dossier, title: '').url,
+  seanceRef: 'RUANR5L17S2027IDS30955',
+  startsAt: DateTime.utc(2026, 10, 21, 12),
+);
 
 DecisionSummary _decision(
   String id, {
@@ -105,7 +139,7 @@ void main() {
   final now = DateTime.utc(2026, 10, 18, 9);
 
   setUpAll(() {
-    dossiers = DossierIndex.fromArchive(fixtureDossiersArchive());
+    dossiers = DossierIndex.fromArchive(dossiersWithPlfss());
   });
 
   setUp(() {
@@ -114,8 +148,15 @@ void main() {
   });
   tearDown(() => dir.deleteSync(recursive: true));
 
-  Future<void> publish(List<DecisionSummary> decisions) async {
-    final index = DecisionIndex(generatedAt: now, decisions: decisions);
+  Future<void> publish(
+    List<DecisionSummary> decisions, {
+    InDebate? inDebate,
+  }) async {
+    final index = DecisionIndex(
+      generatedAt: now,
+      decisions: decisions,
+      inDebate: inDebate,
+    );
     await store.write(indexPath, jsonEncode(index.toJson()));
     for (final d in decisions) {
       await store.write(
@@ -168,6 +209,27 @@ void main() {
       expect(s.text, startsWith('Article unique\nEst autorisée'));
       expect(s.text, isNot(contains('Délibéré en séance publique')));
       expect(s.text, isNot(contains('LARCHER')));
+    });
+
+    test('texte budgétaire, un exposé par article : le plan du texte', () {
+      // PLFSS 2027 : pas d'exposé général, mais un exposé des motifs après
+      // chaque article. Le premier (article liminaire) ne résume pas le
+      // texte : on donne les intitulés des parties et des articles.
+      final source = extractSourceText(_fixture('PRJLANR5L17B3211'))!;
+      expect(source.kind, SourceKind.articles);
+      expect(source.truncated, isFalse);
+      expect(
+        source.text,
+        contains(
+          'Article 8 : Extension de la « taxe soda » à des produits sucrés '
+          'et transformés',
+        ),
+      );
+      expect(source.text, contains('TROISIÈME PARTIE'));
+      expect(source.text, isNot(contains('Cet article présente')));
+      // Ni les tableaux ni le texte des articles.
+      expect(source.text, isNot(contains('258,5')));
+      expect(source.text.length, lessThan(maxSourceChars));
     });
 
     test('page sans exposé ni articles : rien', () {
@@ -630,6 +692,182 @@ void main() {
       final detail = await readDetail(summarized.first);
       expect(detail.decision.summary!.title, 'Titre lisible');
       expect(llm.requests, hasLength(calls));
+    });
+  });
+
+  group('texte en débat (#73)', () {
+    final debateId = inDebateSummaryId(plfssDossier);
+
+    test(
+      'le PLFSS en débat est résumé : un appel, points dans l\'index',
+      () async {
+        await publish(const [], inDebate: _debate());
+        final llm = FakeLlm();
+        final report = await pass(llm);
+
+        expect(report.calls, 1);
+        expect(report.summarized, [debateId]);
+        final message = llm.userMessage(0);
+        expect(
+          message,
+          contains(
+            'Intitulé officiel : Projet de loi de financement de la sécurité '
+            'sociale pour 2027',
+          ),
+        );
+        expect(message, contains('articles du texte'));
+        expect(message, contains('taxe soda'));
+
+        final cache = await SummaryCache.read(store, []);
+        expect(cache[debateId]!.status, SummaryStatus.resume);
+        expect(cache[debateId]!.textUid, 'PRJLANR5L17B3211');
+        expect(cache[debateId]!.source, SourceKind.articles);
+
+        // Pas de fichier de détail : titre, phrase et points dans l'index.
+        final summary = (await readIndex()).inDebate!.summary!;
+        expect(summary.title, 'Titre lisible');
+        expect(summary.points, hasLength(3));
+        expect((await store.read(indexPath))!, contains('Point un.'));
+      },
+    );
+
+    test('un second passage ne refait pas d\'appel', () async {
+      await publish(const [], inDebate: _debate());
+      final llm = FakeLlm();
+      final texts = FakeTexts();
+      await pass(llm, texts: texts);
+      final second = await pass(llm, texts: texts);
+      expect(second.calls, 0);
+      expect(llm.requests, hasLength(1));
+      expect(texts.requested, hasLength(1));
+      expect((await readIndex()).inDebate!.summary!.title, 'Titre lisible');
+
+      // Cache perdu : le résumé est repris de l'index publié, sans appel.
+      await store.write(summaryCacheKey, 'illisible');
+      final third = await pass(llm, texts: texts);
+      expect(third.calls, 0);
+      expect(llm.requests, hasLength(1));
+      expect((await readIndex()).inDebate!.summary!.title, 'Titre lisible');
+    });
+
+    test('repris au vote sur l\'ensemble du texte, sans appel', () async {
+      await publish(const [], inDebate: _debate());
+      final llm = FakeLlm();
+      await pass(llm);
+
+      final vote = _decision('VTANR5L17V9100', dossier: plfssDossier);
+      await publish([vote], inDebate: _debate());
+      final report = await pass(llm);
+      expect(report.calls, 0);
+      expect(report.reused, [vote.id]);
+      expect(llm.requests, hasLength(1));
+      final decision = (await readIndex()).decisions.single;
+      expect(decision.summary!.title, 'Titre lisible');
+      expect(
+        (await readDetail(vote.id)).decision.summary!.points,
+        hasLength(3),
+      );
+    });
+
+    test('texte déjà résumé pour une décision : repris sans appel', () async {
+      final d = _decision('VTANR5L17V217', dossier: 'DLR5L17N50453');
+      await publish([d], inDebate: _debate(dossier: 'DLR5L17N50453'));
+      final llm = FakeLlm();
+      await pass(llm);
+      expect(llm.requests, hasLength(1));
+      final summary = (await readIndex()).inDebate!.summary!;
+      expect(summary, (await readDetail(d.id)).decision.summary);
+      expect(summary.points, hasLength(3));
+    });
+
+    test('sans source exploitable : pas de résumé, pas d\'appel', () async {
+      // Dossier sans texte déposé connu.
+      await publish(const [], inDebate: _debate(dossier: 'DLR5L17N99999'));
+      final llm = FakeLlm();
+      var report = await pass(llm);
+      expect(report.calls, 0);
+      expect(report.pending.keys, [inDebateSummaryId('DLR5L17N99999')]);
+      expect((await readIndex()).inDebate!.summary, isNull);
+
+      // Texte pas encore en ligne : « à régénérer », puis résumé dès qu'il
+      // paraît, même longtemps après (jamais sur l'intitulé seul).
+      await publish(const [], inDebate: _debate());
+      final texts = FakeTexts()..online.remove('PRJLANR5L17B3211');
+      report = await pass(llm, texts: texts);
+      expect(report.calls, 0);
+      expect(report.pending[debateId], contains('HTTP 404'));
+      expect((await readIndex()).inDebate!.summary, isNull);
+
+      texts.online.add('PRJLANR5L17B3211');
+      report = await pass(
+        llm,
+        texts: texts,
+        at: now.add(const Duration(days: 30)),
+      );
+      expect(report.calls, 1);
+      expect((await readIndex()).inDebate!.summary, isNotNull);
+    });
+
+    test('plafond d\'appels par passage respecté', () async {
+      await publish([
+        _decision('VTANR5L17V217', dossier: 'DLR5L17N50453'),
+      ], inDebate: _debate());
+      final llm = FakeLlm();
+      const limits = SummaryLimits(maxCallsPerPass: 1);
+      var report = await pass(llm, limits: limits);
+      expect(report.calls, 1);
+      expect(report.deferred, 1);
+      // Le texte en débat passe en premier : c'est l'actualité.
+      expect(report.summarized, [debateId]);
+
+      report = await pass(llm, limits: limits);
+      expect(report.calls, 1);
+      expect(report.summarized, ['VTANR5L17V217']);
+      expect(llm.requests, hasLength(2));
+    });
+
+    test('échecs du modèle : retenté, puis abandonné', () async {
+      await publish(const [], inDebate: _debate());
+      final llm = FakeLlm([
+        const LlmException('HTTP 500'),
+        const LlmException('HTTP 500'),
+        const LlmException('HTTP 500'),
+      ]);
+      for (var i = 0; i < 4; i++) {
+        await pass(llm);
+      }
+      expect(llm.requests, hasLength(3));
+      final cache = await SummaryCache.read(store, []);
+      expect(cache[debateId]!.status, SummaryStatus.abandonne);
+      expect((await readIndex()).inDebate!.summary, isNull);
+    });
+
+    test('le cache s\'applique au bloc recalculé', () {
+      final summary = PlainSummary(
+        title: 'Budget de la Sécurité sociale',
+        explanation: 'Le texte fixe le budget.',
+        promptVersion: summaryPromptVersion,
+        points: const ['Un.', 'Deux.', 'Trois.'],
+      );
+      final cache = SummaryCache({
+        debateId: SummaryEntry(
+          status: SummaryStatus.resume,
+          updatedAt: now,
+          summary: summary,
+        ),
+      });
+      expect(cache.applyToInDebate(_debate())!.summary, summary);
+      expect(
+        cache.applyToInDebate(_debate(dossier: 'DLR5L17N1'))!.summary,
+        isNull,
+      );
+      expect(cache.applyToInDebate(null), isNull);
+      final index = DecisionIndex(
+        generatedAt: now,
+        decisions: const [],
+        inDebate: _debate(),
+      );
+      expect(cache.applyTo(index).inDebate!.summary, summary);
     });
   });
 }

@@ -385,6 +385,11 @@ derniers jours, et ses articles votés au scrutin public.
   qu'écrit dans l'intitulé (« 4 », « liminaire », « 3 bis A », « premier »).
   `outcome` : `adopte`, `rejete`, ou `supprime` (amendement de suppression
   adopté). Un article de sort inconnu ou malformé est ignoré.
+- `summary` (optionnel, ticket #73) : résumé du texte, même format que celui
+  d'une décision (`PlainSummary` : `title`, `explanation`, `points`,
+  `promptVersion`), points compris (pas de fichier de détail). Absent tant
+  que le texte n'est pas résumé ou sans texte exploitable ; malformé, il est
+  ignoré et le bloc reste lisible.
 - `inDebate` absent : aucun texte en débat dans les 7 derniers jours, ou index
   antérieur au ticket. Un bloc malformé vaut absence.
 - Ajout rétrocompatible : même `schemaVersion`, les anciennes versions de

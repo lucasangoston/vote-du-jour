@@ -5,6 +5,7 @@ import 'package:vote_contract/vote_contract.dart';
 import '../dossier_index.dart';
 import '../job.dart' show dossiersStateKey, indexCacheControl;
 import '../object_store.dart';
+import '../summary/summary_cache.dart';
 import 'agenda_reader.dart';
 import 'agenda_source.dart';
 import 'in_debate.dart';
@@ -146,14 +147,20 @@ Future<AgendaReport> runAgendaPass({
     dossiers: dossiers,
   );
   final articleVotes = await ArticleVotesState.read(store, report.warnings);
-  final inDebate = buildInDebate(
-    state.points,
-    now: now,
-    votes: articleVotes?.votes ?? const [],
-    confirmedUpTo: articleVotes?.lastNumero ?? 0,
-    previous: index.inDebate,
-    decisions: index.decisions,
-    dossiers: dossiers,
+  // Le résumé du texte en débat (#73) est rédigé par le job : le passage
+  // applique celui du cache (ou de l'index publié si le cache est perdu).
+  final summaries = await SummaryCache.read(store, report.warnings)
+    ..adoptPublished(index, now: now);
+  final inDebate = summaries.applyToInDebate(
+    buildInDebate(
+      state.points,
+      now: now,
+      votes: articleVotes?.votes ?? const [],
+      confirmedUpTo: articleVotes?.lastNumero ?? 0,
+      previous: index.inDebate,
+      decisions: index.decisions,
+      dossiers: dossiers,
+    ),
   );
   report
     ..upcoming = upcoming

@@ -11,6 +11,7 @@ Source : Assemblée nationale, open data. Licence Ouverte / Open Licence (Etalab
 | --- | --- | --- |
 | PIONANR5L17B0284 | DLR5L17N50453 | proposition déposée à l'Assemblée : exposé des motifs, puis 3 articles |
 | PRJLANR5L17B3060 | DLR5L17N54379 | projet de loi transmis par le Sénat : pas d'exposé, article unique |
+| PRJLANR5L17B3211 | DLR5L17N54951 | PLFSS 2027 (ticket #73), enregistré le 25/10/2026 et compressé (`.html.gz`, 1,4 Mo décompressé) : un exposé des motifs par article, pas d'exposé général |
 
 Vérifiés le même jour, non enregistrés :
 

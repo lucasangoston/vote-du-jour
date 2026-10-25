@@ -211,7 +211,7 @@ Future<JobOutcome> runJob({
       final index = summaryCache
           .applyTo(reconciled.index)
           .withUpcoming(published?.upcoming)
-          .withInDebate(published?.inDebate);
+          .withInDebate(summaryCache.applyToInDebate(published?.inDebate));
       // Les détails avant l'index, qui renvoie vers eux. Les décisions
       // encore provisoires ont le décompte du site, sans vote par groupe.
       // Les décisions déjà argumentées (#35) gardent leurs arguments.

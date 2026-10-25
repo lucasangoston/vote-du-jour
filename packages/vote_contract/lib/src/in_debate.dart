@@ -1,4 +1,5 @@
 import 'decision.dart' show formatDate;
+import 'plain_summary.dart';
 
 /// Sort d'un article du texte en débat (#55).
 enum ArticleOutcome {
@@ -92,6 +93,7 @@ class InDebate {
     required this.seanceRef,
     required this.startsAt,
     this.articles = const [],
+    this.summary,
   });
 
   /// Dossier législatif du texte (`DLR5L17N54951`).
@@ -114,8 +116,26 @@ class InDebate {
   /// plus récent au plus ancien. Vide si aucun article n'a encore été voté.
   final List<DebatedArticle> articles;
 
-  /// Lit le bloc ; `null` s'il est malformé. Un article illisible est
-  /// ignoré.
+  /// Résumé du texte (#73), rédigé par le même modèle et avec la même
+  /// consigne que celui d'une décision, et repris par la décision sur
+  /// l'ensemble du texte. Les [PlainSummary.points] sont publiés ici, faute
+  /// de fichier de détail. Champ optionnel : absent tant que le texte n'est
+  /// pas résumé, ou sans texte exploitable.
+  final PlainSummary? summary;
+
+  /// Le même bloc avec le résumé [summary].
+  InDebate withSummary(PlainSummary? summary) => InDebate(
+    dossierRef: dossierRef,
+    shortTitle: shortTitle,
+    dossierUrl: dossierUrl,
+    seanceRef: seanceRef,
+    startsAt: startsAt,
+    articles: articles,
+    summary: summary,
+  );
+
+  /// Lit le bloc ; `null` s'il est malformé. Un article ou un résumé
+  /// illisible est ignoré.
   static InDebate? tryFromJson(Object? json) {
     if (json is! Map<String, Object?>) return null;
     final dossierRef = json['dossierRef'];
@@ -144,6 +164,7 @@ class InDebate {
         if (articles is List)
           for (final a in articles) ?DebatedArticle.tryFromJson(a),
       ],
+      summary: PlainSummary.tryFromJson(json['summary']),
     );
   }
 
@@ -154,6 +175,7 @@ class InDebate {
     'seanceRef': seanceRef,
     'startsAt': startsAt.toUtc().toIso8601String(),
     'articles': [for (final a in articles) a.toJson()],
+    'summary': ?summary?.toJson(),
   };
 
   @override

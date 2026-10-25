@@ -40,6 +40,16 @@ final _inDebate = <String, Object?>{
   ],
 };
 
+/// Résumé du texte en débat, rédigé par le job (#73).
+final _summary = <String, Object?>{
+  'title': 'Financement de la Sécurité sociale en 2027',
+  'explanation':
+      'Le texte fixe les recettes et les dépenses de la Sécurité '
+      'sociale pour 2027.',
+  'points': ['Point un.', 'Point deux.', 'Point trois.'],
+  'promptVersion': 1,
+};
+
 final _decision = <String, Object?>{
   'id': 'VTANR5L17V8706',
   'numero': 8706,
@@ -79,6 +89,40 @@ void main() {
       expect(d.articles.first.date, DateTime.utc(2026, 10, 19));
       expect(d.articles.first.scrutinNumero, 8892);
       expect(_roundTrip(d.toJson()), _inDebate);
+    });
+
+    test('résumé du texte (#73) : optionnel, points compris', () {
+      expect(InDebate.tryFromJson(_inDebate)!.summary, isNull);
+      expect(
+        (_roundTrip(InDebate.tryFromJson(_inDebate)!.toJson()) as Map)
+            .containsKey('summary'),
+        isFalse,
+      );
+      final json = {..._inDebate, 'summary': _summary};
+      final d = InDebate.tryFromJson(json)!;
+      expect(d.summary!.title, 'Financement de la Sécurité sociale en 2027');
+      expect(d.summary!.points, hasLength(3));
+      // Pas de fichier de détail pour le texte en débat : les points sont
+      // publiés dans l'index.
+      expect(_roundTrip(d.toJson()), json);
+    });
+
+    test('résumé malformé : ignoré, le bloc reste lisible', () {
+      final d = InDebate.tryFromJson({
+        ..._inDebate,
+        'summary': {'title': 'Sans explication'},
+      })!;
+      expect(d.summary, isNull);
+      expect(d.articles, hasLength(4));
+    });
+
+    test('withSummary garde le reste', () {
+      final d = InDebate.tryFromJson(_inDebate)!;
+      final summary = PlainSummary.tryFromJson(_summary)!;
+      final s = d.withSummary(summary);
+      expect(s.summary, same(summary));
+      expect(_roundTrip(s.withSummary(null).toJson()), _inDebate);
+      expect(s.articles, same(d.articles));
     });
 
     test('sans article voté : liste vide', () {

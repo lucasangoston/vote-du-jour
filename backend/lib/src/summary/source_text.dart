@@ -52,11 +52,20 @@ const _minArticlesChars = 40;
 ///
 /// La page est une donnée non fiable : elle n'est jamais interprétée, seul
 /// son texte est extrait (balises, styles et scripts retirés).
+///
+/// Un texte budgétaire (PLF, PLFSS) n'a pas d'exposé général mais un exposé
+/// des motifs après chaque article : on donne alors son plan, les intitulés
+/// de ses parties et de ses articles (#73).
 SourceText? extractSourceText(String html, {int maxChars = maxSourceChars}) {
   final lines = htmlToLines(html);
-  final exposeAt = lines.indexWhere(
-    (l) => _exposeHeading.hasMatch(l.toLowerCase()),
-  );
+  bool isExpose(String l) => _exposeHeading.hasMatch(l.toLowerCase());
+  final exposeAt = lines.indexWhere(isExpose);
+  if (lines.where(isExpose).length > 1) {
+    final outline = _outline(lines);
+    if (outline.length >= _minArticlesChars) {
+      return _truncated(SourceKind.articles, outline, maxChars);
+    }
+  }
   if (exposeAt >= 0) {
     final end = _dispositifStart(lines, exposeAt + 1);
     final expose = [
@@ -178,6 +187,49 @@ bool _isArticleHeading(String l) =>
 final _endOfText = RegExp(
   r'^(Délibéré en séance publique|\[\(\d+\)\]|\(\d+\) Ce groupe est composé)',
 );
+
+/// Intitulé d'une partie d'un texte budgétaire (« PREMIÈRE PARTIE »,
+/// « DEUXIÈME PARTIE : »).
+final _partHeading = RegExp(
+  r'^(première|deuxième|troisième|quatrième|cinquième|sixième) partie\b',
+  caseSensitive: false,
+);
+
+/// Un intitulé d'article plus long est coupé : c'est alors le début du
+/// texte de l'article, pas son titre.
+const _maxOutlineLine = 300;
+
+/// Plan d'un texte budgétaire : chaque partie suivie de son titre, chaque
+/// article suivi de la ligne qui le suit (son titre : « Article 8 :
+/// Extension de la « taxe soda »… »).
+String _outline(List<String> lines) {
+  String cut(String l) =>
+      l.length <= _maxOutlineLine ? l : '${l.substring(0, _maxOutlineLine)}…';
+  final outline = <String>[];
+  for (var i = 0; i < lines.length; i++) {
+    final l = lines[i];
+    if (_endOfText.hasMatch(l)) break;
+    final next = i + 1 < lines.length ? lines[i + 1] : null;
+    if (_partHeading.hasMatch(l)) {
+      outline.add(
+        next == null || _isArticleHeading(next) || next.length > 200
+            ? l
+            : '$l ${cut(next)}',
+      );
+    } else if (_isArticleHeading(l)) {
+      outline.add(
+        next == null || _isHeadingLike(next) ? l : '$l : ${cut(next)}',
+      );
+    }
+  }
+  return outline.join('\n');
+}
+
+/// Ligne qui n'est pas un titre d'article : un autre intitulé.
+bool _isHeadingLike(String l) =>
+    _isArticleHeading(l) ||
+    _partHeading.hasMatch(l) ||
+    _exposeHeading.hasMatch(l.toLowerCase());
 
 /// Début du dispositif après l'exposé : son titre, sinon le premier
 /// intitulé d'article, sinon la fin de la page.
