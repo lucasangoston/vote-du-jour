@@ -792,6 +792,14 @@ class _DecisionCard extends StatelessWidget {
             ],
           ),
         ),
+        if (seats != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: NoVoteNote(seats),
+            ),
+          ),
         _CardTitle(title),
       ],
     );

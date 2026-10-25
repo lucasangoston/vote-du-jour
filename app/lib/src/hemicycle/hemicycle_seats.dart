@@ -168,6 +168,33 @@ String hemicycleSeatsLabel(VoteResult result, VoteTally count) {
       '${count.abstentions} abstentions';
 }
 
+/// Sièges estompés (absents et non-votants), dits en clair sous
+/// l'hémicycle : « 236 n’ont pas voté ». `null` si tout le monde a voté.
+String? noVoteNote(List<HemicycleSeat> seats) {
+  final n = seats
+      .where((s) => s.vote == SeatVote.absent || s.vote == SeatVote.nonVotant)
+      .length;
+  if (n == 0) return null;
+  return n == 1 ? '1 n’a pas voté' : '$n n’ont pas voté';
+}
+
+/// La mention [noVoteNote] en texte secondaire, ou rien.
+class NoVoteNote extends StatelessWidget {
+  const NoVoteNote(this.seats, {super.key});
+
+  final List<HemicycleSeat> seats;
+
+  @override
+  Widget build(BuildContext context) {
+    final note = noVoteNote(seats);
+    if (note == null) return const SizedBox.shrink();
+    return Text(
+      note,
+      style: HemicycleText.meta.copyWith(color: context.colors.ink2),
+    );
+  }
+}
+
 /// L'hémicycle aux places réelles (#74) : chaque député à sa place, couleur
 /// officielle de son groupe, forme selon son vote. Dôme ouvert vers le bas,
 /// LFI-NFP à l'extrême gauche, RN à droite. La hauteur suit la largeur

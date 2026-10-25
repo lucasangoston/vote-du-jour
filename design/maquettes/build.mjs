@@ -263,6 +263,9 @@ const GLYPH = {
 // Décompte sans mots : la forme dit le vote (appris dans l'app), le chiffre suit.
 const tallyLine = (c, cls = '') => `<p class="tally num ${cls}" aria-label="${c.pour} pour, ${c.contre} contre, ${c.abstentions} abstentions">${[['pour', c.pour], ['contre', c.contre], ['abst', c.abstentions]].map(([k, n]) => `<span class="t-${k}">${GLYPH[k]}${nb(n)}</span>`).join('')}</p>`;
 
+// Sièges estompés dits en clair : « 236 n’ont pas voté » (absents et non-votants).
+const noVote = (num) => { const k = checkSeats(num); const n = k.nv + k.absent; return n ? `<p class="novote">${n} n’${n > 1 ? 'ont' : 'a'} pas voté</p>` : ''; };
+
 // ---------- gabarit ----------
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">';
 const BASE_CSS = readFileSync(join(root, 'perchoir.css'), 'utf8');
@@ -345,7 +348,8 @@ function homeCards() {
       tab: shortDate(day(d.date)), kind: d.result, href: `detail-${num}`,
       figure: `<div class="fig">${realHemi(num, { label: `${word} : ${parts.join(', ')}.`, id: 'h' + num })}
 </div>
-      <div class="resrow"><span class="word r-${d.result}">${word}</span>${tallyLine(c)}</div>`,
+      <div class="resrow"><span class="word r-${d.result}">${word}</span>${tallyLine(c)}</div>
+      ${noVote(num)}`,
       title: shortTitle(d),
     });
   }
@@ -537,6 +541,7 @@ function detailApp(num, theme) {
       <div><dt>${GLYPH.contre}contre</dt><dd class="t-contre">${nb(c.contre)}</dd></div>
       <div><dt>${GLYPH.abst}abstentions</dt><dd class="t-abst">${nb(c.abstentions)}</dd></div>
     </dl>
+    ${noVote(num)}
   </section>
   <p class="kind">${meta}</p>
   <h1 class="serif">${typo(d.summary.title)}</h1>
