@@ -182,54 +182,58 @@ class _HomePageState extends State<HomePage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: RefreshIndicator(
-          onRefresh: _refresh,
-          edgeOffset: padding.top,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: padding.top + 4),
-                    const BrandBar(),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                      child: Semantics(
-                        header: true,
-                        child: Text(
-                          formatFrenchWeekdayDay(_now),
-                          style: HemicycleText.displayLg.copyWith(
-                            color: context.colors.ink,
+        // Le contenu ne passe jamais sous la barre d'état (heure, réseau) ni
+        // sous l'encoche, même en défilant.
+        body: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 4),
+                      const BrandBar(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                        child: Semantics(
+                          header: true,
+                          child: Text(
+                            formatFrenchWeekdayDay(_now),
+                            style: HemicycleText.displayLg.copyWith(
+                              color: context.colors.ink,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    // Les cartes, centrées entre la date et le bouton.
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 22),
-                        child: Center(child: _body(context)),
+                      // Les cartes, centrées entre la date et le bouton.
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 22),
+                          child: Center(child: _body(context)),
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        20,
-                        0,
-                        20,
-                        24 + padding.bottom,
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          0,
+                          20,
+                          24 + padding.bottom,
+                        ),
+                        child: _PrimaryButton(
+                          label: 'Toutes les décisions',
+                          onPressed: _openList,
+                        ),
                       ),
-                      child: _PrimaryButton(
-                        label: 'Toutes les décisions',
-                        onPressed: _openList,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

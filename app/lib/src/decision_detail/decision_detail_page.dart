@@ -88,26 +88,25 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: ListView(
-          controller: _scroll,
-          padding: EdgeInsets.fromLTRB(
-            20,
-            padding.top,
-            20,
-            40 + padding.bottom,
+        // Le contenu ne passe jamais sous la barre d'état, même en défilant.
+        body: SafeArea(
+          bottom: false,
+          child: ListView(
+            controller: _scroll,
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 40 + padding.bottom),
+            children: [
+              const HemicycleBackButton(),
+              if (decision == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 120),
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _Unavailable(onRetry: _load),
+                )
+              else
+                ..._content(decision),
+            ],
           ),
-          children: [
-            const HemicycleBackButton(),
-            if (decision == null)
-              Padding(
-                padding: const EdgeInsets.only(top: 120),
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _Unavailable(onRetry: _load),
-              )
-            else
-              ..._content(decision),
-          ],
         ),
       ),
     );

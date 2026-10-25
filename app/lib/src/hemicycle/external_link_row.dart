@@ -84,28 +84,27 @@ class HemicyclePage extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: ListView(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            padding.top,
-            20,
-            40 + padding.bottom,
-          ),
-          children: [
-            const HemicycleBackButton(),
-            const SizedBox(height: 8),
-            Semantics(
-              header: true,
-              child: Text(
-                title,
-                style: HemicycleText.displayLg.copyWith(
-                  color: context.colors.ink,
+        // Le contenu ne passe jamais sous la barre d'état, même en défilant.
+        body: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 40 + padding.bottom),
+            children: [
+              const HemicycleBackButton(),
+              const SizedBox(height: 8),
+              Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  style: HemicycleText.displayLg.copyWith(
+                    color: context.colors.ink,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            ...children,
-          ],
+              const SizedBox(height: 16),
+              ...children,
+            ],
+          ),
         ),
       ),
     );
