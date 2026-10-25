@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Perchoir, planche</title>
+<style>
+  :root { --ground: #E8EAEC; --ink: #15181C; --ink2: #4F5761; --on: #FFFFFF; }
+  :root[data-t="sombre"] { --ground: #050607; --ink: #ECEEF0; --ink2: #9AA2AB; --on: #23272C; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 400 15px/1.4 system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 16px; padding: 14px 24px; background: var(--ground); }
+  h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .seg { display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: color-mix(in srgb, var(--ink) 10%, var(--ground)); }
+  .seg button { border: 0; border-radius: 8px; padding: 6px 14px; font: inherit; color: var(--ink2); background: none; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--on); color: var(--ink); font-weight: 600; }
+  main { display: flex; gap: 28px; overflow-x: auto; padding: 8px 24px 32px; }
+  figure { margin: 0; flex: none; display: flex; flex-direction: column; gap: 10px; }
+  figcaption { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; }
+  figcaption a { color: var(--ink2); font-weight: 400; }
+  iframe { width: 390px; height: 844px; border: 0; border-radius: 36px; background: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Le Perchoir : les écrans</h1>
+  <div class="seg"><button data-t="clair" aria-pressed="false">Jour</button><button data-t="sombre" aria-pressed="true">Nuit</button></div>
+</header>
+<main id="frames"></main>
+<script>
+const SCREENS = [
+  ['widgets', 'Widgets'], ['notif', 'Notification'], ['debat', 'En débat'], ['accueil', 'Accueil'], ['liste', 'Décisions'],
+  ['detail-8706', 'Détail adopté'], ['detail-8610', 'Détail rejeté'], ['apropos', 'À propos'],
+];
+const frames = document.getElementById('frames');
+function render(t) {
+  document.documentElement.dataset.t = t;
+  document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
+  const v = Date.now();
+  frames.innerHTML = SCREENS.map(([f, name]) => `<figure><figcaption>${name}<a href="${f}-${t}.html" target="_blank">ouvrir</a></figcaption><iframe src="${f}-${t}.html?v=${v}" title="${name}"></iframe></figure>`).join('');
+}
+document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => render(b.dataset.t)));
+render('sombre');
+</script>
+</body>
+</html>

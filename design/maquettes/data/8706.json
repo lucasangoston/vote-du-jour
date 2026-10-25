@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "name": "Assemblée nationale — open data",
+    "url": "https://data.assemblee-nationale.fr",
+    "license": "Licence Ouverte / Open Licence (Etalab)",
+    "licenseUrl": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  },
+  "decision": {
+    "id": "VTANR5L17V8706",
+    "numero": 8706,
+    "voteMode": "scrutin_public",
+    "type": "ensemble",
+    "status": "confirmee",
+    "result": "adopte",
+    "date": "2026-10-13",
+    "officialTitle": "la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales (première lecture).",
+    "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8706",
+    "shortTitle": "Adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
+    "stage": "1re lecture à l'AN",
+    "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54777",
+    "summary": {
+      "title": "Juges spécialisés pour les violences sexuelles et intrafamiliales",
+      "explanation": "Le texte prévoit une formation obligatoire pour les magistrats chargés des violences sexuelles et intrafamiliales, et reconnaît un juge spécialisé dans ce domaine.",
+      "points": [
+        "Le texte vise à renforcer l'adéquation du traitement judiciaire des violences sexistes, sexuelles et intrafamiliales.",
+        "L'article 1er prévoit une formation spécifique obligatoire pour les juges, procureurs et magistrats des juridictions spécialisées concernées.",
+        "L'article 2 inscrit le juge des violences sexuelles et intrafamiliales comme juge spécialisé dans l'ordonnance du 22 décembre 1958 relative au statut de la magistrature.",
+        "L'article 3 concerne le coût pour l'État de la proposition de loi organique."
+      ],
+      "promptVersion": 1
+    },
+    "count": {
+      "pour": 503,
+      "contre": 0,
+      "abstentions": 67
+    },
+    "arc": [
+      {
+        "position": "abstention",
+        "n": 66
+      },
+      {
+        "position": "pour",
+        "n": 382
+      },
+      {
+        "position": "abstention",
+        "n": 1
+      },
+      {
+        "position": "pour",
+        "n": 121
+      }
+    ]
+  },
+  "count": {
+    "pour": 503,
+    "contre": 0,
+    "abstentions": 67,
+    "nonVotants": 1
+  },
+  "groups": [
+    {
+      "organeRef": "PO845401",
+      "name": "Rassemblement National",
+      "abbreviation": "RN",
+      "position": "pour",
+      "count": {
+        "pour": 121,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845407",
+      "name": "Ensemble pour la République",
+      "abbreviation": "EPR",
+      "position": "pour",
+      "count": {
+        "pour": 89,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 1
+      }
+    },
+    {
+      "organeRef": "PO845413",
+      "name": "La France insoumise - Nouveau Front Populaire",
+      "abbreviation": "LFI-NFP",
+      "position": "abstention",
+      "count": {
+        "pour": 4,
+        "contre": 0,
+        "abstentions": 66,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845419",
+      "name": "Socialistes et apparentés",
+      "abbreviation": "SOC",
+      "position": "pour",
+      "count": {
+        "pour": 68,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845425",
+      "name": "Droite Républicaine",
+      "abbreviation": "DR",
+      "position": "pour",
+      "count": {
+        "pour": 45,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845439",
+      "name": "Écologiste et Social",
+      "abbreviation": "EcoS",
+      "position": "pour",
+      "count": {
+        "pour": 38,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845454",
+      "name": "Les Démocrates",
+      "abbreviation": "Dem",
+      "position": "pour",
+      "count": {
+        "pour": 37,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845470",
+      "name": "Horizons & Indépendants",
+      "abbreviation": "HOR",
+      "position": "pour",
+      "count": {
+        "pour": 34,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845485",
+      "name": "Libertés, Indépendants, Outre-mer et Territoires",
+      "abbreviation": "LIOT",
+      "position": "pour",
+      "count": {
+        "pour": 23,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO872880",
+      "name": "Union des droites pour la République",
+      "abbreviation": "UDR",
+      "position": "pour",
+      "count": {
+        "pour": 16,
+        "contre": 0,
+        "abstentions": 1,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845514",
+      "name": "Gauche Démocrate et Républicaine",
+      "abbreviation": "GDR",
+      "position": "pour",
+      "count": {
+        "pour": 17,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO840056",
+      "name": "Non inscrit",
+      "abbreviation": "NI",
+      "position": "pour",
+      "count": {
+        "pour": 11,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    }
+  ],
+  "arguments": {
+    "pour": [
+      {
+        "group": "SOC",
+        "organeRef": "PO845419",
+        "text": "Le texte étend la prescription glissante aux victimes majeures et crée une infraction spécifique d'inceste."
+      },
+      {
+        "group": "DR",
+        "organeRef": "PO845425",
+        "text": "Le texte instaure un socle minimal d'investigations, avec auditions rapides, recherche de preuves et identification d'autres victimes."
+      },
+      {
+        "group": "RN",
+        "organeRef": "PO845401",
+        "text": "Le texte consolide les actes d'enquête, crée de nouvelles incriminations et aggrave certaines peines."
+      }
+    ],
+    "contre": [],
+    "abstention": [
+      {
+        "group": "LFI-NFP",
+        "organeRef": "PO845413",
+        "text": "Le texte ne protège pas les femmes étrangères victimes de violences contre le risque d'une OQTF après une plainte."
+      },
+      {
+        "group": "LFI-NFP",
+        "organeRef": "PO845413",
+        "text": "Le texte ne prévoit aucune prise en charge des auteurs de violences ni de prévention."
+      },
+      {
+        "group": "LFI-NFP",
+        "organeRef": "PO845413",
+        "text": "Le texte n'est pas assorti d'un budget suffisant et ne prend pas en charge les soins des victimes majeures."
+      }
+    ],
+    "source": {
+      "date": "2026-10-13",
+      "url": "https://www.assemblee-nationale.fr/dyn/17/comptes-rendus/seance/CRSANR5L17S2027O1N020"
+    },
+    "promptVersion": 2
+  }
+}

@@ -1,0 +1,2580 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-23T20:19:00.378608Z",
+  "source": {
+    "name": "Assemblée nationale — open data",
+    "url": "https://data.assemblee-nationale.fr",
+    "license": "Licence Ouverte / Open Licence (Etalab)",
+    "licenseUrl": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  },
+  "decisions": [
+    {
+      "id": "VTANR5L17V8706",
+      "numero": 8706,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-13",
+      "officialTitle": "la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8706",
+      "shortTitle": "Adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54777",
+      "summary": {
+        "title": "Juges spécialisés pour les violences sexuelles et intrafamiliales",
+        "explanation": "Le texte prévoit une formation obligatoire pour les magistrats chargés des violences sexuelles et intrafamiliales, et reconnaît un juge spécialisé dans ce domaine.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 503,
+        "contre": 0,
+        "abstentions": 67
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 66
+        },
+        {
+          "position": "pour",
+          "n": 382
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 121
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8705",
+      "numero": 8705,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-13",
+      "officialTitle": "la proposition de loi apportant une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8705",
+      "shortTitle": "Apporter une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54776",
+      "summary": {
+        "title": "Réponse intégrale aux violences sexuelles et sexistes",
+        "explanation": "Le texte vise à créer un cadre juridique commun contre les violences sexistes et sexuelles envers les femmes et les enfants, dans de nombreux domaines.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 503,
+        "contre": 0,
+        "abstentions": 67
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 66
+        },
+        {
+          "position": "pour",
+          "n": 382
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 121
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8696",
+      "numero": 8696,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-12",
+      "officialTitle": "l'article unique du projet de loi autorisant l'approbation de la convention d'extradition entre le Gouvernement de la République française et le Gouvernement de la République de Colombie (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8696",
+      "shortTitle": "Projet de loi autorisant l’approbation de la convention d’extradition entre le Gouvernement de la République française et le Gouvernement de la République de Colombie",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53095",
+      "summary": {
+        "title": "Approbation d'une convention d'extradition entre la France et la Colombie",
+        "explanation": "Le texte autorise l'approbation d'une convention franco-colombienne sur l'extradition, c'est-à-dire la remise de personnes recherchées par un autre État.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 28,
+        "contre": 5,
+        "abstentions": 2
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 3
+        },
+        {
+          "position": "contre",
+          "n": 5
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 25
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8695",
+      "numero": 8695,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-12",
+      "officialTitle": "l'ensemble de la proposition de loi relative à l'expérimentation d'une gouvernance territoriale unifiée pour le centre de ressources, d'expertise et de performance sportive (CREPS) de Vichy (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8695",
+      "shortTitle": "Proposition de loi relative à l’expérimentation d’une gouvernance territoriale unifiée pour le centre de ressources, d’expertise et de performance sportive (CREPS) de Vichy",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54096",
+      "summary": {
+        "title": "Gouvernance unifiée du centre sportif de Vichy à titre expérimental",
+        "explanation": "Le texte prévoit, à titre expérimental jusqu'en 2033, une gouvernance partagée entre l'État, la région et l'intercommunalité pour le centre sportif de Vichy.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 44,
+        "contre": 0,
+        "abstentions": 6
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 4
+        },
+        {
+          "position": "pour",
+          "n": 6
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 38
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8694",
+      "numero": 8694,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-12",
+      "officialTitle": "l'ensemble de la proposition de loi visant à assouplir la procédure d'autorisation des établissements et services sociaux et médico-sociaux à caractère expérimental (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8694",
+      "shortTitle": "Assouplir la procédure d'autorisation des établissements et services médico-sociaux à caractère expérimental",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53886",
+      "summary": {
+        "title": "Assouplir les autorisations expérimentales des établissements médico-sociaux",
+        "explanation": "Le texte modifie les conditions de renouvellement des autorisations expérimentales des établissements et services sociaux et médico-sociaux.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 53,
+        "contre": 0,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 53
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8693",
+      "numero": 8693,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-12",
+      "officialTitle": "l'ensemble de la proposition de loi visant à moderniser et rééquilibrer le fonctionnement du titre-restaurant (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8693",
+      "shortTitle": "Moderniser et rééquilibrer le fonctionnement du titre-restaurant",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54445",
+      "summary": {
+        "title": "Titre-restaurant : passage au format dématérialisé et transparence des commissions",
+        "explanation": "Le texte prévoit un titre-restaurant exclusivement dématérialisé à partir de 2028, utilisable pour tout produit alimentaire, hors exceptions, avec plus d'information sur les commissions.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 87,
+        "contre": 0,
+        "abstentions": 15
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 12
+        },
+        {
+          "position": "pour",
+          "n": 18
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "pour",
+          "n": 69
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8612",
+      "numero": 8612,
+      "voteMode": "scrutin_public",
+      "type": "resolution",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-10-08",
+      "officialTitle": "la proposition de résolution invitant le Gouvernement à engager les démarches en vue de soutenir l'entrée au Panthéon d'Olympe de Gouges, de l'abbé Charles-Michel de l'Epée et de Zéna M'Déré (article 34-1 de la Constitution).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8612",
+      "shortTitle": "Inviter le Gouvernement à engager les démarches en vue de soutenir l’entrée au Panthéon d’Olympe de Gouges, de l’abbé Charles-Michel de l’Épée et de Zéna M’Déré",
+      "stage": "Résolution (sans valeur de loi)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54916",
+      "summary": {
+        "title": "Soutenir l'entrée au Panthéon de trois personnalités",
+        "explanation": "Cette proposition de résolution, sans valeur de loi, invite le Gouvernement à engager des démarches pour soutenir l'entrée au Panthéon de trois personnalités.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 133,
+        "contre": 158,
+        "abstentions": 3
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 118
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 4
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 35
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 133
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8611",
+      "numero": 8611,
+      "voteMode": "scrutin_public",
+      "type": "resolution",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-10-08",
+      "officialTitle": "la proposition de résolution visant à refonder l'espace Schengen en instaurant une double frontière nationale et européenne (article 34-1 de la Constitution).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8611",
+      "shortTitle": "Refonder l'espace Schengen en instaurant une double frontière nationale et européenne",
+      "stage": "Résolution (sans valeur de loi)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54847",
+      "summary": {
+        "title": "Réforme de l'espace Schengen et contrôles aux frontières",
+        "explanation": "La proposition de résolution demande au Gouvernement de faire réviser le code frontières Schengen afin de permettre des contrôles aux frontières intérieures visant les ressortissants de pays tiers.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 144,
+        "contre": 199,
+        "abstentions": 5
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 199
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "pour",
+          "n": 144
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8610",
+      "numero": 8610,
+      "voteMode": "scrutin_public",
+      "type": "resolution",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-10-08",
+      "officialTitle": "la proposition de résolution visant à mobiliser la commande publique au service de l'emploi, de la production et de l'innovation en France (article 34-1 de la Constitution).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8610",
+      "shortTitle": "Mobiliser la commande publique au service de l’emploi, de la production et de l’innovation en France",
+      "stage": "Résolution (sans valeur de loi)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54841",
+      "summary": {
+        "title": "Donner aux acheteurs publics un critère de priorité nationale",
+        "explanation": "Cette proposition de résolution, sans valeur de loi, vise à permettre aux acheteurs publics de privilégier les offres dont les moyens d'exécution sont localisés en France.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 151,
+        "contre": 187,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 187
+        },
+        {
+          "position": "pour",
+          "n": 151
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8609",
+      "numero": 8609,
+      "voteMode": "scrutin_public",
+      "type": "resolution",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-10-08",
+      "officialTitle": "la proposition de résolution visant à garantir un accès continu à l'eau potable dans les territoires ultramarins (article 34-1 de la Constitution).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8609",
+      "shortTitle": "Garantir un accès continu à l’eau potable dans les territoires ultramarins",
+      "stage": "Résolution (sans valeur de loi)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54844",
+      "summary": {
+        "title": "Accès continu à l'eau potable dans les territoires ultramarins",
+        "explanation": "Proposition de résolution invitant le Gouvernement à mobiliser les moyens de l'État pour garantir l'accès à l'eau potable dans les territoires ultramarins.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 156,
+        "contre": 160,
+        "abstentions": 6
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 133
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "contre",
+          "n": 27
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 156
+        }
+      ]
+    },
+    {
+      "id": "L17-VD234087DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-07",
+      "officialTitle": "projet de loi autorisant l'approbation de l'accord multilatéral entre autorités compétentes portant sur l'échange des informations GloBE",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379",
+      "shortTitle": "Projet de loi autorisant l’approbation de l’accord multilatéral entre autorités compétentes portant sur l’échange des informations GloBE",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379",
+      "summary": {
+        "title": "Approbation d'un accord d'échange d'informations fiscales",
+        "explanation": "Le texte autorise l'approbation d'un accord entre autorités compétentes sur l'échange d'informations relatives aux règles GloBE (règles mondiales anti-érosion de l'assiette fiscale).",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "L17-VD233953DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-05",
+      "officialTitle": "projet de loi autorisant l'approbation de l'accord entre le Gouvernement de la République française et le Gouvernement de la République de Moldavie dans le domaine de la sécurité sociale",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53743",
+      "shortTitle": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République de Moldavie dans le domaine de la sécurité sociale",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53743",
+      "summary": {
+        "title": "Accord de sécurité sociale entre la France et la Moldavie",
+        "explanation": "Le texte autorise l'approbation d'un accord de sécurité sociale entre la France et la Moldavie, qui fixe les règles applicables aux personnes concernées par les deux systèmes.",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "L17-VD233952DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-10-05",
+      "officialTitle": "projet de loi autorisant l'approbation de l'accord entre le Gouvernement de la République française et le Gouvernement de la République de Moldova relatif à la coopération dans le domaine de la défense",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53075",
+      "shortTitle": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République de Moldova relatif à la coopération dans le domaine de la défense",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53075",
+      "summary": {
+        "title": "Accord franco-moldave de coopération en matière de défense",
+        "explanation": "Le texte autorise l'approbation d'un accord de coopération militaire entre la France et la Moldavie, qui fixe les domaines et formes de la coopération.",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "VTANR5L17V8434",
+      "numero": 8434,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-21",
+      "officialTitle": "l'ensemble de la proposition de loi visant à moderniser la gestion du patrimoine immobilier de l'État (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8434",
+      "shortTitle": "Moderniser la gestion du patrimoine immobilier de l'État",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52746",
+      "summary": {
+        "title": "Création d'une foncière pour gérer le patrimoine immobilier de l'État",
+        "explanation": "Le texte prévoit la création d'un établissement public chargé d'exercer les responsabilités de propriétaire sur des biens immobiliers transférés par l'État.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 276,
+        "contre": 86,
+        "abstentions": 2
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 86
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 276
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8433",
+      "numero": 8433,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-21",
+      "officialTitle": "l'ensemble du projet de loi visant à offrir des réponses immédiates aux phénomènes troublant l'ordre public, la sécurité et la tranquillité de nos concitoyens (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8433",
+      "shortTitle": "Projet de loi visant à offrir des réponses immédiates aux phénomènes troublant l’ordre public, la sécurité et la tranquillité de nos concitoyens",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53980",
+      "summary": {
+        "title": "Réponses immédiates aux troubles à l'ordre public",
+        "explanation": "Le texte renforce les sanctions et les pouvoirs administratifs contre les usages dangereux d'explosifs, les rassemblements festifs illégaux et certaines infractions routières.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 351,
+        "contre": 179,
+        "abstentions": 7
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 178
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "abstention",
+          "n": 4
+        },
+        {
+          "position": "pour",
+          "n": 58
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 162
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 131
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8431",
+      "numero": 8431,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-21",
+      "officialTitle": "l'ensemble de la proposition de loi visant à protéger les mineurs des risques auxquels les expose l'utilisation des réseaux sociaux (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8431",
+      "shortTitle": "Protéger les mineurs des risques auxquels les expose l’utilisation des réseaux sociaux",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53187",
+      "summary": {
+        "title": "Protéger les mineurs des risques des réseaux sociaux",
+        "explanation": "Le texte vise à protéger les mineurs des réseaux sociaux, notamment par une interdiction d'accès pour les moins de 15 ans.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 279,
+        "contre": 81,
+        "abstentions": 66
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 66
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "pour",
+          "n": 25
+        },
+        {
+          "position": "abstention",
+          "n": 7
+        },
+        {
+          "position": "contre",
+          "n": 7
+        },
+        {
+          "position": "abstention",
+          "n": 28
+        },
+        {
+          "position": "pour",
+          "n": 52
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 38
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 156
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "pour",
+          "n": 8
+        },
+        {
+          "position": "abstention",
+          "n": 4
+        },
+        {
+          "position": "contre",
+          "n": 7
+        },
+        {
+          "position": "abstention",
+          "n": 14
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8430",
+      "numero": 8430,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-21",
+      "officialTitle": "l'ensemble du projet de loi relatif à la protection des enfants (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8430",
+      "shortTitle": "Projet de loi relatif à la protection des enfants",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54372",
+      "summary": {
+        "title": "Protection des enfants confiés à l'aide sociale à l'enfance",
+        "explanation": "Le texte vise à sécuriser les parcours des enfants protégés, à favoriser l'accueil en famille et à renforcer les contrôles de sécurité.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 378,
+        "contre": 7,
+        "abstentions": 173
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 69
+        },
+        {
+          "position": "pour",
+          "n": 5
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "contre",
+          "n": 7
+        },
+        {
+          "position": "pour",
+          "n": 3
+        },
+        {
+          "position": "abstention",
+          "n": 96
+        },
+        {
+          "position": "pour",
+          "n": 56
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 95
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 219
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8427",
+      "numero": 8427,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-20",
+      "officialTitle": "l'ensemble du projet de loi d'urgence pour la protection et la souveraineté agricoles (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8427",
+      "shortTitle": "Projet de loi d’urgence pour la protection et la souveraineté agricoles",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54085",
+      "summary": {
+        "title": "Projet de loi pour la protection et la souveraineté agricoles",
+        "explanation": "Le texte vise à renforcer la souveraineté alimentaire en agissant sur les importations, la restauration collective, l'eau, les terres agricoles et les relations commerciales.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 296,
+        "contre": 224,
+        "abstentions": 41
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 190
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "contre",
+          "n": 4
+        },
+        {
+          "position": "abstention",
+          "n": 11
+        },
+        {
+          "position": "pour",
+          "n": 27
+        },
+        {
+          "position": "abstention",
+          "n": 6
+        },
+        {
+          "position": "contre",
+          "n": 12
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 58
+        },
+        {
+          "position": "abstention",
+          "n": 16
+        },
+        {
+          "position": "contre",
+          "n": 18
+        },
+        {
+          "position": "abstention",
+          "n": 4
+        },
+        {
+          "position": "pour",
+          "n": 211
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8421",
+      "numero": 8421,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-20",
+      "officialTitle": "l'ensemble de la proposition de loi pour une montagne vivante et souveraine (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8421",
+      "shortTitle": "Pour une montagne vivante et souveraine",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54006",
+      "summary": {
+        "title": "Mesures pour les territoires de montagne",
+        "explanation": "Le texte porte sur des mesures pour les territoires de montagne dans les domaines de la santé, de l'éducation, de l'eau, de l'agriculture, de la forêt et du tourisme.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 376,
+        "contre": 92,
+        "abstentions": 4
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 63
+        },
+        {
+          "position": "pour",
+          "n": 14
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 29
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 61
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 301
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8419",
+      "numero": 8419,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-20",
+      "officialTitle": "l'ensemble de la proposition de loi visant à doter la France d'une stratégie nationale de lutte contre les maladies cardio-neuro-vasculaires (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8419",
+      "shortTitle": "Accélérer la prévention cardio-neuro-vasculaire et anticiper un risque sanitaire et social majeur",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53426",
+      "summary": {
+        "title": "Stratégie nationale de lutte contre les maladies cardio-neuro-vasculaires",
+        "explanation": "Le texte vise à doter la France d'une stratégie nationale de prévention et de dépistage des maladies cardio-neuro-vasculaires, en renforçant leur place dans les politiques de santé et dans le milieu professionnel.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 462,
+        "contre": 0,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 462
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8418",
+      "numero": 8418,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-20",
+      "officialTitle": "l'ensemble de la proposition de loi relative à l'organisation, à la gestion et au financement du sport professionnel (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8418",
+      "shortTitle": "Proposition de loi relative à l'organisation, à la gestion et au financement du sport professionnel",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51732",
+      "summary": {
+        "title": "Gouvernance et financement du sport professionnel",
+        "explanation": "Le texte encadre la gouvernance, les rémunérations, les agents sportifs et l'organisation des ligues professionnelles du sport professionnel.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 359,
+        "contre": 1,
+        "abstentions": 81
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 67
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 171
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 82
+        },
+        {
+          "position": "abstention",
+          "n": 13
+        },
+        {
+          "position": "pour",
+          "n": 106
+        }
+      ]
+    },
+    {
+      "id": "L17-VD233242DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-16",
+      "officialTitle": "projet de loi autorisant l'approbation de l'accord entre le Gouvernement de la République française et le Gouvernement du Royaume des Pays-Bas portant délimitation de la frontière entre la République française (Saint-Martin) et le Royaume des Pays-Bas (Sint Maarten)",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53848",
+      "shortTitle": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement du Royaume des Pays-Bas portant délimitation de la frontière entre la République française (Saint-Martin) et le Royaume des Pays-Bas (Sint Maarten)",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53848",
+      "summary": {
+        "title": "Frontière entre Saint-Martin et Sint Maarten",
+        "explanation": "Le texte autorise l'approbation d'un accord franco-néerlandais qui délimite la frontière entre Saint-Martin et Sint Maarten.",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "VTANR5L17V8280",
+      "numero": 8280,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-15",
+      "officialTitle": "l'ensemble de la proposition de loi relative au droit à l'aide à mourir (lecture définitive).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8280",
+      "shortTitle": "Fin de vie",
+      "stage": "Lecture définitive à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51670",
+      "summary": {
+        "title": "Droit à l'aide à mourir : proposition de loi sur la fin de vie",
+        "explanation": "Le texte vise à poursuivre la réforme sur la fin de vie en créant une aide à mourir pour certains malades en fin de vie.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 291,
+        "contre": 241,
+        "abstentions": 29
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 2
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "pour",
+          "n": 71
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "contre",
+          "n": 4
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 90
+        },
+        {
+          "position": "abstention",
+          "n": 6
+        },
+        {
+          "position": "contre",
+          "n": 12
+        },
+        {
+          "position": "abstention",
+          "n": 4
+        },
+        {
+          "position": "pour",
+          "n": 30
+        },
+        {
+          "position": "contre",
+          "n": 23
+        },
+        {
+          "position": "pour",
+          "n": 67
+        },
+        {
+          "position": "abstention",
+          "n": 9
+        },
+        {
+          "position": "contre",
+          "n": 18
+        },
+        {
+          "position": "pour",
+          "n": 16
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 18
+        },
+        {
+          "position": "pour",
+          "n": 5
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "contre",
+          "n": 164
+        },
+        {
+          "position": "pour",
+          "n": 12
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8279",
+      "numero": 8279,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-15",
+      "officialTitle": "l'ensemble du projet de loi visant à offrir des réponses immédiates aux phénomènes troublant l'ordre public, la sécurité et la tranquillité de nos concitoyens (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8279",
+      "shortTitle": "Projet de loi visant à offrir des réponses immédiates aux phénomènes troublant l’ordre public, la sécurité et la tranquillité de nos concitoyens",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53980",
+      "summary": {
+        "title": "Réponses immédiates aux troubles à l'ordre public",
+        "explanation": "Le texte renforce les sanctions et les pouvoirs administratifs contre les usages dangereux d'explosifs, les rassemblements festifs illégaux et certaines infractions routières.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 366,
+        "contre": 182,
+        "abstentions": 8
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 180
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "contre",
+          "n": 2
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "pour",
+          "n": 62
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 168
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 136
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8043",
+      "numero": 8043,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-08",
+      "officialTitle": "l'ensemble du projet de loi organique relatif au renforcement des juridictions criminelles (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8043",
+      "shortTitle": "Projet de loi organique relatif au renforcement des juridictions criminelles",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53942",
+      "summary": {
+        "title": "Participation d'avocats honoraires et de citoyens aux cours criminelles",
+        "explanation": "Le texte permet à des avocats honoraires et à des citoyens assesseurs de siéger dans les cours criminelles départementales, et prévoit des formations préalables pour les magistrats et les assesseurs.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 283,
+        "contre": 156,
+        "abstentions": 1
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 156
+        },
+        {
+          "position": "pour",
+          "n": 132
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 151
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V8042",
+      "numero": 8042,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-08",
+      "officialTitle": "l'ensemble du projet de loi sur la justice criminelle et le respect des victimes (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8042",
+      "shortTitle": "Projet de loi sur la justice criminelle et le respect des victimes",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53940",
+      "summary": {
+        "title": "Justice criminelle et respect des victimes : procédure de crimes reconnus",
+        "explanation": "Le texte crée une procédure de jugement des crimes reconnus, applicable lorsque l'accusé reconnaît les faits et que la partie civile ne s'y oppose pas.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 283,
+        "contre": 156,
+        "abstentions": 1
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 156
+        },
+        {
+          "position": "pour",
+          "n": 132
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 151
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7987",
+      "numero": 7987,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-07",
+      "officialTitle": "l'ensemble de la proposition de loi visant à reconnaître une présomption de légitime défense pour les forces de l'ordre, dans l'exercice de leurs fonctions (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7987",
+      "shortTitle": "Reconnaître une présomption de légitime défense pour les forces de l'ordre, dans l'exercice de leurs fonctions",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51037",
+      "summary": {
+        "title": "Présomption de légitime défense pour les forces de l'ordre",
+        "explanation": "Le texte prévoit une présomption de légitime défense pour les forces de l'ordre face à une menace réelle, immédiate et grave.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 313,
+        "contre": 199,
+        "abstentions": 5
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 185
+        },
+        {
+          "position": "pour",
+          "n": 37
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "contre",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 61
+        },
+        {
+          "position": "contre",
+          "n": 12
+        },
+        {
+          "position": "pour",
+          "n": 215
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7981",
+      "numero": 7981,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-07",
+      "officialTitle": "l'ensemble du projet de loi organique relatif au renforcement des juridictions criminelles (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7981",
+      "shortTitle": "Projet de loi organique relatif au renforcement des juridictions criminelles",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53942",
+      "summary": {
+        "title": "Participation d'avocats honoraires et de citoyens aux cours criminelles",
+        "explanation": "Le texte permet à des avocats honoraires et à des citoyens assesseurs de siéger dans les cours criminelles départementales, et prévoit des formations préalables pour les magistrats et les assesseurs.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 363,
+        "contre": 177,
+        "abstentions": 2
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 176
+        },
+        {
+          "position": "pour",
+          "n": 66
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 297
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7980",
+      "numero": 7980,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-07",
+      "officialTitle": "l'ensemble du projet de loi sur la justice criminelle et le respect des victimes (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7980",
+      "shortTitle": "Projet de loi sur la justice criminelle et le respect des victimes",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53940",
+      "summary": {
+        "title": "Justice criminelle et respect des victimes : procédure de crimes reconnus",
+        "explanation": "Le texte crée une procédure de jugement des crimes reconnus, applicable lorsque l'accusé reconnaît les faits et que la partie civile ne s'y oppose pas.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 357,
+        "contre": 177,
+        "abstentions": 1
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 176
+        },
+        {
+          "position": "pour",
+          "n": 67
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 290
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7979",
+      "numero": 7979,
+      "voteMode": "scrutin_public",
+      "type": "motion_de_censure",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-07-06",
+      "officialTitle": "la motion de censure déposée en application de l'article 49, alinéa 2, de la Constitution par Mmes Cyrielle Chatelain, Nadège Abomangoli et 56 députés.",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7979",
+      "shortTitle": "Motion de censure déposée par Mmes Cyrielle Chatelain, Nadège Abomangoli et 56 députés",
+      "stage": "Motion de censure",
+      "summary": {
+        "title": "Motion de censure déposée par des députés",
+        "explanation": "Ce vote porte sur une motion de censure, un texte qui peut renverser le Gouvernement s'il est adopté.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 132,
+        "contre": 0,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 132
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7905",
+      "numero": 7905,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-01",
+      "officialTitle": "l'ensemble du projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7905",
+      "shortTitle": "Projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54083",
+      "summary": {
+        "title": "Actualisation de la programmation militaire 2024-2030",
+        "explanation": "Le texte actualise la programmation militaire 2024-2030 et prévoit diverses dispositions en matière de défense, de résilience et de mobilisation des forces vives de la Nation.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 375,
+        "contre": 113,
+        "abstentions": 2
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 62
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 50
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 47
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 328
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7904",
+      "numero": 7904,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-07-01",
+      "officialTitle": "l'ensemble de la proposition de loi visant à assurer le droit de chaque enfant à être assisté d'un avocat dans le cadre d'une mesure d'assistance éducative et de protection de l'enfance (deuxième lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7904",
+      "shortTitle": "Assurer le droit de chaque enfant à disposer d’un avocat dans le cadre d’une mesure d’assistance éducative et de protection de l’enfance",
+      "stage": "2e lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52781",
+      "summary": {
+        "title": "Droit à un avocat pour les enfants en assistance éducative",
+        "explanation": "Le texte vise à instaurer la présence systématique d'un avocat auprès de chaque enfant faisant l'objet d'une mesure d'assistance éducative.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 292,
+        "contre": 0,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 292
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7894",
+      "numero": 7894,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-30",
+      "officialTitle": "l'ensemble de la proposition de loi relative au droit à l'aide à mourir (nouvelle lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7894",
+      "shortTitle": "Fin de vie",
+      "stage": "Nouvelle lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51670",
+      "summary": {
+        "title": "Droit à l'aide à mourir : proposition de loi sur la fin de vie",
+        "explanation": "Le texte vise à poursuivre la réforme sur la fin de vie en créant une aide à mourir pour certains malades en fin de vie.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 295,
+        "contre": 232,
+        "abstentions": 35
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 2
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "pour",
+          "n": 72
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "contre",
+          "n": 3
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 91
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "contre",
+          "n": 11
+        },
+        {
+          "position": "abstention",
+          "n": 6
+        },
+        {
+          "position": "pour",
+          "n": 28
+        },
+        {
+          "position": "contre",
+          "n": 23
+        },
+        {
+          "position": "pour",
+          "n": 69
+        },
+        {
+          "position": "abstention",
+          "n": 7
+        },
+        {
+          "position": "contre",
+          "n": 17
+        },
+        {
+          "position": "pour",
+          "n": 16
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 18
+        },
+        {
+          "position": "pour",
+          "n": 5
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "contre",
+          "n": 158
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        },
+        {
+          "position": "pour",
+          "n": 14
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7893",
+      "numero": 7893,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-29",
+      "officialTitle": "l'ensemble de la proposition de loi relative à l'organisation, à la gestion et au financement du sport professionnel (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7893",
+      "shortTitle": "Proposition de loi relative à l'organisation, à la gestion et au financement du sport professionnel",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51732",
+      "summary": {
+        "title": "Gouvernance et financement du sport professionnel",
+        "explanation": "Le texte encadre la gouvernance, les rémunérations, les agents sportifs et l'organisation des ligues professionnelles du sport professionnel.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 75,
+        "contre": 2,
+        "abstentions": 1
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 18
+        },
+        {
+          "position": "contre",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 43
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 14
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7494",
+      "numero": 7494,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-24",
+      "officialTitle": "l’ensemble de la proposition de loi visant à réduire l’impact environnemental de l’industrie textile (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7494",
+      "shortTitle": "Réduire l’impact environnemental de l’industrie textile",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L16N49364",
+      "summary": {
+        "title": "Réduire l'impact environnemental de l'industrie textile",
+        "explanation": "Le texte vise à réduire l'impact environnemental de l'industrie textile, en informant les consommateurs, en modulant les contributions des producteurs et en interdisant la publicité pour la mode éphémère.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 338,
+        "contre": 0,
+        "abstentions": 151
+      },
+      "arc": [
+        {
+          "position": "abstention",
+          "n": 50
+        },
+        {
+          "position": "pour",
+          "n": 3
+        },
+        {
+          "position": "abstention",
+          "n": 101
+        },
+        {
+          "position": "pour",
+          "n": 335
+        }
+      ]
+    },
+    {
+      "id": "L17-VD232782DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-24",
+      "officialTitle": "projet de loi autorisant l'approbation de l'accord de partenariat et de coopération renforcé entre l'Union européenne et ses États membres, d'une part, et la République kirghize, d'autre part",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53844",
+      "shortTitle": "Projet de loi autorisant l’approbation de l’accord de partenariat et de coopération renforcé entre l'Union européenne et ses Etats membres, d'une part, et la République kirghize, d'autre part",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53844",
+      "summary": {
+        "title": "Approbation d'un accord de partenariat avec le Kirghizistan",
+        "explanation": "Le texte autorise l'approbation d'un accord de partenariat et de coopération renforcé entre l'Union européenne, ses États membres et la République kirghize.",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "L17-VD232780DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-24",
+      "officialTitle": "projet de loi autorisant l'approbation de la convention d'entraide judiciaire en matière pénale entre le Gouvernement de la République française et le Gouvernement de la République du Suriname",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52000",
+      "shortTitle": "Projet de loi autorisant l’approbation de la convention d’entraide judiciaire en matière pénale entre le Gouvernement de la République française et le Gouvernement de la République du Suriname",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52000",
+      "summary": {
+        "title": "Entraide judiciaire pénale entre la France et le Suriname",
+        "explanation": "Le texte autorise l'approbation d'une convention d'entraide judiciaire en matière pénale entre la France et le Suriname.",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "VTANR5L17V7454",
+      "numero": 7454,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-23",
+      "officialTitle": "l'ensemble du projet de loi constitutionnelle pour une Corse autonome au sein de la République (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7454",
+      "shortTitle": "Projet de loi constitutionnelle pour une Corse autonome au sein de la République",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54218",
+      "summary": {
+        "title": "Autonomie de la Corse dans la Constitution",
+        "explanation": "Le texte inscrit dans la Constitution un statut d'autonomie pour la Corse, lui permettant d'adapter et de fixer certaines normes.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 271,
+        "contre": 202,
+        "abstentions": 64
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 66
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "contre",
+          "n": 11
+        },
+        {
+          "position": "abstention",
+          "n": 4
+        },
+        {
+          "position": "pour",
+          "n": 68
+        },
+        {
+          "position": "abstention",
+          "n": 19
+        },
+        {
+          "position": "contre",
+          "n": 7
+        },
+        {
+          "position": "pour",
+          "n": 46
+        },
+        {
+          "position": "abstention",
+          "n": 11
+        },
+        {
+          "position": "contre",
+          "n": 6
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 68
+        },
+        {
+          "position": "abstention",
+          "n": 11
+        },
+        {
+          "position": "contre",
+          "n": 5
+        },
+        {
+          "position": "pour",
+          "n": 22
+        },
+        {
+          "position": "abstention",
+          "n": 6
+        },
+        {
+          "position": "pour",
+          "n": 1
+        },
+        {
+          "position": "abstention",
+          "n": 10
+        },
+        {
+          "position": "contre",
+          "n": 171
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7409",
+      "numero": 7409,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-17",
+      "officialTitle": "l'ensemble de la proposition de loi visant à relancer les investissements dans le secteur de l'hydroélectricité pour contribuer à la transition énergétique (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7409",
+      "shortTitle": "Relancer les investissements dans le secteur de l’hydroélectricité pour contribuer à la transition énergétique",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53530",
+      "summary": {
+        "title": "Relance des investissements dans l'hydroélectricité",
+        "explanation": "Le texte fixe un nouveau régime d'autorisation pour les grandes installations hydroélectriques, en remplacement du régime de concession, et ouvre une partie de la production d'EDF à d'autres acteurs.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 290,
+        "contre": 59,
+        "abstentions": 116
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 59
+        },
+        {
+          "position": "pour",
+          "n": 16
+        },
+        {
+          "position": "abstention",
+          "n": 32
+        },
+        {
+          "position": "pour",
+          "n": 274
+        },
+        {
+          "position": "abstention",
+          "n": 84
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7408",
+      "numero": 7408,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-17",
+      "officialTitle": "l'ensemble de la proposition de loi visant à améliorer l'accès au logement des travailleurs des services publics (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7408",
+      "shortTitle": "Améliorer l'accès au logement des travailleurs des services publics",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51968",
+      "summary": {
+        "title": "Faciliter le logement des travailleurs des services publics",
+        "explanation": "Le texte vise à faciliter l'accès au logement social des agents publics, notamment par de nouvelles réservations et des règles d'urbanisme assouplies.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 292,
+        "contre": 160,
+        "abstentions": 14
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 160
+        },
+        {
+          "position": "abstention",
+          "n": 12
+        },
+        {
+          "position": "pour",
+          "n": 26
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "pour",
+          "n": 266
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7405",
+      "numero": 7405,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-16",
+      "officialTitle": "l'ensemble de la proposition de loi visant à renforcer la sécurité, la rétention administrative et la prévention des risques d’attentat (texte de la commission mixte paritaire).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7405",
+      "shortTitle": "Renforcer la sécurité, la rétention administrative et la prévention des risques d’attentat",
+      "stage": "Texte de compromis (CMP)",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53284",
+      "summary": {
+        "title": "Renforcer la sécurité et la prévention des risques d'attentat",
+        "explanation": "Le texte prévoit des mesures de suivi psychiatrique, de rétention et de surveillance visant les personnes représentant une menace terroriste.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 345,
+        "contre": 177,
+        "abstentions": 11
+      },
+      "arc": [
+        {
+          "position": "contre",
+          "n": 67
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 109
+        },
+        {
+          "position": "abstention",
+          "n": 9
+        },
+        {
+          "position": "pour",
+          "n": 38
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "pour",
+          "n": 307
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7401",
+      "numero": 7401,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-15",
+      "officialTitle": "l'ensemble du projet de loi portant habilitation de l'assemblée de Martinique à fixer des règles applicables sur son territoire en application de l'article 73 de la Constitution en matière d'énergie, d'eau et d'assainissement (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7401",
+      "shortTitle": "Projet de loi portant habilitation de l’assemblée de Martinique à fixer elle-même des règles applicables sur son territoire en application de l’article 73 de la Constitution en matière d’énergie, d’eau et d’assainissement",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53600",
+      "summary": {
+        "title": "Habilitation de l'Assemblée de Martinique en énergie, eau et assainissement",
+        "explanation": "Le texte habilite l'Assemblée de Martinique à adopter ses propres règles en matière d'énergie, puis à créer une autorité unique pour l'eau et l'assainissement.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 35,
+        "contre": 0,
+        "abstentions": 5
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 35
+        },
+        {
+          "position": "abstention",
+          "n": 5
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7398",
+      "numero": 7398,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-15",
+      "officialTitle": "l'article unique de la proposition de loi relative à la sortie des collections publiques de restes humains kali'nas et arawaks en vue de funérailles sur le territoire de la Guyane (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7398",
+      "shortTitle": "Proposition de loi relative au déclassement de restes humains kali'nas et à leur remise à la collectivité de Guyane à des fins funéraires",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50548",
+      "summary": {
+        "title": "Sortie de restes humains kali'nas et arawaks des collections publiques",
+        "explanation": "Le texte fait sortir des restes humains kali'nas et arawaks et des moulages des collections du Muséum, pour des funérailles en Guyane.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 59,
+        "contre": 0,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 59
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7397",
+      "numero": 7397,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-11",
+      "officialTitle": "l'ensemble de la proposition de loi visant à réformer les bourses sur critères sociaux et à lutter contre la précarité étudiante (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7397",
+      "shortTitle": "Réformer les bourses sur critères sociaux et lutter contre la précarité étudiante",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54229",
+      "summary": {
+        "title": "Indexer et annualiser les bourses étudiantes",
+        "explanation": "Ce texte prévoit que les bourses sur critères sociaux suivent l'évolution des prix et soient versées sur douze mois.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 75,
+        "contre": 1,
+        "abstentions": 15
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 58
+        },
+        {
+          "position": "contre",
+          "n": 1
+        },
+        {
+          "position": "abstention",
+          "n": 15
+        },
+        {
+          "position": "pour",
+          "n": 17
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7380",
+      "numero": 7380,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-11",
+      "officialTitle": "l'ensemble de la proposition de loi visant à la nationalisation d'ArcelorMittal France afin de préserver la souveraineté industrielle de la France (deuxième lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7380",
+      "shortTitle": "Nationalisation d'ArcelorMittal France",
+      "stage": "2e lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52977",
+      "summary": {
+        "title": "Nationalisation d'ArcelorMittal France",
+        "explanation": "La proposition de loi prévoit la nationalisation temporaire d'ArcelorMittal France, filiale française du groupe sidérurgique, pour préserver la production d'acier en France.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 106,
+        "contre": 49,
+        "abstentions": 47
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 106
+        },
+        {
+          "position": "contre",
+          "n": 36
+        },
+        {
+          "position": "abstention",
+          "n": 2
+        },
+        {
+          "position": "contre",
+          "n": 13
+        },
+        {
+          "position": "abstention",
+          "n": 45
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7354",
+      "numero": 7354,
+      "voteMode": "scrutin_public",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-11",
+      "officialTitle": "l'ensemble de la proposition de loi visant à renforcer la solidarité envers les retraités pauvres (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7354",
+      "shortTitle": "Renforcer la solidarité envers les retraités pauvres",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51981",
+      "summary": {
+        "title": "Retraités pauvres : la résidence principale exclue du remboursement",
+        "explanation": "Le texte prévoit que le domicile principal du bénéficiaire de l'allocation de solidarité aux personnes âgées (ASPA) ne soit pas compté dans le seuil de remboursement par ses héritiers.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 165,
+        "contre": 0,
+        "abstentions": 3
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 116
+        },
+        {
+          "position": "abstention",
+          "n": 3
+        },
+        {
+          "position": "pour",
+          "n": 49
+        }
+      ]
+    },
+    {
+      "id": "L17-VD232535DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-11",
+      "officialTitle": "proposition de loi pour l'égalité d'accès aux soins des Ultramarins sur l'ensemble du territoire national",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53401",
+      "shortTitle": "Pour l’égalité d’accès aux soins des ressortissants ultramarins en hexagone",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53401",
+      "summary": {
+        "title": "Accès aux soins des ressortissants ultramarins en Hexagone",
+        "explanation": "Le texte vise à permettre aux ressortissants ultramarins présents en Hexagone d'obtenir une carte Vitale, pour faciliter l'accès aux soins.",
+        "promptVersion": 1
+      }
+    },
+    {
+      "id": "VTANR5L17V7351",
+      "numero": 7351,
+      "voteMode": "scrutin_public",
+      "type": "rejet_prealable",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-06-09",
+      "officialTitle": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi portant approbation des comptes de la sécurité sociale de l'année 2025 (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7351",
+      "shortTitle": "Projet de loi portant approbation des comptes de la sécurité sociale de l’année 2025",
+      "stage": "Motion de rejet préalable, 1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54373",
+      "summary": {
+        "title": "Approbation des comptes de la sécurité sociale de 2025",
+        "explanation": "Le texte approuve les comptes 2025 de la sécurité sociale, avec un solde d'ensemble de -21,6 milliards d'euros pour les régimes de base.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 145,
+        "contre": 82,
+        "abstentions": 0
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 79
+        },
+        {
+          "position": "contre",
+          "n": 82
+        },
+        {
+          "position": "pour",
+          "n": 66
+        }
+      ]
+    },
+    {
+      "id": "VTANR5L17V7350",
+      "numero": 7350,
+      "voteMode": "scrutin_public",
+      "type": "rejet_prealable",
+      "status": "confirmee",
+      "result": "rejete",
+      "date": "2026-06-09",
+      "officialTitle": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi relative aux résultats de la gestion et portant approbation des comptes de l'année 2025 (première lecture).",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/7350",
+      "shortTitle": "Projet de loi relative aux résultats de la gestion et portant approbation des comptes de l'année 2025",
+      "stage": "Motion de rejet préalable, 1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54196",
+      "summary": {
+        "title": "Motion de rejet du projet sur les comptes 2025",
+        "explanation": "Les députés votent sur une motion qui propose de rejeter, avant examen, le projet de loi approuvant les résultats de gestion et les comptes de l'année 2025.",
+        "promptVersion": 1
+      },
+      "count": {
+        "pour": 145,
+        "contre": 96,
+        "abstentions": 1
+      },
+      "arc": [
+        {
+          "position": "pour",
+          "n": 84
+        },
+        {
+          "position": "abstention",
+          "n": 1
+        },
+        {
+          "position": "contre",
+          "n": 95
+        },
+        {
+          "position": "pour",
+          "n": 61
+        },
+        {
+          "position": "contre",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "id": "L17-VD232458DEC",
+      "voteMode": "main_levee",
+      "type": "ensemble",
+      "status": "confirmee",
+      "result": "adopte",
+      "date": "2026-06-09",
+      "officialTitle": "projet de loi autorisant l'approbation de la convention entre le Gouvernement de la République française et le Gouvernement de la République de Finlande pour l'élimination de la double imposition en matière d'impôts sur le revenu et la prévention de l'évasion et de la fraude fiscales et l'approbation de l'avenant à la convention entre le Gouvernement de la République française et le Gouvernement du Royaume de Suède en vue d'éviter les doubles impositions et de prévenir l'évasion fiscale en matière d'impôts sur le revenu et sur la fortune",
+      "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52549",
+      "shortTitle": "Projet de loi autorisant l’approbation de la convention entre le Gouvernement de la République française et le Gouvernement de la République de Finlande pour l’élimination de la double imposition en matière d’impôts sur le revenu et la prévention de l’évasion et de la fraude fiscales et l’approbation de l’avenant à la convention entre le Gouvernement de la République française et le Gouvernement du Royaume de Suède en vue d’éviter les doubles impositions et de prévenir l’évasion fiscale en matière d’impôts sur le revenu et sur la fortune",
+      "stage": "1re lecture à l'AN",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52549",
+      "summary": {
+        "title": "Conventions fiscales avec la Finlande et la Suède",
+        "explanation": "Le texte autorise l'approbation d'une convention fiscale avec la Finlande et d'un avenant à la convention fiscale avec la Suède.",
+        "promptVersion": 1
+      }
+    }
+  ],
+  "upcoming": [
+    {
+      "id": "RUANR5L17S2027IDS30964PT53435",
+      "kind": "discussion",
+      "startsAt": "2026-10-27T14:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30964",
+      "label": "Suite de la discussion du projet de loi de finances pour 2027 (première partie)",
+      "shortTitle": "Projet de loi de finances pour 2027",
+      "inProgress": true,
+      "dossierRef": "DLR5L17N54629",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54629"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53348",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi d’urgence visant à rétablir l’interdiction de l’acétamipride et du flupyradifurone pour garantir la protection de la santé humaine, de la biodiversité, de l’environnement et notre souveraineté alimentaire",
+      "shortTitle": "Loi d’urgence visant à rétablir l’interdiction de l’acétamipride et du flupyradifurone pour garantir la protection de la santé humaine, de la biodiversité, de l’environnement et notre souveraineté alimentaire",
+      "dossierRef": "DLR5L17N54902",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54902"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53354",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à créer un corps de fonctionnaires de catégorie B pour les accompagnants d’élèves en situation de handicap",
+      "shortTitle": "Créer un corps de fonctionnaires de catégorie B pour les accompagnants d’élèves en situation de handicap",
+      "dossierRef": "DLR5L17N54901",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54901"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53359",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Suite de la discussion de la proposition de loi pour défiscaliser les pensions alimentaires perçues et lutter contre la précarité des familles monoparentales",
+      "shortTitle": "Défiscaliser les pensions alimentaires perçues et lutter contre la précarité des familles monoparentales",
+      "inProgress": true,
+      "dossierRef": "DLR5L17N52970",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52970"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53352",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant l'augmentation des salaires et des pensions",
+      "shortTitle": "Augmenter les salaires et des pensions",
+      "dossierRef": "DLR5L17N54906",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54906"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53357",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant un contrôle réel des investissements étrangers en France",
+      "shortTitle": "Contrôle réel des investissements étrangers en France",
+      "dossierRef": "DLR5L17N54907",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54907"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53353",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à instaurer un moratoire sur le projet du Canal Seine-Nord Europe",
+      "shortTitle": "Instaurer un moratoire sur le projet du canal Seine-nord Europe",
+      "dossierRef": "DLR5L17N54900",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54900"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53355",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à garantir le droit de vote par l’encadrement des radiations pour perte d’attache communale",
+      "shortTitle": "Garantir le droit de vote par l’encadrement des radiations pour perte d’attache communale",
+      "dossierRef": "DLR5L17N53266",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53266"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53350",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à créer un parcours de soins intégralement pris en charge par la sécurité sociale pour toutes les victimes de violences sexuelles",
+      "shortTitle": "Créer un parcours de soins intégralement pris en charge par la sécurité sociale pour toutes les victimes de violences sexuelles",
+      "dossierRef": "DLR5L17N54898",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54898"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53356",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi pour protéger durablement les jeunes majeurs de l’aide sociale à l’enfance et de la protection judiciaire de la jeunesse",
+      "shortTitle": "Protéger durablement les jeunes majeurs de l’aide sociale à l’enfance et de la protection judiciaire de la jeunesse",
+      "dossierRef": "DLR5L17N54298",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54298"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53349",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à rétablir le droit commun de la prescription acquisitive dans les Collectivités régies par l’article 73 de la Constitution ainsi qu’à Saint-Martin et Saint-Barthélemy",
+      "shortTitle": "Rétablir le droit commun de la prescription acquisitive dans les collectivités régies par l’article 73 de la Constitution ainsi qu’à Saint-Martin et Saint-Barthélemy",
+      "dossierRef": "DLR5L17N53331",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53331"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53358",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à abroger le dispositif des amendes forfaitaires délictuelles",
+      "shortTitle": "Abroger le dispositif des amendes forfaitaires délictuelles",
+      "dossierRef": "DLR5L17N54903",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54903"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30968PT53351",
+      "kind": "discussion",
+      "startsAt": "2026-10-29T08:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30968",
+      "label": "Discussion de la proposition de loi visant à garantir les droits des joueurs et joueuses et la pérennité des jeux vidéo",
+      "shortTitle": "Garantir les droits des joueurs et joueuses et la pérennité des jeux vidéo",
+      "dossierRef": "DLR5L17N54899",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54899"
+    },
+    {
+      "id": "RUANR5L17S2027IDS30977PT53449",
+      "kind": "vote_solennel",
+      "startsAt": "2026-11-03T14:00:00.000Z",
+      "seanceRef": "RUANR5L17S2027IDS30977",
+      "label": "Vote solennel sur le projet de loi de finances pour 2027 (première partie)",
+      "shortTitle": "Projet de loi de finances pour 2027 (première partie)",
+      "dossierRef": "DLR5L17N54629",
+      "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54629"
+    }
+  ],
+  "inDebate": {
+    "dossierRef": "DLR5L17N54951",
+    "shortTitle": "Projet de loi de financement de la sécurité sociale pour 2027",
+    "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54951",
+    "seanceRef": "RUANR5L17S2027IDS30959",
+    "startsAt": "2026-10-23T07:00:00.000Z",
+    "articles": [
+      {
+        "number": "19",
+        "outcome": "supprime",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9096"
+      },
+      {
+        "number": "18",
+        "outcome": "rejete",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9093"
+      },
+      {
+        "number": "17",
+        "outcome": "supprime",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9090"
+      },
+      {
+        "number": "16",
+        "outcome": "supprime",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9089"
+      },
+      {
+        "number": "15",
+        "outcome": "adopte",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9084"
+      },
+      {
+        "number": "12",
+        "outcome": "supprime",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9077"
+      },
+      {
+        "number": "11",
+        "outcome": "adopte",
+        "date": "2026-10-23",
+        "scrutinRef": "VTANR5L17V9073"
+      },
+      {
+        "number": "10",
+        "outcome": "supprime",
+        "date": "2026-10-22",
+        "scrutinRef": "VTANR5L17V9065"
+      },
+      {
+        "number": "9",
+        "outcome": "supprime",
+        "date": "2026-10-22",
+        "scrutinRef": "VTANR5L17V9064"
+      },
+      {
+        "number": "8",
+        "outcome": "supprime",
+        "date": "2026-10-22",
+        "scrutinRef": "VTANR5L17V9033"
+      },
+      {
+        "number": "7",
+        "outcome": "rejete",
+        "date": "2026-10-22",
+        "scrutinRef": "VTANR5L17V8998"
+      },
+      {
+        "number": "6",
+        "outcome": "adopte",
+        "date": "2026-10-21",
+        "scrutinRef": "VTANR5L17V8964"
+      },
+      {
+        "number": "5",
+        "outcome": "supprime",
+        "date": "2026-10-21",
+        "scrutinRef": "VTANR5L17V8931"
+      },
+      {
+        "number": "4",
+        "outcome": "adopte",
+        "date": "2026-10-20",
+        "scrutinRef": "VTANR5L17V8905"
+      },
+      {
+        "number": "3",
+        "outcome": "supprime",
+        "date": "2026-10-20",
+        "scrutinRef": "VTANR5L17V8899"
+      },
+      {
+        "number": "2",
+        "outcome": "supprime",
+        "date": "2026-10-20",
+        "scrutinRef": "VTANR5L17V8898"
+      },
+      {
+        "number": "premier",
+        "outcome": "supprime",
+        "date": "2026-10-20",
+        "scrutinRef": "VTANR5L17V8897"
+      },
+      {
+        "number": "liminaire",
+        "outcome": "supprime",
+        "date": "2026-10-20",
+        "scrutinRef": "VTANR5L17V8896"
+      }
+    ]
+  }
+}

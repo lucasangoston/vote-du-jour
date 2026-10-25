@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "name": "Assemblée nationale — open data",
+    "url": "https://data.assemblee-nationale.fr",
+    "license": "Licence Ouverte / Open Licence (Etalab)",
+    "licenseUrl": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  },
+  "decision": {
+    "id": "VTANR5L17V8610",
+    "numero": 8610,
+    "voteMode": "scrutin_public",
+    "type": "resolution",
+    "status": "confirmee",
+    "result": "rejete",
+    "date": "2026-10-08",
+    "officialTitle": "la proposition de résolution visant à mobiliser la commande publique au service de l'emploi, de la production et de l'innovation en France (article 34-1 de la Constitution).",
+    "sourceUrl": "https://www.assemblee-nationale.fr/dyn/17/scrutins/8610",
+    "shortTitle": "Mobiliser la commande publique au service de l’emploi, de la production et de l’innovation en France",
+    "stage": "Résolution (sans valeur de loi)",
+    "dossierUrl": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54841",
+    "summary": {
+      "title": "Donner aux acheteurs publics un critère de priorité nationale",
+      "explanation": "Cette proposition de résolution, sans valeur de loi, vise à permettre aux acheteurs publics de privilégier les offres dont les moyens d'exécution sont localisés en France.",
+      "points": [
+        "Elle propose un critère qualitatif de priorité nationale, fondé sur la localisation en France des moyens d'exécution.",
+        "Ce critère serait facultatif : aucune obligation générale d'acheter français n'est instituée, et l'acheteur garde son pouvoir d'appréciation.",
+        "Le texte indique que les acheteurs pourraient retenir la localisation des emplois, de la production et de l'innovation selon la nature du marché.",
+        "Le texte indique que certains acheteurs recherchent déjà ce résultat par des clauses qualitatives et vise à rendre ce choix explicite."
+      ],
+      "promptVersion": 1
+    },
+    "count": {
+      "pour": 151,
+      "contre": 187,
+      "abstentions": 0
+    },
+    "arc": [
+      {
+        "position": "contre",
+        "n": 187
+      },
+      {
+        "position": "pour",
+        "n": 151
+      }
+    ]
+  },
+  "count": {
+    "pour": 151,
+    "contre": 187,
+    "abstentions": 0,
+    "nonVotants": 1
+  },
+  "groups": [
+    {
+      "organeRef": "PO845401",
+      "name": "Rassemblement National",
+      "abbreviation": "RN",
+      "position": "pour",
+      "count": {
+        "pour": 118,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845407",
+      "name": "Ensemble pour la République",
+      "abbreviation": "EPR",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 36,
+        "abstentions": 0,
+        "nonVotants": 1
+      }
+    },
+    {
+      "organeRef": "PO845413",
+      "name": "La France insoumise - Nouveau Front Populaire",
+      "abbreviation": "LFI-NFP",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 56,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845419",
+      "name": "Socialistes et apparentés",
+      "abbreviation": "SOC",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 42,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845425",
+      "name": "Droite Républicaine",
+      "abbreviation": "DR",
+      "position": "pour",
+      "count": {
+        "pour": 16,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845439",
+      "name": "Écologiste et Social",
+      "abbreviation": "EcoS",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 26,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845454",
+      "name": "Les Démocrates",
+      "abbreviation": "Dem",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 8,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845470",
+      "name": "Horizons & Indépendants",
+      "abbreviation": "HOR",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 5,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845485",
+      "name": "Libertés, Indépendants, Outre-mer et Territoires",
+      "abbreviation": "LIOT",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 5,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO845514",
+      "name": "Gauche Démocrate et Républicaine",
+      "abbreviation": "GDR",
+      "position": "contre",
+      "count": {
+        "pour": 0,
+        "contre": 9,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO872880",
+      "name": "Union des droites pour la République",
+      "abbreviation": "UDR",
+      "position": "pour",
+      "count": {
+        "pour": 17,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    },
+    {
+      "organeRef": "PO840056",
+      "name": "Non inscrit",
+      "abbreviation": "NI",
+      "position": "nonVotant",
+      "count": {
+        "pour": 0,
+        "contre": 0,
+        "abstentions": 0,
+        "nonVotants": 0
+      }
+    }
+  ],
+  "arguments": {
+    "pour": [
+      {
+        "group": "RN",
+        "organeRef": "PO845401",
+        "text": "Le texte donne aux acheteurs publics une liberté, là où ils doivent aujourd'hui recourir à la clause environnementale pour favoriser des offres créant de l'emploi en France."
+      },
+      {
+        "group": "RN",
+        "organeRef": "PO845401",
+        "text": "Le texte apporte de la lisibilité, en indiquant que les acheteurs publics peuvent accorder une priorité aux offres dont les moyens d'exécution sont localisés en France."
+      }
+    ],
+    "contre": [
+      {
+        "group": "LFI-NFP",
+        "organeRef": "PO845413",
+        "text": "Le texte ne crée aucune obligation et n'aurait aucun effet concret, sans critères sociaux sur l'emploi maintenu ou les salaires."
+      },
+      {
+        "group": "GDR",
+        "organeRef": "PO845514",
+        "text": "Le texte se limite à la localisation des moyens d'exécution et ne fixe aucune condition sociale, environnementale ou de formation pour les entreprises."
+      },
+      {
+        "group": "LIOT",
+        "organeRef": "PO845485",
+        "text": "Le texte introduit un critère contraire au principe d'égalité de traitement et de libre accès aux marchés publics, ce qui le rend inapplicable."
+      }
+    ],
+    "abstention": [],
+    "source": {
+      "date": "2026-10-08",
+      "url": "https://www.assemblee-nationale.fr/dyn/17/comptes-rendus/seance/CRSANR5L17S2027O1N013"
+    },
+    "promptVersion": 2
+  }
+}
