@@ -144,6 +144,25 @@ Future<void> _swipe(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('un seul appui ouvre le détail, même juste après un glissement', (
+    tester,
+  ) async {
+    await _pumpHome(tester);
+    await tester.fling(
+      find.text("Budget de l'État 2027"),
+      const Offset(-200, 0),
+      1000,
+    );
+    // La carte se recale : un appui 0,3 s après le geste doit déjà compter
+    // (le défilement en cours ignore les touchers).
+    for (var t = 0; t < 300; t += 16) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await tester.tap(find.text('Juges des violences sexuelles'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DecisionDetailPage), findsOneWidget);
+  });
+
   group('cartes de l\'accueil', () {
     test('le vote solennel, puis une carte par texte, sans « En débat »', () {
       final cards = homeCards(_index, now: _now);
