@@ -115,7 +115,11 @@ const textDecisionTypes = {
 ///    reprend ce résumé sans appel ;
 /// 4. au plus [SummaryLimits.maxCallsPerPass] appels et
 ///    [SummaryLimits.maxRetriesPerPass] décisions « à régénérer » retentées
-///    par passage.
+///    par passage ;
+/// 5. le texte en débat (`inDebate`, #73), avant les décisions, est résumé
+///    de la même façon à partir du texte déposé de son dossier, une seule
+///    fois par texte ([inDebateSummaryId]) ; sans texte exploitable, pas de
+///    résumé. La décision sur l'ensemble du texte reprend ce résumé.
 ///
 /// Les résumés obtenus sont écrits dans le cache, puis dans les fichiers de
 /// détail et l'index publiés.
@@ -134,38 +138,39 @@ Future<SummaryReport> runSummaryPass({
   final limits = service.limits;
 
   final texts = <String, Future<TextFetch>>{};
+  Future<TextFetch> fetch(String uid) =>
+      texts[uid] ??= service.texts.fetch(uid);
   var retries = 0;
-  for (final d in index.decisions) {
-    final entry = cache[d.id];
-    if (entry != null && entry.status != SummaryStatus.aRegenerer) continue;
+
+  // Résume [subject] (identifiant [id] dans le cache) selon le plan
+  // [plan], dans les bornes du passage.
+  Future<void> summarize(
+    String id,
+    DecisionSummary subject,
+    Future<_Plan> Function() plan,
+  ) async {
+    final entry = cache[id];
+    if (entry != null && entry.status != SummaryStatus.aRegenerer) return;
     final isRetry = entry != null;
     if (report.calls >= limits.maxCallsPerPass ||
         (isRetry && retries >= limits.maxRetriesPerPass)) {
       report.deferred++;
-      continue;
+      return;
     }
     if (isRetry) retries++;
     cacheChanged = true;
 
-    final plan = await _plan(
-      d,
-      cache: cache,
-      dossiers: dossiers,
-      fetch: (uid) => texts[uid] ??= service.texts.fetch(uid),
-      now: now,
-      textWait: limits.textWait,
-    );
-    switch (plan) {
+    switch (await plan()) {
       case _Wait(:final reason):
-        cache[d.id] = SummaryEntry(
+        cache[id] = SummaryEntry(
           status: SummaryStatus.aRegenerer,
           updatedAt: now,
           reason: reason,
           failures: entry?.failures ?? 0,
         );
-        report.pending[d.id] = reason;
+        report.pending[id] = reason;
       case _Reuse(:final from, :final textUid):
-        cache[d.id] = SummaryEntry(
+        cache[id] = SummaryEntry(
           status: SummaryStatus.resume,
           updatedAt: now,
           summary: from.summary,
@@ -173,19 +178,19 @@ Future<SummaryReport> runSummaryPass({
           textUid: textUid,
           reason: 'repris du résumé du même texte',
         );
-        report.summarized.add(d.id);
-        report.reused.add(d.id);
+        report.summarized.add(id);
+        report.reused.add(id);
       case _Call(:final source, :final textUid):
         report.calls++;
         try {
           final response = await service.llm.createMessage(
-            buildSummaryRequest(decision: d, source: source),
+            buildSummaryRequest(decision: subject, source: source),
           );
           final summary = parseSummaryResponse(
             response,
             withPoints: source != null,
           );
-          cache[d.id] = SummaryEntry(
+          cache[id] = SummaryEntry(
             status: SummaryStatus.resume,
             updatedAt: now,
             summary: summary,
@@ -195,11 +200,11 @@ Future<SummaryReport> runSummaryPass({
                 ? response['model'] as String
                 : summaryModel,
           );
-          report.summarized.add(d.id);
+          report.summarized.add(id);
         } on LlmException catch (e) {
           final failures = (entry?.failures ?? 0) + 1;
           final abandon = failures >= limits.maxFailures;
-          cache[d.id] = SummaryEntry(
+          cache[id] = SummaryEntry(
             status: abandon
                 ? SummaryStatus.abandonne
                 : SummaryStatus.aRegenerer,
@@ -209,12 +214,36 @@ Future<SummaryReport> runSummaryPass({
             failures: failures,
           );
           if (abandon) {
-            report.abandoned.add(d.id);
+            report.abandoned.add(id);
           } else {
-            report.pending[d.id] = 'échec du modèle ($e)';
+            report.pending[id] = 'échec du modèle ($e)';
           }
         }
     }
+  }
+
+  // Le texte en débat d'abord : c'est l'actualité de l'écran « En débat ».
+  if (index.inDebate case final debate?) {
+    await summarize(
+      inDebateSummaryId(debate.dossierRef),
+      inDebateSubject(debate, dossiers),
+      () =>
+          _planInDebate(debate, cache: cache, dossiers: dossiers, fetch: fetch),
+    );
+  }
+  for (final d in index.decisions) {
+    await summarize(
+      d.id,
+      d,
+      () => _plan(
+        d,
+        cache: cache,
+        dossiers: dossiers,
+        fetch: fetch,
+        now: now,
+        textWait: limits.textWait,
+      ),
+    );
   }
 
   if (cacheChanged) await cache.write(store);
@@ -270,14 +299,8 @@ Future<_Plan> _plan(
     }
     return const _Call();
   }
-  for (final MapEntry(value: e) in cache.entries) {
-    if (e.status == SummaryStatus.resume &&
-        e.textUid == textUid &&
-        e.source != null &&
-        e.source != SourceKind.titre &&
-        e.summary?.promptVersion == summaryPromptVersion) {
-      return _Reuse(e, textUid);
-    }
+  if (_summaryOfText(cache, textUid) case final from?) {
+    return _Reuse(from, textUid);
   }
   final String reason;
   switch (await fetch(textUid)) {
@@ -295,6 +318,72 @@ Future<_Plan> _plan(
   return _Call(textUid: textUid);
 }
 
+/// Résumé déjà obtenu du texte [textUid] à partir de son texte (pas de son
+/// intitulé), avec la consigne en vigueur : une décision ou un texte en
+/// débat sur le même texte le reprend sans appel.
+SummaryEntry? _summaryOfText(SummaryCache cache, String textUid) {
+  for (final MapEntry(value: e) in cache.entries) {
+    if (e.status == SummaryStatus.resume &&
+        e.textUid == textUid &&
+        e.source != null &&
+        e.source != SourceKind.titre &&
+        e.summary?.promptVersion == summaryPromptVersion) {
+      return e;
+    }
+  }
+  return null;
+}
+
+/// Plan du résumé du texte en débat [debate] (#73) : le texte déposé de son
+/// dossier, comme pour une décision ; un résumé du même texte est repris.
+/// Sans texte exploitable (dossier sans dépôt connu, texte pas encore en
+/// ligne, ni exposé ni articles), pas de résumé : jamais sur l'intitulé
+/// seul, le bloc a déjà son titre court. Retenté aux passages suivants.
+Future<_Plan> _planInDebate(
+  InDebate debate, {
+  required SummaryCache cache,
+  required DossierIndex? dossiers,
+  required Future<TextFetch> Function(String uid) fetch,
+}) async {
+  final textUid = dossiers?.depositText(debate.dossierRef);
+  if (textUid == null) {
+    return _Wait('pas de texte déposé connu pour ${debate.dossierRef}');
+  }
+  if (_summaryOfText(cache, textUid) case final from?) {
+    return _Reuse(from, textUid);
+  }
+  switch (await fetch(textUid)) {
+    case TextFound(:final html):
+      if (extractSourceText(html) case final source?) {
+        return _Call(source: source, textUid: textUid);
+      }
+      return _Wait('texte $textUid : ni exposé des motifs ni articles');
+    case TextUnavailable(:final reason):
+      return _Wait('texte $textUid indisponible ($reason)');
+  }
+}
+
+/// Ce que le modèle reçoit pour résumer le texte en débat [debate] : la
+/// décision à venir sur l'ensemble du texte, dont le résumé est celui du
+/// texte (la consigne interdit d'y mentionner l'issue du vote). C'est le
+/// résumé que reprendra cette décision ; seuls le type, l'intitulé (titre
+/// du dossier) et le titre court entrent dans le message.
+DecisionSummary inDebateSubject(InDebate debate, DossierIndex? dossiers) =>
+    DecisionSummary(
+      id: inDebateSummaryId(debate.dossierRef),
+      // Pas encore de scrutin : ni numéro ni issue, absents du message.
+      numero: 0,
+      type: DecisionType.ensembleTexte,
+      status: DecisionStatus.provisoire,
+      result: VoteResult.adopte,
+      date: debate.startsAt,
+      officialTitle:
+          dossiers?.dossier(debate.dossierRef)?.title ?? debate.shortTitle,
+      sourceUrl: debate.dossierUrl,
+      shortTitle: debate.shortTitle,
+      dossierUrl: debate.dossierUrl,
+    );
+
 Future<DecisionIndex?> _readIndex(
   ObjectStore store,
   List<String> warnings,
@@ -309,7 +398,8 @@ Future<DecisionIndex?> _readIndex(
   }
 }
 
-/// Écrit les résumés de [ids] dans leurs fichiers de détail, puis l'index.
+/// Écrit les résumés de [ids] dans leurs fichiers de détail, puis l'index
+/// (le résumé du texte en débat n'y figure que là).
 Future<void> _publish(
   ObjectStore store,
   DecisionIndex index,
@@ -317,7 +407,8 @@ Future<void> _publish(
   List<String> ids,
   DateTime now,
 ) async {
-  for (final id in ids) {
+  final decisions = {for (final d in index.decisions) d.id};
+  for (final id in ids.where(decisions.contains)) {
     final key = decisionDetailPath(id);
     final raw = await store.read(key);
     if (raw == null) continue;

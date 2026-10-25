@@ -43,3 +43,14 @@ Numéros dans `inDebateNumeros` (`test/fixtures.dart`), hors de
 | 8897 | 30953 | amendement de suppression de l'article premier (PLFSS) | adopté | article premier supprimé |
 | 8905 | 30953 | l'article 4 (PLFSS) | adopté | article 4 adopté |
 | 8931 | 30955 | amendement de suppression de l'article 5 (PLFSS) | adopté | article 5 supprimé |
+
+## `dossiers/` : dossier du PLFSS 2027 (ticket #73)
+
+`DLR5L17N54951.json`, extrait sans modification de
+`Dossiers_Legislatifs.json.zip` téléchargé le 25/10/2026 (`Last-Modified:
+Sun, 25 Oct 2026 11:16:27 GMT`) :
+https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip
+
+Ajouté aux dossiers de `../dossiers/` par `fixtureDossiersArchive(extra:
+…)` dans les tests du résumé du texte en débat : son texte déposé est
+`PRJLANR5L17B3211` (`../textes/`).

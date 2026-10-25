@@ -8,6 +8,12 @@ import 'source_text.dart';
 /// Clé du cache des résumés dans le bucket.
 const summaryCacheKey = 'state/resumes.json';
 
+/// Identifiant, dans le cache, du résumé du texte en débat du dossier
+/// [dossierRef] (#73) : un résumé par texte, quelles que soient ses séances.
+/// Il porte le texte résumé ([SummaryEntry.textUid]) : la décision sur
+/// l'ensemble du texte le reprend sans appel.
+String inDebateSummaryId(String dossierRef) => 'en_debat:$dossierRef';
+
 /// État du résumé d'une décision.
 enum SummaryStatus {
   /// Résumée : le résumé est publié et ne sera plus jamais redemandé.
@@ -100,12 +106,13 @@ class SummaryEntry {
   };
 }
 
-/// Cache des résumés (`state/resumes.json`), par identifiant de décision : un
-/// seul appel au modèle par décision, quels que soient les passages et les
-/// republications de l'index.
+/// Cache des résumés (`state/resumes.json`), par identifiant de décision (et
+/// par texte en débat, [inDebateSummaryId]) : un seul appel au modèle par
+/// décision, quels que soient les passages et les republications de l'index.
 ///
-/// Le job (et la détection en direct, en lecture seule) l'applique à chaque
-/// index qu'il publie : une décision republiée garde son résumé.
+/// Le job (et la détection en direct et le passage de l'agenda, en lecture
+/// seule) l'applique à chaque index qu'il publie : une décision republiée,
+/// un bloc « En débat » recalculé, gardent leur résumé.
 class SummaryCache {
   SummaryCache([Map<String, SummaryEntry>? entries]) : _entries = entries ?? {};
 
@@ -170,26 +177,43 @@ class SummaryCache {
         null => decision,
       };
 
-  /// [index] avec le résumé de chaque décision résumée.
-  DecisionIndex applyTo(DecisionIndex index) =>
-      index.withDecisions([for (final d in index.decisions) apply(d)]);
+  /// [inDebate] avec le résumé de son texte, s'il y en a un ; sinon tel
+  /// quel.
+  InDebate? applyToInDebate(InDebate? inDebate) {
+    if (inDebate == null) return null;
+    final summary = summaryOf(inDebateSummaryId(inDebate.dossierRef));
+    return summary == null ? inDebate : inDebate.withSummary(summary);
+  }
+
+  /// [index] avec le résumé de chaque décision résumée et celui du texte en
+  /// débat.
+  DecisionIndex applyTo(DecisionIndex index) => index
+      .withDecisions([for (final d in index.decisions) apply(d)])
+      .withInDebate(applyToInDebate(index.inDebate));
 
   /// Reprend les résumés de l'index publié [published] absents du cache
   /// (cache perdu ou illisible) : ils ne sont pas redemandés. Les points ne
   /// figurent pas dans l'index : ils sont repris des fichiers de détail
-  /// quand le job les republie. Renvoie `true` si le cache a changé.
+  /// quand le job les republie. Le résumé du texte en débat est repris
+  /// aussi. Renvoie `true` si le cache a changé.
   bool adoptPublished(DecisionIndex? published, {required DateTime now}) {
     var changed = false;
-    for (final d in published?.decisions ?? const <DecisionSummary>[]) {
-      final summary = d.summary;
-      if (summary == null || summaryOf(d.id) != null) continue;
-      _entries[d.id] = SummaryEntry(
+    void adopt(String id, PlainSummary? summary) {
+      if (summary == null || summaryOf(id) != null) return;
+      _entries[id] = SummaryEntry(
         status: SummaryStatus.resume,
         updatedAt: now,
         summary: summary,
         reason: "repris de l'index publié",
       );
       changed = true;
+    }
+
+    for (final d in published?.decisions ?? const <DecisionSummary>[]) {
+      adopt(d.id, d.summary);
+    }
+    if (published?.inDebate case final d?) {
+      adopt(inDebateSummaryId(d.dossierRef), d.summary);
     }
     return changed;
   }

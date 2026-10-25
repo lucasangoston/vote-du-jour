@@ -10,6 +10,7 @@ import 'fixtures.dart';
 import 'job_test.dart' show FakeDumpSource;
 import 'live_pass_test.dart' show FakeSite;
 import 'site_reader_test.dart' show sitePage;
+import 'summary_test.dart' show FakeLlm, FakeTexts, dossiersWithPlfss;
 
 const _plfss = 'DLR5L17N54951';
 const _plf = 'DLR5L17N54629';
@@ -479,6 +480,55 @@ void main() {
       // Plus de 7 jours après la dernière séance : plus rien.
       await agendaPass(DateTime.utc(2026, 11, 11));
       expect((await readIndex()).inDebate, isNull);
+    });
+
+    test('le PLFSS en débat porte un résumé dans latest.json (#73), gardé '
+        'par les passages suivants sans nouvel appel', () async {
+      final now = DateTime.utc(2026, 10, 21, 19, 17);
+      await publishDump(inDebateNumeros, now);
+      await agendaPass(now);
+      expect((await readIndex()).inDebate!.dossierRef, _plfss);
+
+      final llm = FakeLlm();
+      final texts = FakeTexts();
+      Future<SummaryReport> summaryPass() => runSummaryPass(
+        store: store,
+        service: SummaryService(llm: llm, texts: texts),
+        dossiers: DossierIndex.fromArchive(dossiersWithPlfss()),
+        clock: () => now,
+      );
+      // Appels sur le PLFSS (les décisions publiées sont résumées aussi).
+      int plfssCalls() => [
+        for (var i = 0; i < llm.requests.length; i++)
+          if (llm.userMessage(i).contains('taxe soda')) i,
+      ].length;
+      final report = await summaryPass();
+      expect(report.summarized.first, inDebateSummaryId(_plfss));
+      expect(plfssCalls(), 1);
+      expect((await readIndex()).inDebate!.summary!.title, 'Titre lisible');
+
+      // Passage de l'agenda, détection en direct, job : le bloc est
+      // recalculé et garde son résumé, tiré du cache.
+      await agendaPass(now.add(const Duration(minutes: 5)));
+      expect((await readIndex()).inDebate!.summary!.points, hasLength(3));
+      await runLivePass(
+        site: FakeSite(sitePage('liste_scrutins.html')),
+        store: store,
+        clock: () => now.add(const Duration(minutes: 10)),
+      );
+      expect((await readIndex()).inDebate!.summary, isNotNull);
+      await runJob(
+        source: FakeDumpSource('autre', archive: fixtureArchive),
+        store: store,
+        clock: () => now,
+        force: true,
+      );
+      expect((await readIndex()).inDebate!.summary, isNotNull);
+
+      // Second passage du résumeur : pas de nouvel appel sur le PLFSS.
+      await summaryPass();
+      expect(plfssCalls(), 1);
+      expect((await readIndex()).inDebate!.summary, isNotNull);
     });
 
     test('détection en direct : article lu sur le site, puis confirmé par '

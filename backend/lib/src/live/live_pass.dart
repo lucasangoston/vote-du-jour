@@ -348,21 +348,23 @@ Future<LiveOutcome> runLivePass({
   final articleVotes = await ArticleVotesState.read(store, warnings);
   final inDebate = agenda == null
       ? publishedIndex?.inDebate
-      : buildInDebate(
-          agenda.points,
-          now: now,
-          votes: articleVotes?.votes ?? const [],
-          confirmedUpTo: articleVotes?.lastNumero ?? upTo,
-          provisional: [
-            for (final s in listed)
-              if (s.result != null)
-                ?ArticleVote.fromScrutin(
-                  s.toScrutin(fallbackDate: parisDay(now)),
-                ),
-          ],
-          previous: publishedIndex?.inDebate,
-          decisions: summarized.decisions,
-          dossiers: dossiers,
+      : summaries.applyToInDebate(
+          buildInDebate(
+            agenda.points,
+            now: now,
+            votes: articleVotes?.votes ?? const [],
+            confirmedUpTo: articleVotes?.lastNumero ?? upTo,
+            provisional: [
+              for (final s in listed)
+                if (s.result != null)
+                  ?ArticleVote.fromScrutin(
+                    s.toScrutin(fallbackDate: parisDay(now)),
+                  ),
+            ],
+            previous: publishedIndex?.inDebate,
+            decisions: summarized.decisions,
+            dossiers: dossiers,
+          ),
         );
   final index = summarized
       .withUpcoming(publishedIndex?.upcoming)
