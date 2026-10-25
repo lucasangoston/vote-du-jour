@@ -206,6 +206,11 @@ function hemicycle(seq, { R = 150, inner = 0.44, label = '', id = 'h', band = fa
   const w = 2 * (R + padX), h = R + padTop + dot + 1;
   return `<svg class="hemi${band ? ' banded' : ''}" id="${id}" viewBox="0 0 ${w.toFixed(0)} ${h.toFixed(0)}" role="img" aria-label="${esc(label)}">${extra}${circles}</svg>`;
 }
+// Revue ui-ux-pro-max : un siège doit tenir 3:1 contre le fond. De jour, les couleurs officielles plus claires
+// (HOR, LIOT, SOC, DR, EcoS, Dem, NI) gardent leur remplissage et prennent un contour 35 % plus sombre.
+const lum = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+const LIGHT_GROUPS = Object.entries(GROUP_COLORS).filter(([, c]) => 1.05 / (lum(c) + 0.05) < 3).map(([g]) => g);
+const OUTLINE_CSS = LIGHT_GROUPS.map((g) => `:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="${g}"]:not(.s-contre) { stroke: color-mix(in srgb, ${GROUP_COLORS[g]} 65%, #000); stroke-width: .55; }`).join('\n');
 const PARTY_CSS = Object.entries(GROUP_COLORS).map(([g, c]) => `.hemi:not(.votes) .seat[data-g="${g}"] { fill: ${c}; stroke: ${c}; } .sw-g[data-g="${g}"] { background: ${c}; }`).join('\n');
 // Nuit : les couleurs officielles très sombres (RN, GDR, UDR) disparaissent sur la surface #191C20 ; on les éclaircit de 30 % vers le blanc, teinte inchangée.
 const PARTY_CSS_DARK = Object.entries(GROUP_COLORS).map(([g, c]) => `:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="${g}"] { fill: color-mix(in srgb, ${c} 70%, #ffffff); stroke: color-mix(in srgb, ${c} 70%, #ffffff); }`).join('\n');
@@ -275,6 +280,7 @@ ${FONTS}
 ${BASE_CSS}
 ${PARTY_CSS}
 ${PARTY_CSS_DARK}
+${OUTLINE_CSS}
 ${css}
 </style>
 </head>
@@ -511,7 +517,7 @@ function detailApp(num, theme) {
   const posBlock = (k, w) => {
     const gs = order.filter((g) => g.position === k);
     if (!gs.length) return '';
-    const tile = (g) => `<li><button data-g="${g.abbreviation}" aria-pressed="false">${LOGOS[g.abbreviation] ? `<img src="../assets/logos/${LOGOS[g.abbreviation]}.png" alt="" width="96" height="48">` : `<span class="ni">${g.abbreviation}</span>`}<b>${g.abbreviation === 'NI' ? 'Non inscrits' : g.abbreviation}</b></button></li>`;
+    const tile = (g) => `<li><button data-g="${g.abbreviation}" aria-pressed="false" aria-label="${g.abbreviation === 'NI' ? 'Non inscrits' : g.abbreviation}, ${w.toLowerCase()}, montrer ses sièges">${LOGOS[g.abbreviation] ? `<img src="../assets/logos/${LOGOS[g.abbreviation]}.png" alt="" width="96" height="48">` : `<span class="ni">${g.abbreviation}</span>`}<b>${g.abbreviation === 'NI' ? 'Non inscrits' : g.abbreviation}</b></button></li>`;
     return `<h3 class="pos r-${POS[k]}">${GLYPH[POS[k]]}${w}</h3><ul class="tiles3">${gs.map(tile).join('')}</ul>`;
   };
   const args = D.arguments;

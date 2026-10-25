@@ -305,6 +305,29 @@ ul { list-style: none; }
 .hemi .seat.s-wait { fill: color-mix(in srgb, var(--ink) 22%, var(--surface)); stroke: none; }
 .wait { margin-top: 14px; font-size: 15px; color: var(--ink2); text-align: center; }
 
+/* Revue ui-ux-pro-max : le vote ne se lit pas qu'à la teinte. Pour foncé, contre clair (et l'inverse de nuit),
+   abstention en gris moyen : les trois restent distincts pour un daltonien (simulation deutéranopie),
+   chacun à 3:1 au moins contre la surface. */
+:root, :root[data-theme="light"] { --v-pour: #1D6B54; --v-contre: #E0683A; --v-abst: #8D949A; }
+:root[data-theme="dark"] { --v-pour: #4FB08F; --v-contre: #B5461F; --v-abst: #9AA2AB; }
+.hemi.votes .seat.s-pour { fill: var(--v-pour); stroke: var(--v-pour); }
+.hemi.votes .seat.s-contre { fill: var(--v-contre) !important; stroke: var(--v-contre); }
+.hemi.votes .seat.s-abst { fill: var(--v-abst); stroke: var(--v-abst); }
+/* absents un peu plus présents : 20 % disparaissait de jour */
+.hemi.real .seat.s-off { opacity: .28; }
+/* tuile choisie : bord plein en plus du fond, l'état ne tient pas à une nuance */
+.tiles3 button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+/* accueil : la carte suivante dépasse, on voit qu'il y en a d'autres ; la carte suit son contenu */
+@media (max-width: 759px) {
+  .home .card { flex-basis: calc(100% - 28px); }
+  .home .deck { flex: none; }
+  .home .sheet { flex: none; }
+  .home .primary { margin-top: auto; }
+}
+/* la carte se centre entre le titre et le bouton, plutôt que de laisser le vide en bas */
+@media (max-width: 759px) { .home .deck { margin-top: auto; } .home .pager { margin-bottom: auto; } .home .primary { margin-top: 24px; } }
+.w-tally .t-contre .gly { color: var(--v-contre); } .w-tally .t-pour .gly { color: var(--v-pour); } .w-tally .t-abst .gly { color: var(--v-abst); }
+
 .hemi:not(.votes) .seat[data-g="LFI-NFP"] { fill: #C00D0D; stroke: #C00D0D; } .sw-g[data-g="LFI-NFP"] { background: #C00D0D; }
 .hemi:not(.votes) .seat[data-g="GDR"] { fill: #830E21; stroke: #830E21; } .sw-g[data-g="GDR"] { background: #830E21; }
 .hemi:not(.votes) .seat[data-g="EcoS"] { fill: #77AA79; stroke: #77AA79; } .sw-g[data-g="EcoS"] { background: #77AA79; }
@@ -329,6 +352,12 @@ ul { list-style: none; }
 :root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="NI"] { fill: color-mix(in srgb, #8D949A 70%, #ffffff); stroke: color-mix(in srgb, #8D949A 70%, #ffffff); }
 :root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="UDR"] { fill: color-mix(in srgb, #3367A7 70%, #ffffff); stroke: color-mix(in srgb, #3367A7 70%, #ffffff); }
 :root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="RN"] { fill: color-mix(in srgb, #313567 70%, #ffffff); stroke: color-mix(in srgb, #313567 70%, #ffffff); }
+:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="EcoS"]:not(.s-contre) { stroke: color-mix(in srgb, #77AA79 65%, #000); stroke-width: .55; }
+:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="SOC"]:not(.s-contre) { stroke: color-mix(in srgb, #F5B4CE 65%, #000); stroke-width: .55; }
+:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="LIOT"]:not(.s-contre) { stroke: color-mix(in srgb, #FFD96F 65%, #000); stroke-width: .55; }
+:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="Dem"]:not(.s-contre) { stroke: color-mix(in srgb, #F07E26 65%, #000); stroke-width: .55; }
+:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="HOR"]:not(.s-contre) { stroke: color-mix(in srgb, #B5E2F9 65%, #000); stroke-width: .55; }
+:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="DR"]:not(.s-contre) { stroke: color-mix(in srgb, #8CB0DC 65%, #000); stroke-width: .55; }
 
 .detail-app .vote { padding: 22px 18px 20px; } .detail-app .hemi-wrap .hemi { width: 100%; max-width: 340px; display: block; margin: 0 auto; }
 .verdict { margin-top: 14px; text-align: center; font-size: 34px; font-weight: 600; line-height: 1; } .verdict.muted { color: var(--ink); }
