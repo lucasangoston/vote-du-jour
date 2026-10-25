@@ -168,14 +168,16 @@ String hemicycleSeatsLabel(VoteResult result, VoteTally count) {
       '${count.abstentions} abstentions';
 }
 
-/// Sièges estompés (absents et non-votants), dits en clair sous
-/// l'hémicycle : « 236 n’ont pas voté ». `null` si tout le monde a voté.
+/// Sièges estompés, dits en clair sous l'hémicycle : « 236 absents ». Ils
+/// comptent aussi les non-votants (président de séance…), un ou deux : « n'ont
+/// pas voté » se confondait avec l'abstention, qui est un vote. `null` si
+/// tout le monde a voté.
 String? noVoteNote(List<HemicycleSeat> seats) {
   final n = seats
       .where((s) => s.vote == SeatVote.absent || s.vote == SeatVote.nonVotant)
       .length;
   if (n == 0) return null;
-  return n == 1 ? '1 n’a pas voté' : '$n n’ont pas voté';
+  return n == 1 ? '1 absent' : '$n absents';
 }
 
 /// La mention [noVoteNote] en texte secondaire, ou rien.
