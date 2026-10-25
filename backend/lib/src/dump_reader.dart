@@ -149,6 +149,35 @@ class _Reader {
         'groupe.vote.positionMajoritaire',
       ),
       decompte: decompte(vote['decompteVoix'], 'groupe.vote.decompteVoix'),
+      membres: int.tryParse('${g['nombreMembresGroupe']}'),
+      votants: nominalVotes(vote['decompteNominatif']),
     );
+  }
+
+  /// Vote nominatif d'un groupe (#71). Lecture tolérante : un bloc absent ou
+  /// un votant illisible est ignoré, sans rendre le scrutin illisible ; les
+  /// sièges, vérifiés contre le décompte, ne seront alors pas publiés.
+  List<NominalVote> nominalVotes(Object? v) {
+    if (v is! Map<String, Object?>) return const [];
+    return [
+      for (final (key, vote) in const [
+        ('pours', SeatVote.pour),
+        ('contres', SeatVote.contre),
+        ('abstentions', SeatVote.abstention),
+        ('nonVotants', SeatVote.nonVotant),
+      ])
+        if (v[key] case {'votant': final votants})
+          for (final votant in switch (votants) {
+            List<Object?> l => l,
+            Map<String, Object?> m => [m],
+            _ => const <Object?>[],
+          })
+            if (votant case {'acteurRef': final String acteurRef})
+              NominalVote(
+                acteurRef: acteurRef,
+                place: int.tryParse('${votant['numPlace']}'),
+                vote: vote,
+              ),
+    ];
   }
 }

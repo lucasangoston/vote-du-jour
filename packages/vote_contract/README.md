@@ -184,6 +184,7 @@ reste identique octet pour octet et le job ne le réécrit pas.
       "organeRef": "PO845401",
       "name": "Rassemblement National",
       "abbreviation": "RN",
+      "color": "#313567",
       "position": "pour",
       "count": { "pour": 121, "contre": 0, "abstentions": 0, "nonVotants": 0 }
     }
@@ -200,7 +201,9 @@ reste identique octet pour octet et le job ne le réécrit pas.
   `name` est le libellé du groupe (organe de type `GP`) dans le jeu de données
   des acteurs et organes de la législature (AMO20, qui garde aussi les groupes
   dissous ou renommés) ; « Groupe non identifié » si la référence est
-  inconnue. `abbreviation` (sigle d'usage) est optionnel.
+  inconnue. `abbreviation` (sigle d'usage) est optionnel. `color` (#71,
+  optionnel) est la couleur officielle du groupe (`couleurAssociee` de AMO20),
+  au format `#RRGGBB` ; une couleur malformée est ignorée.
 - `position` : `pour`, `contre`, `abstention` (celle qui a recueilli le plus
   de voix parmi les membres du groupe), `partage` (égalité) ou `nonVotant`
   (aucun membre n'a voté). Elle est calculée sur le décompte du groupe : le
@@ -209,6 +212,36 @@ reste identique octet pour octet et le job ne le réécrit pas.
   la position est inconnue d'un lecteur est ignoré.
 - Ajouts rétrocompatibles : l'index n'a pas changé, les anciennes versions de
   l'app ignorent ces fichiers.
+
+## Sièges du scrutin (ticket #71)
+
+Champ optionnel `seats` du fichier de détail (`DecisionDetail.seats`,
+`HemicycleSeat`) : la place, le groupe et le vote de chaque député, pour
+l'hémicycle « places réelles ». Un tableau compact `[place, groupe, vote]` par
+siège, trié par place :
+
+```json
+"seats": [[1, "PO845401", "p"], [2, "PO845401", "p"], "…", [181, "PO845425", "x"], "…", [518, "PO845413", "a"], "…"]
+```
+
+- `place` : numéro de la place (`placeHemicycle` de AMO20, `numPlace` du vote
+  nominatif), de la droite de l'hémicycle (1) vers sa gauche.
+- `groupe` : référence du groupe (`organeRef`), celle d'un groupe de `groups`
+  (nom, sigle et couleur).
+- `vote` : `p` (pour), `c` (contre), `a` (abstention), `n` (non-votant), `x`
+  (absent : pas de vote nominatif).
+- Une place par député en exercice : sa place AMO, ou celle du vote nominatif
+  (`decompteNominatif`) s'il a voté ailleurs ; un votant prend le groupe sous
+  lequel il a voté, un absent garde son groupe actuel.
+- Le job ne publie les sièges que s'ils sont cohérents : effectif de chaque
+  groupe (`nombreMembresGroupe`) égal à son nombre de sièges, pour, contre et
+  abstentions égaux au décompte publié, LFI-NFP le plus à gauche et RN le plus
+  à droite du plan de l'hémicycle. Sinon le détail est publié sans `seats`
+  (scrutins anciens, quand les groupes ont changé depuis) et le job le signale.
+- Absent pour une décision provisoire ou à main levée, et dans les détails plus
+  anciens. Un seul siège illisible (vote inconnu, place nulle ou en double)
+  rend `seats` illisible : le lecteur s'en passe.
+- Ajout rétrocompatible : même `schemaVersion`, index inchangé.
 
 ## Résumés (ticket #9)
 

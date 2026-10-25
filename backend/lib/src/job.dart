@@ -222,6 +222,7 @@ Future<JobOutcome> runJob({
           [...scrutins, ...reconciled.pending],
           index,
           groups: groups.directory,
+          warnings: warnings,
         ).map(arguments.apply),
       );
       await store.write(

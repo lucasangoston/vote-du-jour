@@ -18,6 +18,8 @@ export 'src/dump_reader.dart';
 export 'src/dump_source.dart';
 export 'src/group_directory.dart';
 export 'src/hemicycle_arc.dart';
+export 'src/hemicycle_plan.dart';
+export 'src/hemicycle_seats.dart';
 export 'src/index_builder.dart';
 export 'src/job.dart';
 export 'src/live/live_pass.dart';
