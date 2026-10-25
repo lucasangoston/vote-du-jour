@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vote_contract/vote_contract.dart';
 
+import '../theme.dart';
 import 'hemicycle_places.dart';
 
 /// Forme d'un siège : celle du vote (#74), comme les symboles de la légende
@@ -271,4 +272,45 @@ class HemicycleSeatsPainter extends CustomPainter {
       [
         for (var i = 0; i < marks.length; i++) old.marks[i] == marks[i],
       ].contains(false);
+}
+
+/// Part de l'encre dans le gris des sièges d'attente, mêlée à la surface
+/// (`.seat.s-wait` des maquettes).
+const waitingSeatInk = 0.22;
+
+/// Sièges de l'hémicycle d'attente (#77) : toutes les places du plan, même
+/// taille, même gris [color] ; personne n'a encore voté.
+List<SeatMark> waitingSeatMarks(Color color) => [
+  for (final MapEntry(key: place, value: center) in hemicyclePlaces.entries)
+    SeatMark(
+      place: place,
+      group: '',
+      center: center,
+      shape: SeatShape.disc,
+      color: color,
+      opacity: 1,
+    ),
+];
+
+/// L'hémicycle d'un texte en débat (#77) : toutes les places en gris, sans
+/// groupe ni vote. Décoratif : le texte de la carte dit déjà « En débat ».
+class WaitingHemicycle extends StatelessWidget {
+  const WaitingHemicycle({super.key, required this.width});
+
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return ExcludeSemantics(
+      child: CustomPaint(
+        size: Size(width, width * HemicycleSeats.aspect),
+        painter: HemicycleSeatsPainter(
+          waitingSeatMarks(
+            Color.lerp(colors.surface, colors.ink, waitingSeatInk)!,
+          ),
+        ),
+      ),
+    );
+  }
 }

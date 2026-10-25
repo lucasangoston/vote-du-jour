@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../decision_detail/decision_route.dart';
 import '../home_widget/home_widget_sync.dart';
 import '../home_widget/widget_link.dart';
+import '../in_debate/in_debate_route.dart';
 import 'push_messaging.dart';
 
 /// Sujet FCM des votes importants (même nom que côté job, voir
@@ -23,6 +24,17 @@ String? decisionIdFromNotification(Map<String, Object?> data) {
   final link = data['link'];
   final uri = link is String ? Uri.tryParse(link) : null;
   return uri == null ? null : decisionIdFromDeepLink(uri);
+}
+
+/// Texte visé par une notification « En débat » (#77) : la donnée
+/// `dossierRef`, sinon le lien `votedujour://en-debat/<dossier>` de la
+/// donnée `link`.
+String? inDebateRefFromNotification(Map<String, Object?> data) {
+  final ref = data['dossierRef'];
+  if (ref is String && ref.isNotEmpty && !ref.contains('/')) return ref;
+  final link = data['link'];
+  final uri = link is String ? Uri.tryParse(link) : null;
+  return uri == null ? null : inDebateRefFromDeepLink(uri);
 }
 
 /// Lien d'une notification sans décision (veille d'un vote solennel, #54) :
@@ -159,18 +171,27 @@ class ImportantVotesNotifications extends ChangeNotifier {
     }
   }
 
-  /// Ouvre le détail de la décision de la notification, ou revient à la
-  /// liste pour une notification sans décision qui la vise (veille d'un
-  /// vote solennel) ; sinon l'app s'ouvre simplement.
+  /// Ouvre le détail de la décision de la notification, l'écran du texte
+  /// en débat (#77), ou revient à la liste pour une notification sans
+  /// décision qui la vise (veille d'un vote solennel) ; sinon l'app s'ouvre
+  /// simplement.
   void _openDecision(PushNotification notification) {
-    final id = decisionIdFromNotification(notification.data);
-    if (id == null && !opensListFromNotification(notification.data)) return;
-    unawaited(
-      openWidgetLinkWhenReady(
-        _navigatorKey,
-        Uri(scheme: 'votedujour', host: 'decisions', pathSegments: [?id]),
-      ),
-    );
+    final link = _linkOf(notification);
+    if (link != null) unawaited(openWidgetLinkWhenReady(_navigatorKey, link));
+  }
+
+  /// Lien de l'écran visé par [notification], ou `null`.
+  Uri? _linkOf(PushNotification notification) {
+    final data = notification.data;
+    if (decisionIdFromNotification(data) case final id?) {
+      return Uri(scheme: 'votedujour', host: 'decisions', pathSegments: [id]);
+    }
+    if (inDebateRefFromNotification(data) case final ref?) {
+      return Uri(scheme: 'votedujour', host: 'en-debat', pathSegments: [ref]);
+    }
+    return opensListFromNotification(data)
+        ? Uri(scheme: 'votedujour', host: 'decisions')
+        : null;
   }
 
   void _showBanner(PushNotification notification) {
@@ -178,13 +199,15 @@ class ImportantVotesNotifications extends ChangeNotifier {
     final messenger = messengerKey.currentState;
     final title = notification.title;
     if (messenger == null || title == null) return;
-    final id = decisionIdFromNotification(notification.data);
+    final opens =
+        decisionIdFromNotification(notification.data) != null ||
+        inDebateRefFromNotification(notification.data) != null;
     messenger.showSnackBar(
       SnackBar(
         content: Text(title),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 8),
-        action: id == null
+        action: !opens
             ? null
             : SnackBarAction(
                 label: 'Voir',
