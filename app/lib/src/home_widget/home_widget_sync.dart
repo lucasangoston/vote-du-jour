@@ -35,9 +35,12 @@ final homeWidgetNavigatorKey = GlobalKey<NavigatorState>();
 ///
 /// Sans effet sur le web et les plateformes sans widget.
 class HomeWidgetSync {
-  HomeWidgetSync({DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
+  HomeWidgetSync({DateTime Function()? clock, SeatsLoader? seats})
+    : _clock = clock ?? DateTime.now,
+      _loadSeats = seats;
 
   final DateTime Function() _clock;
+  final SeatsLoader? _loadSeats;
   StreamSubscription<Uri?>? _taps;
 
   static bool get _supported =>
@@ -69,8 +72,17 @@ class HomeWidgetSync {
   /// garde alors son instantané précédent.
   Future<void> publish(DecisionIndex index) async {
     if (!_supported) return;
-    final snapshot = WidgetSnapshot.fromIndex(index, savedAt: _clock());
     try {
+      final seats = await latestDecisionSeats(
+        index,
+        previous: await _previousSnapshot(),
+        load: _loadSeats,
+      );
+      final snapshot = WidgetSnapshot.fromIndex(
+        index,
+        savedAt: _clock(),
+        seats: seats,
+      );
       await HomeWidget.saveWidgetData<String>(
         WidgetSnapshot.storageKey,
         jsonEncode(snapshot.toJson()),
@@ -87,6 +99,18 @@ class HomeWidgetSync {
     }
   }
 
+  /// Instantané écrit en dernier (par l'app ou par les widgets eux-mêmes).
+  Future<WidgetSnapshot?> _previousSnapshot() async {
+    try {
+      final json = await HomeWidget.getWidgetData<String>(
+        WidgetSnapshot.storageKey,
+      );
+      return json == null ? null : WidgetSnapshot.tryFromJson(jsonDecode(json));
+    } catch (e) {
+      return null;
+    }
+  }
+
   Uri? _lastOpened;
 
   /// Ouvre le lien d'un tap, dès que le navigateur existe (le flux peut
@@ -97,6 +121,36 @@ class HomeWidgetSync {
   }
 
   Future<void> dispose() async => _taps?.cancel();
+}
+
+/// Sièges de l'hémicycle d'une décision, lus dans son fichier de détail ;
+/// `null` s'il n'en a pas.
+typedef SeatsLoader = Future<List<HemicycleSeat>?> Function(String id);
+
+/// Sièges de la dernière décision de [index] (#78), la seule que les widgets
+/// dessinent en hémicycle, au format de l'instantané et par identifiant :
+/// ceux de l'instantané [previous] pour la même décision, sinon ceux que
+/// [load] lit dans son fichier de détail (un téléchargement par nouvelle
+/// décision). Vide sans sièges ou en cas d'échec : les widgets dessinent alors
+/// l'arc.
+Future<Map<String, String>> latestDecisionSeats(
+  DecisionIndex index, {
+  WidgetSnapshot? previous,
+  SeatsLoader? load,
+}) async {
+  final id = index.decisions.firstOrNull?.id;
+  if (id == null) return const {};
+  final kept = previous?.seatsOf(id);
+  if (kept != null) return {id: kept};
+  try {
+    final seats = await load?.call(id);
+    return seats == null || seats.isEmpty
+        ? const {}
+        : {id: encodeSeatVotes(seats)};
+  } catch (e) {
+    debugPrint('latestDecisionSeats : $e');
+    return const {};
+  }
 }
 
 /// [DecisionsRepository] qui met à jour les widgets après chaque chargement

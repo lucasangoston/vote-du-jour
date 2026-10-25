@@ -37,7 +37,21 @@ object DecisionFetcher {
             prefs.getString(BASE_URL_KEY, null)?.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL
         try {
           val body = download(indexUrl(baseUrl))
-          val snapshot = SnapshotConverter.fromIndex(body, Instant.now()) ?: return@withContext false
+          // Sièges de la dernière décision (#78), seule dessinée en hémicycle : ceux de
+          // l'instantané précédent pour la même décision, sinon ceux de son fichier de détail (un
+          // téléchargement par nouvelle décision).
+          val seats =
+              SnapshotConverter.latestDecisionId(body)?.let { id ->
+                val previous =
+                    DecisionSnapshot.parse(prefs.getString(DecisionSnapshot.STORAGE_KEY, null))
+                        ?.decisions
+                        ?.firstOrNull { it.id == id }
+                        ?.seats
+                (previous ?: detailSeats(baseUrl, id))?.let { mapOf(id to it) }
+              }
+          val snapshot =
+              SnapshotConverter.fromIndex(body, Instant.now(), seats.orEmpty())
+                  ?: return@withContext false
           prefs.edit().putString(DecisionSnapshot.STORAGE_KEY, snapshot).commit()
         } catch (e: Exception) {
           Log.w(TAG, "Rafraîchissement impossible, instantané précédent gardé : $e")
@@ -46,6 +60,19 @@ object DecisionFetcher {
       }
 
   fun indexUrl(baseUrl: String): String = "${baseUrl.trimEnd('/')}/$INDEX_PATH"
+
+  /** Fichier de détail d'une décision (`v1/decisions/<id>.json`), pour ses sièges. */
+  fun detailUrl(baseUrl: String, id: String): String =
+      "${baseUrl.trimEnd('/')}/v1/decisions/${java.net.URLEncoder.encode(id, "UTF-8")}.json"
+
+  /** Sièges du fichier de détail ; `null` en cas d'échec : le widget dessine l'arc. */
+  private fun detailSeats(baseUrl: String, id: String): SeatVotes? =
+      try {
+        SeatVotes.fromDetail(download(detailUrl(baseUrl, id)), id)
+      } catch (e: Exception) {
+        Log.w(TAG, "Sièges de $id indisponibles : $e")
+        null
+      }
 
   private fun download(url: String): String {
     val connection = URL(url).openConnection() as HttpURLConnection
@@ -96,20 +123,21 @@ object SnapshotConverter {
   /** Mention d'une décision pas encore confirmée (`lib/src/decision_status_label.dart`). */
   private const val PROVISIONAL_LABEL = "provisoire"
 
-  /** `null` si l'index est illisible ou d'une autre version de schéma. */
-  fun fromIndex(json: String, savedAt: Instant): String? {
-    val root =
-        try {
-          JSONObject(json)
-        } catch (e: Exception) {
-          return null
-        }
-    if (root.opt("schemaVersion") != SCHEMA_VERSION) return null
-    val items = root.optJSONArray("decisions") ?: return null
+  /**
+   * `null` si l'index est illisible ou d'une autre version de schéma. [seats] donne les sièges de
+   * l'hémicycle (#78) des décisions qui en ont, par identifiant.
+   */
+  fun fromIndex(json: String, savedAt: Instant, seats: Map<String, SeatVotes> = emptyMap()): String? {
+    val items = decisions(json) ?: return null
+    val root = JSONObject(json)
     val decisions = JSONArray()
     for (i in 0 until items.length()) {
       if (decisions.length() == MAX_DECISIONS) break
-      items.optJSONObject(i)?.let(::convert)?.let(decisions::put)
+      items
+          .optJSONObject(i)
+          ?.let(::convert)
+          ?.also { d -> seats[d.getString("id")]?.let { d.put("seats", it.encoded) } }
+          ?.let(decisions::put)
     }
     val snapshot =
         JSONObject()
@@ -128,6 +156,28 @@ object SnapshotConverter {
       snapshot.put("upcomingVotes", JSONArray(votes.map { it.toJson() }))
     }
     return snapshot.toString()
+  }
+
+  /**
+   * Identifiant de la décision la plus récente que les widgets afficheront, `null` si l'index est
+   * illisible ou n'en a pas.
+   */
+  fun latestDecisionId(json: String): String? {
+    val items = decisions(json) ?: return null
+    return (0 until items.length()).firstNotNullOfOrNull { i ->
+      items.optJSONObject(i)?.let(::convert)?.getString("id")
+    }
+  }
+
+  private fun decisions(json: String): JSONArray? {
+    val root =
+        try {
+          JSONObject(json)
+        } catch (e: Exception) {
+          return null
+        }
+    if (root.opt("schemaVersion") != SCHEMA_VERSION) return null
+    return root.optJSONArray("decisions")
   }
 
   /**

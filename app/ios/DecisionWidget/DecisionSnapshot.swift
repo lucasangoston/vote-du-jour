@@ -93,7 +93,8 @@ extension UpcomingVote {
   static let staleAfterDays = 3
 
   private static let weekdays = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."]
-  private static let months = [
+  /// Mois abrégés, de janvier à décembre.
+  static let months = [
     "janv.", "févr.", "mars", "avr.", "mai", "juin",
     "juil.", "août", "sept.", "oct.", "nov.", "déc.",
   ]
@@ -120,6 +121,22 @@ extension UpcomingVote {
 
   /// « oct. »
   var monthLabel: String { Self.months[(day.month ?? 1) - 1] }
+
+  /// Heure de la séance à Paris : « 15 h », « 21 h 30 ».
+  var timeLabel: String {
+    let time = Self.paris.dateComponents([.hour, .minute], from: startsAt)
+    let minute = time.minute ?? 0
+    return minute == 0
+      ? "\(time.hour ?? 0) h" : "\(time.hour ?? 0) h \(String(format: "%02d", minute))"
+  }
+
+  /// « Vote · mar. 15 h », sous le jour des widgets (#78).
+  var whenLabel: String { "Vote · \(weekdayLabel) \(timeLabel)" }
+
+  /// Lecture d'écran : « Prochain vote solennel, mar. 3 nov. à 15 h. Budget de l'État 2027 ».
+  var accessibilityLabel: String {
+    "Prochain vote solennel, \(dayLabel) à \(timeLabel). \(title)"
+  }
 
   /// Vote à annoncer à l'instant `now` : le premier de `votes` dont le jour
   /// (à Paris) n'est pas passé, si la dernière décision (`latestDecisionDay`,
@@ -182,11 +199,15 @@ struct WidgetDecision: Decodable {
   /// Arc dans l'ordre de l'hémicycle (#67), s'il est publié ; sinon l'arc se
   /// dessine par sens à partir de `count`.
   let arc: [HemicyclePart]?
+  /// Vote de chaque place de l'hémicycle (#78), lu dans le fichier de détail ;
+  /// absent (décision provisoire, à main levée, détail pas encore lu), les
+  /// widgets dessinent l'arc.
+  let seats: SeatVotes?
 
   init(
     id: String, result: Result, date: String, title: String, stage: String?,
     explanation: String?, count: VoteCount? = nil, voteMode: VoteMode? = nil,
-    arc: [HemicyclePart]? = nil
+    arc: [HemicyclePart]? = nil, seats: SeatVotes? = nil
   ) {
     self.id = id
     self.result = result
@@ -197,10 +218,11 @@ struct WidgetDecision: Decodable {
     self.count = count
     self.voteMode = voteMode
     self.arc = arc
+    self.seats = seats
   }
 
   private enum CodingKeys: String, CodingKey {
-    case id, result, date, title, stage, explanation, count, voteMode, arc
+    case id, result, date, title, stage, explanation, count, voteMode, arc, seats
   }
 
   init(from decoder: Decoder) throws {
@@ -219,6 +241,8 @@ struct WidgetDecision: Decodable {
     // Arc de l'hémicycle (#67) : un arc illisible est ignoré (arc par sens).
     let parts = (try? c.decodeIfPresent([ArcPartJSON].self, forKey: .arc)) ?? nil
     arc = HemicyclePart.parse(parts?.map(\.object))
+    // Sièges de l'hémicycle (#78) : illisibles, ignorés (arc).
+    seats = SeatVotes(encoded: (try? c.decodeIfPresent(String.self, forKey: .seats)) ?? nil)
   }
 
   var day: Date? {
@@ -242,6 +266,14 @@ struct WidgetDecision: Decodable {
     formatter.dateFormat = "MMMM yyyy"
     let dayOfMonth = calendar.component(.day, from: day)
     return "\(dayOfMonth == 1 ? "1er" : String(dayOfMonth)) \(formatter.string(from: day))"
+  }
+
+  /// « 8 oct. » (« 1er » pour le premier du mois), sous le titre du widget
+  /// moyen (#78).
+  var shortDateLabel: String {
+    let parts = date.split(separator: "-").compactMap { Int($0) }
+    guard parts.count == 3, (1...12).contains(parts[1]) else { return date }
+    return "\(parts[2] == 1 ? "1er" : String(parts[2])) \(UpcomingVote.months[parts[1] - 1])"
   }
 }
 
@@ -333,6 +365,23 @@ extension WidgetDecision {
   var mentions: [String] {
     [isMainLevee ? Self.mainLeveeMention : nil, isProvisional ? Self.provisionalMention : nil]
       .compactMap { $0 }
+  }
+
+  /// « Adopté » / « Rejeté ».
+  var resultLabel: String { result == .adopte ? "Adopté" : "Rejeté" }
+
+  /// Lecture d'écran du widget (#78) : résultat, titre, totaux, puis les
+  /// mentions. « Adopté. Juges des violences sexuelles. 503 pour, 0 contre,
+  /// 67 abstentions. »
+  var accessibilityLabel: String {
+    let totals: String? =
+      isMainLevee
+      ? "Vote à main levée"
+      : count.map { "\($0.pour) pour, \($0.contre) contre, \($0.abstentions) abstentions" }
+    let provisional = isProvisional ? "Décision provisoire" : nil
+    return [resultLabel, title, totals, provisional].compactMap { $0 }
+      .map { $0.hasSuffix(".") ? $0 : $0 + "." }
+      .joined(separator: " ")
   }
 }
 

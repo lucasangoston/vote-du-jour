@@ -18,8 +18,8 @@ class DecisionSnapshotTest {
           })
 
   @Test
-  fun grand_widget_les_trois_plus_recentes_dans_l_ordre() {
-    val latest = snapshot("a", "b", "c", "d", "e").latest(LargeDecisionWidget.LARGE_WIDGET_COUNT)
+  fun les_trois_plus_recentes_dans_l_ordre() {
+    val latest = snapshot("a", "b", "c", "d", "e").latest(3)
     assertEquals(listOf("a", "b", "c"), latest.map { it.id })
   }
 

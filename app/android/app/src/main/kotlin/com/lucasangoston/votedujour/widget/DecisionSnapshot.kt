@@ -131,6 +131,11 @@ data class WidgetDecision(
      * instantané ancien, arc illisible) : arc par sens à partir de [count].
      */
     val hemicycle: List<HemicyclePart>? = null,
+    /**
+     * Vote de chaque place de l'hémicycle (#78), lu dans le fichier de détail ; absent (décision
+     * provisoire, à main levée, détail pas encore lu) : les widgets dessinent l'arc.
+     */
+    val seats: SeatVotes? = null,
 ) {
   /** « 13 octobre 2026 » (« 1er » pour le premier du mois). */
   val dateLabel: String
@@ -152,6 +157,28 @@ data class WidgetDecision(
    */
   val isMainLevee: Boolean
     get() = voteMode?.let { it == VoteMode.MAIN_LEVEE } ?: (MAIN_LEVEE_MENTION in mentions)
+
+  /** « 8 oct. » (« 1er » pour le premier du mois), sous le titre du widget moyen (#78). */
+  val shortDateLabel: String
+    get() =
+        "${if (date.dayOfMonth == 1) "1er" else date.dayOfMonth} ${UpcomingVote.MONTHS[date.monthValue - 1]}"
+
+  val isProvisional: Boolean
+    get() = PROVISIONAL_MENTION in mentions
+
+  /**
+   * Lecture d'écran du widget (#78) : résultat, titre, totaux, puis les mentions. « Adopté. Juges
+   * des violences sexuelles. 503 pour, 0 contre, 67 abstentions. »
+   */
+  val accessibilityLabel: String
+    get() =
+        listOfNotNull(
+                WidgetText.result(result),
+                title,
+                if (isMainLevee) "Vote à main levée" else count?.description,
+                "Décision provisoire".takeIf { isProvisional },
+            )
+            .joinToString(" ") { if (it.endsWith(".")) it else "$it." }
 
   /** Arc du vote dessiné par les widgets. */
   val arc: VoteArc
@@ -183,6 +210,8 @@ data class WidgetDecision(
               count = VoteCount.parse(json.optJSONObject("count")),
               voteMode = VoteMode.parse(json.opt("voteMode")),
               hemicycle = HemicyclePart.parseList(json.optJSONArray("arc")),
+              // Sièges de l'hémicycle (#78) : illisibles, ignorés (arc).
+              seats = SeatVotes.parse(json.opt("seats")),
           )
         } catch (e: Exception) {
           null
@@ -196,9 +225,10 @@ data class WidgetDecision(
             id = "exemple",
             result = VoteResult.ADOPTE,
             date = LocalDate.of(2026, 10, 13),
-            title = "L'ensemble du projet de loi relatif à la simplification de la vie économique.",
+            title = "Juges des violences sexuelles",
             count = VoteCount(pour = 503, contre = 0, abstentions = 67),
             voteMode = VoteMode.SCRUTIN_PUBLIC,
+            seats = SeatVotes.parse(HemicycleGeometry.SAMPLE_VOTES),
         )
   }
 }

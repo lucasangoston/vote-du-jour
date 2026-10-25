@@ -19,7 +19,12 @@ import 'src/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final widgetSync = HomeWidgetSync()..start();
+  // Les widgets dessinent l'hémicycle de la dernière décision (#78) : ses
+  // sièges viennent de son fichier de détail.
+  final widgetSync = HomeWidgetSync(
+    seats: (id) async =>
+        (await defaultDecisionDetailRepository.fetch(id)).seats,
+  )..start();
   shareDataBaseUrl(dataBaseUrl);
   final notifications = await _startNotifications();
   // Lu avant le premier écran, pour ne pas l'afficher dans la mauvaise

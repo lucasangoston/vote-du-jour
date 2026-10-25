@@ -7,4 +7,10 @@
     <color name="decision_widget_pour">#FF4FB08F</color>
     <color name="decision_widget_contre">#FFE07A58</color>
     <color name="decision_widget_abstention">#FF4A5058</color>
+    <color name="decision_widget_raised">#FF23272C</color>
+    <!-- Couleurs du vote (#78) : sièges et symboles du décompte. -->
+    <color name="decision_widget_vote_pour">#FF4FB08F</color>
+    <color name="decision_widget_vote_contre">#FFB5461F</color>
+    <color name="decision_widget_vote_abstention">#FF9AA2AB</color>
+    <color name="decision_widget_seat_off">#FF4A5058</color>
 </resources>

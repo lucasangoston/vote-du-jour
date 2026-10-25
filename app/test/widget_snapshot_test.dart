@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vote_contract/vote_contract.dart';
+import 'package:votedujour/src/home_widget/home_widget_sync.dart';
 import 'package:votedujour/src/home_widget/widget_snapshot.dart';
 
 DecisionSummary _decision(int numero, VoteResult result, DateTime date) =>
@@ -349,4 +350,97 @@ void main() {
       expect(read.count, summary.count);
     },
   );
+
+  group('sièges de l\'hémicycle (#78)', () {
+    const seats = [
+      HemicycleSeat(place: 1, group: 'PO1', vote: SeatVote.pour),
+      HemicycleSeat(place: 5, group: 'PO2', vote: SeatVote.contre),
+      HemicycleSeat(place: 3, group: 'PO1', vote: SeatVote.abstention),
+      HemicycleSeat(place: 6, group: 'PO3', vote: SeatVote.nonVotant),
+      HemicycleSeat(place: 7, group: 'PO3', vote: SeatVote.absent),
+    ];
+
+    test('une lettre par place, « - » sans député', () {
+      expect(encodeSeatVotes(seats), 'p-a-cnx');
+      expect(isSeatVotes('p-a-cnx'), isTrue);
+      for (final bad in [null, '', '---', 'ppz', 42, 'p' * 1001]) {
+        expect(isSeatVotes(bad), isFalse, reason: '$bad');
+      }
+    });
+
+    test('portés par la dernière décision et relus', () {
+      final snapshot = WidgetSnapshot.fromIndex(
+        index,
+        savedAt: DateTime.utc(2026, 10, 17),
+        seats: {'VTANR5L17V8710': 'p-a'},
+      );
+      final json = snapshot.toJson();
+      final decisions = json['decisions']! as List;
+      expect((decisions[0] as Map)['seats'], 'p-a');
+      expect((decisions[1] as Map).containsKey('seats'), isFalse);
+      final read = WidgetSnapshot.tryFromJson(jsonDecode(jsonEncode(json)))!;
+      expect(read.seatsOf('VTANR5L17V8710'), 'p-a');
+      expect(read.seatsOf('VTANR5L17V8709'), isNull);
+      // Illisibles : ignorés, la décision reste.
+      (decisions[0] as Map)['seats'] = 'ppz';
+      final bad = WidgetSnapshot.tryFromJson(jsonDecode(jsonEncode(json)))!;
+      expect(bad.decisions, hasLength(3));
+      expect(bad.decisions.first.seats, isNull);
+    });
+
+    test('repris de l\'instantané précédent pour la même décision', () async {
+      final previous = WidgetSnapshot.fromIndex(
+        index,
+        savedAt: DateTime.utc(2026, 10, 17),
+        seats: {'VTANR5L17V8710': 'ppp'},
+      );
+      var loads = 0;
+      final result = await latestDecisionSeats(
+        index,
+        previous: previous,
+        load: (id) async {
+          loads++;
+          return seats;
+        },
+      );
+      expect(result, {'VTANR5L17V8710': 'ppp'});
+      expect(loads, 0);
+    });
+
+    test('lus dans le détail pour une nouvelle décision', () async {
+      final ids = <String>[];
+      final result = await latestDecisionSeats(
+        index,
+        load: (id) async {
+          ids.add(id);
+          return seats;
+        },
+      );
+      expect(ids, ['VTANR5L17V8710']);
+      expect(result, {'VTANR5L17V8710': 'p-a-cnx'});
+    });
+
+    test('sans sièges ou en cas d\'échec : rien (les widgets dessinent '
+        'l\'arc)', () async {
+      expect(
+        await latestDecisionSeats(index, load: (_) async => null),
+        isEmpty,
+      );
+      expect(
+        await latestDecisionSeats(
+          index,
+          load: (_) => throw Exception('hors ligne'),
+        ),
+        isEmpty,
+      );
+      expect(await latestDecisionSeats(index), isEmpty);
+      expect(
+        await latestDecisionSeats(
+          DecisionIndex(generatedAt: DateTime.utc(2026), decisions: const []),
+          load: (_) async => seats,
+        ),
+        isEmpty,
+      );
+    });
+  });
 }

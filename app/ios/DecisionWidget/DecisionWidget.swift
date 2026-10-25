@@ -20,42 +20,48 @@ extension WidgetDecision {
 
 struct DecisionEntry: TimelineEntry {
   let date: Date
-  /// Dernières décisions, de la plus récente à la plus ancienne : trois au
-  /// plus, pour le grand widget ; le petit et le moyen n'affichent que la
-  /// première.
+  /// Dernières décisions, de la plus récente à la plus ancienne ; les widgets
+  /// n'affichent que la première (#78).
   let decisions: [WidgetDecision]
   /// Prochains votes solennels de l'instantané (#56).
   var upcomingVotes: [UpcomingVote] = []
 
   var decision: WidgetDecision? { decisions.first }
 
-  /// Vote solennel à annoncer à l'instant de l'entrée : la dernière décision
-  /// a plus de trois jours (ou il n'y en a pas) et le vote n'est pas passé.
+  /// Vote solennel annoncé à la place de la décision (petit et moyen) : la
+  /// dernière décision a plus de trois jours (ou il n'y en a pas) et le vote
+  /// n'est pas passé.
   var upcomingVote: UpcomingVote? {
     UpcomingVote.shown(among: upcomingVotes, latestDecisionDay: decision?.date, now: date)
+  }
+
+  /// Prochain vote pas encore passé, dans la bande du grand widget.
+  var nextVote: UpcomingVote? {
+    UpcomingVote.shown(among: upcomingVotes, latestDecisionDay: nil, now: date)
   }
 }
 
 struct DecisionProvider: TimelineProvider {
   func placeholder(in context: Context) -> DecisionEntry {
-    DecisionEntry(date: .now, decisions: WidgetDecision.samples)
+    DecisionEntry(date: .now, decisions: WidgetDecision.samples, upcomingVotes: UpcomingVote.samples)
   }
 
   func getSnapshot(in context: Context, completion: @escaping (DecisionEntry) -> Void) {
     // Dans la galerie, montrer un exemple si l'app n'a encore rien écrit.
     let snapshot = DecisionSnapshot.load()
     let decisions = snapshot?.latest(DecisionSnapshot.largeWidgetCount) ?? []
+    let sample = decisions.isEmpty && context.isPreview
     completion(
       DecisionEntry(
         date: .now,
-        decisions: decisions.isEmpty && context.isPreview ? WidgetDecision.samples : decisions,
-        upcomingVotes: snapshot?.upcomingVotes ?? []))
+        decisions: sample ? WidgetDecision.samples : decisions,
+        upcomingVotes: sample ? UpcomingVote.samples : snapshot?.upcomingVotes ?? []))
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<DecisionEntry>) -> Void) {
-    // Rafraîchi sans l'app toutes les heures, avec une entrée à minuit pour la
-    // date relative (voir DecisionFetcher.swift). L'app recharge aussi le widget
-    // dès qu'elle écrit un nouvel instantané.
+    // Rafraîchi sans l'app toutes les heures, avec une entrée à minuit (voir
+    // DecisionFetcher.swift). L'app recharge aussi le widget dès qu'elle écrit
+    // un nouvel instantané.
     Task { completion(await DecisionTimeline.make()) }
   }
 }
@@ -66,7 +72,6 @@ struct DecisionWidgetView: View {
 
   var body: some View {
     content
-      .padding(padding)
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .widgetURL(url)
       .containerBackground(for: .widget) { Palette.surface }
@@ -75,340 +80,292 @@ struct DecisionWidgetView: View {
   @ViewBuilder
   private var content: some View {
     // Sans décision récente, le petit et le moyen widget annoncent le
-    // prochain vote solennel ; le grand l'ajoute sous ses décisions.
+    // prochain vote solennel ; le grand le met dans sa bande du bas.
     switch (family, entry.decision, entry.upcomingVote) {
     case (.systemSmall, _, let vote?):
-      SmallUpcomingView(vote: vote)
+      SmallUpcomingView(vote: vote).padding(14)
     case (.systemMedium, _, let vote?):
-      UpcomingView(vote: vote)
+      MediumUpcomingView(vote: vote).padding(14)
     case (_, nil, _):
-      EmptyDecisionView()
+      EmptyDecisionView().padding(14)
     case (.systemSmall, let decision?, _):
-      SmallDecisionView(decision: decision, now: entry.date)
-    case (.systemLarge, _, let vote):
-      LargeDecisionsView(decisions: entry.decisions, upcomingVote: vote, now: entry.date)
+      SmallDecisionView(decision: decision).padding(14)
+    case (.systemLarge, let decision?, _):
+      LargeDecisionView(decision: decision, nextVote: entry.nextVote)
     case (_, let decision?, _):
-      DecisionView(decision: decision, now: entry.date)
+      MediumDecisionView(decision: decision).padding(14)
     }
   }
 
-  /// Marges des maquettes (les marges système sont désactivées).
-  private var padding: EdgeInsets {
-    switch family {
-    case .systemSmall: EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14)
-    case .systemLarge: EdgeInsets(top: 16, leading: 16, bottom: 12, trailing: 16)
-    default: EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16)
-    }
-  }
-
-  /// Tap hors d'une ligne : le grand widget ouvre la liste (chaque ligne a
-  /// son propre lien), les autres le détail de leur décision, ou la liste
-  /// quand ils annoncent le prochain vote.
+  /// Le détail de la décision affichée, ou la liste quand le widget annonce
+  /// le prochain vote (la bande du grand widget a son propre lien).
   private var url: URL {
-    if family == .systemLarge || entry.upcomingVote != nil { return listURL }
+    if family != .systemLarge, entry.upcomingVote != nil { return listURL }
     return entry.decision?.detailURL ?? listURL
   }
 }
 
-/// « Prochain vote solennel » (#56).
-private let upcomingKicker = "Prochain vote solennel"
+/// Mot du résultat, couleur du vote gagnant, suivi des mentions
+/// (« provisoire », « à main levée ») en petit. Sous un décompte
+/// (`withCount`), « à main levée » y est déjà.
+private struct ResultLine: View {
+  let decision: WidgetDecision
+  var size: CGFloat = WidgetTheme.resultSize
+  var withCount = false
 
-/// Petit widget sans décision récente : « Prochain vote solennel », le jour
-/// (« Mar. 27 oct. ») à la place de l'arc, puis le titre court.
-private struct SmallUpcomingView: View {
-  let vote: UpcomingVote
+  private var mentions: [String] {
+    decision.mentions.filter { !(withCount && $0 == WidgetDecision.mainLeveeMention) }
+  }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 2) {
-      MetaText(text: upcomingKicker)
-        .minimumScaleFactor(0.85)
-      Text(metaLine([vote.dayLabel]))
-        .font(.geist(20, semibold: true, relativeTo: .title3))
-        .tracking(-0.2)
-        .foregroundStyle(Palette.ink)
-        .lineLimit(1)
-        .minimumScaleFactor(0.8)
-      Spacer(minLength: 6)
-      DecisionTitle(text: vote.title, lineLimit: 4, lineSpacing: 0)
+    HStack(alignment: .firstTextBaseline, spacing: 6) {
+      Text(decision.resultLabel)
+        .font(WidgetTheme.display(size))
+        .tracking(-0.01 * size)
+        .foregroundStyle(Palette.color(decision.result))
+        .fixedSize()
+      if !mentions.isEmpty {
+        Text(mentions.joined(separator: " · "))
+          .font(WidgetTheme.meta(11.5))
+          .foregroundStyle(Palette.ink2)
+          .lineLimit(1)
+          .minimumScaleFactor(WidgetTheme.minimumScale)
+      }
     }
-    .accessibilityElement(children: .combine)
   }
 }
 
-/// Jour du vote en colonne (« mar. », « 27 », « oct. »), à la place de l'arc
-/// du widget moyen.
-private struct UpcomingDay: View {
-  let vote: UpcomingVote
+/// Titre court : nombre de lignes maximal et léger rétrécissement aux
+/// grandes tailles de texte.
+private struct ShortTitle: View {
+  let text: String
+  let font: Font
+  var lineLimit = 2
+
+  var body: some View {
+    Text(text)
+      .font(font)
+      .foregroundStyle(Palette.ink)
+      .lineLimit(lineLimit)
+      .minimumScaleFactor(WidgetTheme.minimumScale)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .fixedSize(horizontal: false, vertical: true)
+  }
+}
+
+/// Décompte sous l'hémicycle, ou « À main levée » sans scrutin public.
+private struct CountLine: View {
+  let decision: WidgetDecision
+
+  var body: some View {
+    if decision.isMainLevee {
+      Text("À main levée")
+        .font(WidgetTheme.meta())
+        .foregroundStyle(Palette.ink2)
+        .lineLimit(1)
+    } else if let count = decision.count {
+      TallyView(count: count)
+    }
+  }
+}
+
+/// Petit widget : hémicycle, « Adopté » / « Rejeté », titre court sur deux
+/// lignes.
+private struct SmallDecisionView: View {
+  let decision: WidgetDecision
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      DecisionHemicycleView(decision: decision)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      ResultLine(decision: decision)
+        .padding(.top, 8)
+        .layoutPriority(1)
+      ShortTitle(text: decision.title, font: WidgetTheme.title(WidgetTheme.smallTitleSize))
+        .padding(.top, 2)
+        .layoutPriority(1)
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(decision.accessibilityLabel)
+  }
+}
+
+/// Moyen : hémicycle et décompte à gauche ; résultat, titre court et date à
+/// droite.
+private struct MediumDecisionView: View {
+  let decision: WidgetDecision
+
+  var body: some View {
+    GeometryReader { proxy in
+      HStack(alignment: .center, spacing: 14) {
+        VStack(spacing: 8) {
+          DecisionHemicycleView(decision: decision, arcLineWidth: 14)
+          CountLine(decision: decision)
+        }
+        .frame(width: proxy.size.width * 0.46)
+        VStack(alignment: .leading, spacing: 0) {
+          ResultLine(decision: decision, withCount: true)
+          ShortTitle(
+            text: decision.title, font: WidgetTheme.display(WidgetTheme.mediumTitleSize),
+            lineLimit: 3
+          )
+          .padding(.top, 4)
+          Spacer(minLength: 4)
+          Text(decision.shortDateLabel)
+            .font(WidgetTheme.meta())
+            .foregroundStyle(Palette.ink2)
+            .lineLimit(1)
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+      }
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(decision.accessibilityLabel)
+  }
+}
+
+/// Grand : la dernière décision en grand (hémicycle, résultat, décompte, titre
+/// court), puis la bande du prochain vote, qui ouvre la liste.
+private struct LargeDecisionView: View {
+  let decision: WidgetDecision
+  let nextVote: UpcomingVote?
 
   var body: some View {
     VStack(spacing: 0) {
-      Text(vote.weekdayLabel)
-        .font(.geist(13, relativeTo: .footnote))
-        .foregroundStyle(Palette.ink2)
-      Text(vote.dayOfMonthLabel)
-        .font(.geist(34, semibold: true, relativeTo: .title))
-        .tracking(-0.68)
-        .foregroundStyle(Palette.ink)
-      Text(vote.monthLabel)
-        .font(.geist(13, relativeTo: .footnote))
-        .foregroundStyle(Palette.ink2)
+      VStack(alignment: .leading, spacing: 0) {
+        DecisionHemicycleView(decision: decision)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        HStack(alignment: .firstTextBaseline) {
+          ResultLine(decision: decision, size: WidgetTheme.largeResultSize, withCount: true)
+          Spacer(minLength: 8)
+          CountLine(decision: decision)
+        }
+        .padding(.top, 10)
+        .layoutPriority(1)
+        ShortTitle(text: decision.title, font: WidgetTheme.display(WidgetTheme.largeTitleSize))
+          .padding(.top, 6)
+          .layoutPriority(1)
+      }
+      .padding(.horizontal, 18)
+      .padding(.top, 18)
+      .padding(.bottom, nextVote == nil ? 18 : 12)
+      .accessibilityElement(children: .ignore)
+      .accessibilityLabel(decision.accessibilityLabel)
+      if let nextVote {
+        Link(destination: listURL) { NextVoteBand(vote: nextVote) }
+          .layoutPriority(1)
+      }
     }
-    .lineLimit(1)
-    .accessibilityElement(children: .combine)
   }
 }
 
-/// Widget moyen sans décision récente : le jour du vote dans la colonne de
-/// l'arc, « Prochain vote solennel » et le titre court à droite.
-private struct UpcomingView: View {
+/// Bande « prochain vote » du grand widget : le jour et le mois, le titre
+/// court et « Vote · mar. 15 h ».
+private struct NextVoteBand: View {
   let vote: UpcomingVote
 
   var body: some View {
     HStack(spacing: 14) {
-      UpcomingDay(vote: vote).frame(width: 92)
-      VStack(alignment: .leading, spacing: 5) {
-        MetaText(text: upcomingKicker)
-        DecisionTitle(text: vote.title, size: 14.5, lineLimit: 3)
-      }
-      .frame(maxHeight: .infinity)
-    }
-    .frame(maxHeight: .infinity)
-    .accessibilityElement(children: .combine)
-  }
-}
-
-/// Ligne du grand widget sous les décisions : le jour à la place de l'arc,
-/// le titre court, puis « Prochain vote solennel · mar. 27 oct. ».
-private struct UpcomingRow: View {
-  let vote: UpcomingVote
-
-  var body: some View {
-    HStack(spacing: 12) {
-      VStack(spacing: -2) {
+      VStack(spacing: 0) {
         Text(vote.dayOfMonthLabel)
-          .font(.geist(17, semibold: true, relativeTo: .body))
+          .font(WidgetTheme.day(WidgetTheme.bandDaySize))
           .foregroundStyle(Palette.ink)
         Text(vote.monthLabel)
-          .font(.geist(11, relativeTo: .caption2))
+          .font(WidgetTheme.meta(WidgetTheme.monthSize))
           .foregroundStyle(Palette.ink2)
       }
       .lineLimit(1)
-      .frame(width: 48)
-      VStack(alignment: .leading, spacing: 3) {
-        DecisionTitle(text: vote.title, lineLimit: 2)
-        MetaText(text: "\(upcomingKicker) · \(vote.dayLabel)")
-      }
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .accessibilityElement(children: .combine)
-  }
-}
-
-/// Parties d'une ligne d'informations jointes par « · », initiale en majuscule.
-private func metaLine(_ parts: [String?]) -> String {
-  let line = parts.compactMap { $0 }.joined(separator: " · ")
-  return line.prefix(1).uppercased() + line.dropFirst()
-}
-
-/// Titre de décision : Geist semibold, interlettrage serré.
-private struct DecisionTitle: View {
-  let text: String
-  var size: CGFloat = 14
-  var lineLimit: Int
-  var lineSpacing: CGFloat = 1.5
-
-  var body: some View {
-    Text(text)
-      .font(.geist(size, semibold: true, relativeTo: .subheadline))
-      .tracking(-0.01 * size)
-      .lineSpacing(lineSpacing)
-      .foregroundStyle(Palette.ink)
-      .lineLimit(lineLimit)
-      .frame(maxWidth: .infinity, alignment: .leading)
-  }
-}
-
-/// Ligne secondaire (étape, mentions, date relative).
-private struct MetaText: View {
-  let text: String
-  var lineLimit = 1
-
-  var body: some View {
-    Text(text)
-      .font(.geist(11.5, relativeTo: .caption))
-      .foregroundStyle(Palette.ink2)
-      .lineLimit(lineLimit)
-  }
-}
-
-/// Petit widget : arc en haut à gauche, résultat coloré à droite, titre (4
-/// lignes au plus), puis mentions et date relative si la place le permet : le
-/// titre passe avant.
-private struct SmallDecisionView: View {
-  let decision: WidgetDecision
-  let now: Date
-
-  var body: some View {
-    ViewThatFits(in: .vertical) {
-      content(showsDate: true)
-      content(showsDate: false)
-    }
-  }
-
-  private func content(showsDate: Bool) -> some View {
-    VStack(alignment: .leading, spacing: 0) {
-      HStack(alignment: .bottom) {
-        VoteArcView(decision: decision).frame(width: 58, height: 32)
-        Spacer(minLength: 4)
-        Text(decision.result.label)
-          .font(.geist(12, semibold: true, relativeTo: .caption))
-          .foregroundStyle(Palette.color(decision.result))
-          .fixedSize()
-      }
-      Spacer(minLength: 4)
-      DecisionTitle(text: decision.title, lineLimit: 4, lineSpacing: 0)
-      Spacer(minLength: 4)
-      let date = RelativeDate.inlineLabel(day: decision.date, now: now)
-      let parts = decision.mentions + (showsDate ? [date] : [])
-      if !parts.isEmpty {
-        MetaText(text: metaLine(parts), lineLimit: 2)
-      }
-    }
-  }
-}
-
-/// Widget moyen : colonne arc, résultat et chiffres, puis étape et date,
-/// titre et explication sur deux lignes.
-private struct DecisionView: View {
-  let decision: WidgetDecision
-  /// Instant d'affichage de l'entrée, pour la date relative.
-  let now: Date
-
-  var body: some View {
-    HStack(spacing: 14) {
-      VStack(spacing: 6) {
-        VoteArcView(decision: decision, lineWidth: 14).frame(width: 92, height: 51)
-        Text(decision.result.label)
-          .font(.geist(13, semibold: true, relativeTo: .footnote))
-          .foregroundStyle(Palette.color(decision.result))
-        if let count = decision.count, !decision.isMainLevee {
-          Text("\(count.pour) · \(count.contre) · \(count.abstentions)")
-            .font(.geistMono(10.5))
-            .foregroundStyle(Palette.ink2)
-            .accessibilityLabel(VoteArcView.accessibilityLabel(decision))
-        } else if decision.isMainLevee {
-          Text("À main levée")
-            .font(.geist(10.5, relativeTo: .caption2))
-            .foregroundStyle(Palette.ink2)
-        }
-      }
-      .lineLimit(1)
-      .frame(width: 92)
-      ViewThatFits(in: .vertical) {
-        details(explanationLines: 2)
-        details(explanationLines: 1)
-        details(explanationLines: 0)
-      }
-    }
-    .frame(maxHeight: .infinity)
-  }
-
-  private func details(explanationLines: Int) -> some View {
-    VStack(alignment: .leading, spacing: 5) {
-      // La mention « à main levée » est déjà sous l'arc.
-      MetaText(
-        text: metaLine([
-          decision.stageWithoutMentions,
-          decision.isProvisional ? WidgetDecision.provisionalMention : nil,
-          RelativeDate.inlineLabel(day: decision.date, now: now),
-        ]))
-      DecisionTitle(
-        text: decision.title, size: 14.5,
-        lineLimit: decision.explanation == nil || explanationLines == 0 ? 4 : 2)
-      if let explanation = decision.explanation, explanationLines > 0 {
-        Text(explanation)
-          .font(.geist(12, relativeTo: .caption))
-          .lineSpacing(2.5)
-          .foregroundStyle(Palette.ink2)
-          .lineLimit(explanationLines)
-          .frame(maxWidth: .infinity, alignment: .leading)
-      }
-    }
-    .frame(maxHeight: .infinity)
-  }
-}
-
-/// Grand widget : en-tête (logo, « Dernières décisions ») puis les trois
-/// dernières décisions. Chaque ligne ouvre le détail de sa décision ; le reste
-/// du widget (en-tête, marges) ouvre la liste.
-private struct LargeDecisionsView: View {
-  let decisions: [WidgetDecision]
-  /// Prochain vote solennel, ajouté en quatrième ligne (#56).
-  var upcomingVote: UpcomingVote?
-  let now: Date
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 0) {
-      HStack(spacing: 8) {
-        HemicycleLogo().frame(width: 22, height: 12)
-        Text("Dernières décisions")
-          .font(.geist(12, semibold: true, relativeTo: .caption))
-          .foregroundStyle(Palette.ink2)
-      }
-      .padding(.bottom, 6)
-      .accessibilityElement(children: .combine)
-      // Trois emplacements de même hauteur, même s'il y a moins de décisions.
-      ForEach(0..<DecisionSnapshot.largeWidgetCount, id: \.self) { index in
-        Group {
-          if index < decisions.count {
-            Link(destination: decisions[index].detailURL) {
-              DecisionRow(decision: decisions[index], now: now)
-            }
-          } else {
-            Color.clear
-          }
-        }
-        .frame(maxHeight: .infinity)
-        .overlay(alignment: .bottom) {
-          if index + 1 < min(decisions.count, DecisionSnapshot.largeWidgetCount)
-            || (upcomingVote != nil && index + 1 == decisions.count)
-          {
-            Rectangle().fill(Palette.rule).frame(height: 1)
-          }
-        }
-      }
-      // Hors des liens des décisions : le tap ouvre la liste.
-      if let upcomingVote {
-        UpcomingRow(vote: upcomingVote).frame(maxHeight: .infinity)
-      }
-    }
-  }
-}
-
-private struct DecisionRow: View {
-  let decision: WidgetDecision
-  let now: Date
-
-  var body: some View {
-    HStack(spacing: 12) {
-      VoteArcView(decision: decision).frame(width: 48, height: 27)
-      VStack(alignment: .leading, spacing: 3) {
-        DecisionTitle(text: decision.title, lineLimit: 2)
-        // « provisoire » et « à main levée » restent visibles.
-        let rest = (decision.mentions + [RelativeDate.inlineLabel(day: decision.date, now: now)])
-          .joined(separator: " · ")
-        let result = Text(decision.result.label)
-          .font(.geist(11.5, semibold: true, relativeTo: .caption))
-          .foregroundColor(Palette.color(decision.result))
-        Text("\(result) · \(rest)")
-          .font(.geist(11.5, relativeTo: .caption))
+      .frame(minWidth: 40)
+      VStack(alignment: .leading, spacing: 0) {
+        Text(vote.title)
+          .font(WidgetTheme.title(15, semibold: true))
+          .foregroundStyle(Palette.ink)
+          .lineLimit(1)
+          .minimumScaleFactor(WidgetTheme.minimumScale)
+        Text(vote.whenLabel)
+          .font(WidgetTheme.meta())
           .foregroundStyle(Palette.ink2)
           .lineLimit(1)
       }
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .contentShape(Rectangle())
-    .accessibilityElement(children: .combine)
+    .padding(.horizontal, 18)
+    .padding(.top, 12)
+    .padding(.bottom, 14)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Palette.raised)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(vote.accessibilityLabel)
+  }
+}
+
+/// Arc vide et jour du vote en grand, le mois dessous.
+private struct UpcomingFigure: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    EmptyArcView()
+      .overlay(alignment: .bottom) {
+        VStack(spacing: 0) {
+          Text(vote.dayOfMonthLabel)
+            .font(WidgetTheme.day(WidgetTheme.daySize))
+            .foregroundStyle(Palette.ink)
+            .minimumScaleFactor(0.6)
+          Text(vote.monthLabel)
+            .font(WidgetTheme.meta(WidgetTheme.monthSize))
+            .foregroundStyle(Palette.ink2)
+        }
+        .lineLimit(1)
+        .offset(y: 4)
+      }
+  }
+}
+
+/// Petit « prochain vote » : arc vide, jour en grand et mois, « Vote · mar.
+/// 15 h », titre court.
+private struct SmallUpcomingView: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      UpcomingFigure(vote: vote)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      Text(vote.whenLabel)
+        .font(WidgetTheme.meta())
+        .foregroundStyle(Palette.ink2)
+        .lineLimit(1)
+        .padding(.top, 8)
+        .layoutPriority(1)
+      ShortTitle(text: vote.title, font: WidgetTheme.title(WidgetTheme.smallTitleSize))
+        .padding(.top, 2)
+        .layoutPriority(1)
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(vote.accessibilityLabel)
+  }
+}
+
+/// Moyen « prochain vote » : l'arc vide et le jour à gauche, à la place de
+/// l'hémicycle ; « Vote · mar. 15 h » et le titre court à droite.
+private struct MediumUpcomingView: View {
+  let vote: UpcomingVote
+
+  var body: some View {
+    GeometryReader { proxy in
+      HStack(alignment: .center, spacing: 14) {
+        UpcomingFigure(vote: vote).frame(width: proxy.size.width * 0.46)
+        VStack(alignment: .leading, spacing: 4) {
+          Text(vote.whenLabel)
+            .font(WidgetTheme.meta())
+            .foregroundStyle(Palette.ink2)
+            .lineLimit(1)
+          ShortTitle(
+            text: vote.title, font: WidgetTheme.display(WidgetTheme.mediumTitleSize), lineLimit: 3)
+        }
+      }
+      .frame(maxHeight: .infinity)
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(vote.accessibilityLabel)
   }
 }
 
@@ -418,11 +375,10 @@ private struct EmptyDecisionView: View {
       HemicycleLogo().frame(width: 36, height: 20)
         .padding(.bottom, 4)
       Text("Décisions de l'Assemblée")
-        .font(.geist(14, semibold: true, relativeTo: .subheadline))
-        .tracking(-0.14)
+        .font(WidgetTheme.title(WidgetTheme.smallTitleSize, semibold: true))
         .foregroundStyle(Palette.ink)
       Text("Ouvrez l'app pour charger la dernière décision.")
-        .font(.geist(11.5, relativeTo: .caption))
+        .font(WidgetTheme.meta(11.5))
         .foregroundStyle(Palette.ink2)
       Spacer(minLength: 0)
     }
@@ -435,26 +391,36 @@ extension WidgetDecision {
     id: "exemple",
     result: .adopte,
     date: "2026-10-13",
-    title: "Juges spécialisés pour les violences sexuelles et intrafamiliales",
+    title: "Juges des violences sexuelles",
     stage: "1re lecture",
     explanation:
       "Le texte prévoit une formation obligatoire pour les magistrats chargés des violences sexuelles et intrafamiliales.",
     count: VoteCount(pour: 503, contre: 0, abstentions: 67),
-    voteMode: .scrutinPublic
+    voteMode: .scrutinPublic,
+    seats: SeatVotes(encoded: HemicycleGeometry.sampleVotes)
   )
 
-  /// Exemples de la galerie et de l'aperçu (le grand widget en montre trois).
+  /// Exemples des aperçus (le premier dans la galerie).
   static let samples = [
     sample,
     WidgetDecision(
       id: "exemple-rejet", result: .rejete, date: "2026-10-08",
-      title: "Réforme de l'espace Schengen et contrôles aux frontières",
+      title: "Contrôles aux frontières Schengen",
       stage: "Résolution (sans valeur de loi)", explanation: nil,
       count: VoteCount(pour: 144, contre: 199, abstentions: 5), voteMode: .scrutinPublic),
     WidgetDecision(
       id: "exemple-main-levee", result: .adopte, date: "2026-10-07",
-      title: "Approbation d'un accord d'échange d'informations fiscales",
+      title: "Accord d'échange fiscal",
       stage: "1re lecture à l'AN · à main levée", explanation: nil, voteMode: .mainLevee),
+  ]
+}
+
+extension UpcomingVote {
+  /// Exemple de la galerie (bande du grand widget).
+  static let samples = [
+    UpcomingVote(
+      id: "exemple-vote", startsAt: UpcomingVote.instant("2026-11-03T14:00:00Z")!,
+      title: "Budget de l'État 2027")
   ]
 }
 
@@ -465,8 +431,8 @@ struct DecisionWidget: Widget {
     StaticConfiguration(kind: kind, provider: DecisionProvider()) { entry in
       DecisionWidgetView(entry: entry)
     }
-    .configurationDisplayName("Dernières décisions")
-    .description("Les dernières décisions de l'Assemblée nationale et leur résultat.")
+    .configurationDisplayName("Dernière décision")
+    .description("La dernière décision de l'Assemblée nationale, son hémicycle et le prochain vote.")
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     .contentMarginsDisabled()
   }
@@ -480,26 +446,16 @@ struct DecisionWidgetBundle: WidgetBundle {
 }
 
 private let previewTimeline: [DecisionEntry] = [
-  DecisionEntry(date: .now, decisions: WidgetDecision.samples),
   DecisionEntry(
-    date: .now,
-    decisions: [
-      WidgetDecision(
-        id: "exemple-rejet", result: .rejete, date: "2026-10-01",
-        title: "Budget de la Sécurité sociale pour 2027",
-        stage: "1re lecture à l'AN · provisoire",
-        explanation: "La première partie est rejetée : tout le texte tombe.")
-    ]),
+    date: UpcomingVote.instant("2026-10-14T08:00:00Z")!, decisions: WidgetDecision.samples,
+    upcomingVotes: UpcomingVote.samples),
+  // Sans sièges : l'arc du vote.
+  DecisionEntry(date: .now, decisions: Array(WidgetDecision.samples.dropFirst())),
   DecisionEntry(date: .now, decisions: []),
   // Dernière décision de plus de trois jours, vote solennel à venir (#56).
   DecisionEntry(
-    date: UpcomingVote.instant("2026-10-21T08:00:00Z")!,
-    decisions: WidgetDecision.samples,
-    upcomingVotes: [
-      UpcomingVote(
-        id: "exemple-vote", startsAt: UpcomingVote.instant("2026-10-27T14:00:00Z")!,
-        title: "Budget de la Sécurité sociale pour 2027")
-    ]),
+    date: UpcomingVote.instant("2026-10-30T08:00:00Z")!,
+    decisions: WidgetDecision.samples, upcomingVotes: UpcomingVote.samples),
 ]
 
 #Preview("Petit", as: .systemSmall) {

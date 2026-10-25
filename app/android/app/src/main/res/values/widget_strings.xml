@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="decision_widget_label">Dernière décision</string>
-    <string name="decision_widget_description">La dernière décision de l\'Assemblée nationale et son résultat.</string>
-    <string name="decision_widget_small_description">La dernière décision de l\'Assemblée nationale et son résultat, en bref.</string>
-    <string name="decision_widget_large_label">Dernières décisions</string>
-    <string name="decision_widget_large_description">Les trois dernières décisions de l\'Assemblée nationale et leur résultat.</string>
+    <string name="decision_widget_description">La dernière décision de l\'Assemblée nationale, son hémicycle et son décompte.</string>
+    <string name="decision_widget_small_description">La dernière décision de l\'Assemblée nationale et son hémicycle, en bref.</string>
+    <string name="decision_widget_large_label">Dernière décision en grand</string>
+    <string name="decision_widget_large_description">La dernière décision de l\'Assemblée nationale en grand et le prochain vote solennel.</string>
 </resources>

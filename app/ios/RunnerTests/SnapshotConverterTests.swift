@@ -321,4 +321,39 @@ final class SnapshotConverterTests: XCTestCase {
         fromIndex: Data(#"{"schemaVersion":2,"decisions":[]}"#.utf8), savedAt: savedAt))
     XCTAssertNil(SnapshotConverter.snapshot(fromIndex: Data("pas du json".utf8), savedAt: savedAt))
   }
+
+  func testSiegesDeLaDerniereDecision() throws {
+    let index = Data(
+      (#"{"schemaVersion":1,"decisions":["# + decision(8714).replacingOccurrences(
+        of: #""ensemble""#, with: #""inconnu""#) + "," + decision(8713) + "," + decision(8712)
+        + "]}").utf8)
+    // La première décision lisible, celle que les widgets dessinent.
+    XCTAssertEqual(SnapshotConverter.latestDecisionId(fromIndex: index), "VTANR5L17V8713")
+    XCTAssertNil(SnapshotConverter.latestDecisionId(fromIndex: Data("{}".utf8)))
+    let votes = try XCTUnwrap(SeatVotes(encoded: "pc-a"))
+    let json = try XCTUnwrap(
+      SnapshotConverter.snapshot(
+        fromIndex: index, savedAt: savedAt, seats: ["VTANR5L17V8713": votes]))
+    let snapshot = try JSONDecoder().decode(DecisionSnapshot.self, from: Data(json.utf8))
+    XCTAssertEqual(snapshot.decisions.map(\.id), ["VTANR5L17V8713", "VTANR5L17V8712"])
+    XCTAssertEqual(snapshot.decisions[0].seats, votes)
+    XCTAssertNil(snapshot.decisions[1].seats)
+  }
+
+  func testSiegesIllisiblesDansLInstantane() throws {
+    let json = #"""
+      {"version":1,"decisions":[{"id":"a","result":"adopte","date":"2026-10-13","title":"T",
+      "seats":"ppz"}]}
+      """#
+    let snapshot = try JSONDecoder().decode(DecisionSnapshot.self, from: Data(json.utf8))
+    XCTAssertEqual(snapshot.decisions.count, 1)
+    XCTAssertNil(snapshot.decisions[0].seats)
+  }
+
+  func testURLDuDetail() {
+    XCTAssertEqual(
+      DecisionFetcher.detailURL(baseURL: "https://exemple.test/", id: "VTANR5L17V8706")?
+        .absoluteString,
+      "https://exemple.test/v1/decisions/VTANR5L17V8706.json")
+  }
 }

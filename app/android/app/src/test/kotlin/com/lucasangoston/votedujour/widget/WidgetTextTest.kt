@@ -6,8 +6,6 @@ import org.junit.Test
 
 /** Textes des widgets et mentions tirées de l'étape. */
 class WidgetTextTest {
-  private val today = LocalDate.of(2026, 10, 18)
-
   private fun decision(stage: String? = null, voteMode: VoteMode? = null, count: VoteCount? = null) =
       WidgetDecision(
           id = "a",
@@ -40,50 +38,30 @@ class WidgetTextTest {
   }
 
   @Test
-  fun petit_widget_date_et_mentions() {
-    assertEquals("Il y a 5 jours", WidgetText.smallDate(decision("1re lecture à l'AN"), today))
-    assertEquals(
-        "Il y a 5 jours · provisoire",
-        WidgetText.smallDate(decision("1re lecture à l'AN · provisoire"), today),
-    )
-  }
-
-  @Test
-  fun widget_moyen_etape_puis_date() {
-    assertEquals(
-        "1re lecture à l'AN · il y a 5 jours",
-        WidgetText.mediumMeta(decision("1re lecture à l'AN"), today),
-    )
-    assertEquals("Il y a 5 jours", WidgetText.mediumMeta(decision(), today))
-  }
-
-  @Test
-  fun grand_widget_apres_le_resultat() {
-    assertEquals(" · à main levée · il y a 5 jours", WidgetText.largeMeta(decision("À main levée"), today))
-    assertEquals(" · hier", WidgetText.largeMeta(decision().copy(date = today.minusDays(1)), today))
-    assertEquals(" · 1er octobre 2026", WidgetText.largeMeta(decision().copy(date = LocalDate.of(2026, 10, 1)), today))
-  }
-
-  @Test
   fun lecture_d_ecran() {
     assertEquals(
-        "Adopté. 503 pour, 0 contre, 67 abstentions. Titre. Il y a 5 jours",
-        WidgetText.description(decision(count = VoteCount(503, 0, 67)), today),
+        "Adopté. Titre. 503 pour, 0 contre, 67 abstentions.",
+        decision(count = VoteCount(503, 0, 67)).accessibilityLabel,
     )
     assertEquals(
-        "Adopté. Vote à main levée. Titre. À main levée. Il y a 5 jours",
-        WidgetText.description(decision("À main levée", VoteMode.MAIN_LEVEE), today),
+        "Adopté. Titre. Vote à main levée. Décision provisoire.",
+        decision("À main levée · provisoire", VoteMode.MAIN_LEVEE).accessibilityLabel,
     )
+    assertEquals("Adopté. Fin.", decision().copy(title = "Fin.").accessibilityLabel)
+  }
+
+  @Test
+  fun date_courte_du_widget_moyen() {
+    assertEquals("13 oct.", decision().shortDateLabel)
+    assertEquals("1er nov.", decision().copy(date = LocalDate.of(2026, 11, 1)).shortDateLabel)
   }
 
   @Test
   fun pas_de_tiret_cadratin() {
     val texts =
         listOf(
-            WidgetText.smallDate(decision("x · provisoire"), today),
-            WidgetText.mediumMeta(decision("x"), today),
-            WidgetText.largeMeta(decision("à main levée"), today),
-            WidgetText.description(decision("x", count = VoteCount(1, 2, 3)), today),
+            decision("x · provisoire", count = VoteCount(1, 2, 3)).accessibilityLabel,
+            decision().shortDateLabel,
         )
     texts.forEach { assertEquals(false, it.contains('—')) }
   }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arc vide du prochain vote (#78) : deux bandes, teintées par Glance (couleur filet). Maquette :
+     viewBox 300 x 162, rayons 128 et 98, épaisseur 18. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="150dp"
+    android:height="81dp"
+    android:viewportWidth="300"
+    android:viewportHeight="162">
+    <path
+        android:pathData="M22,150 A128,128 0 0,1 278,150 M52,150 A98,98 0 0,1 248,150"
+        android:strokeWidth="18"
+        android:strokeColor="#FFFFFFFF" />
+</vector>

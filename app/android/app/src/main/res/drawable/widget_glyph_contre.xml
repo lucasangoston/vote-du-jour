@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Symbole du décompte des widgets (#78), anneau (contre) : la forme dit le vote. Teinté par Glance
+     (couleur du vote). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="12dp"
+    android:viewportWidth="12"
+    android:viewportHeight="12">
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="2" android:pathData="M2,6 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+</vector>
