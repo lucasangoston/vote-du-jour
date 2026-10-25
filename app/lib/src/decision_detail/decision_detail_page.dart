@@ -445,6 +445,8 @@ class _SeatsVoteCard extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              NoVoteNote(detail.seats!),
             ],
           );
         },

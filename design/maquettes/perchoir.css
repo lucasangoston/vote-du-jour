@@ -368,3 +368,5 @@ ul { list-style: none; }
 :root[data-pal="terre"][data-theme="dark"] { --v-pour: #A9C2A0; --v-contre: #8C4A2B; --v-abst: #4A4A4A; --pour: #A9C2A0; --contre: #C98A55; --pour-ink: #A9C2A0; --contre-ink: #D9A070; }
 :root[data-pal="sourd"] { --v-pour: #2F5F55; --v-contre: #C9907A; --v-abst: #DADADA; --pour: #2F5F55; --contre: #A3523A; --pour-ink: #2F5F55; --contre-ink: #A3523A; }
 :root[data-pal="sourd"][data-theme="dark"] { --v-pour: #8DB8AC; --v-contre: #7E3E2C; --v-abst: #4A4A4A; --pour: #8DB8AC; --contre: #C98A72; --pour-ink: #8DB8AC; --contre-ink: #D49A82; }
+.novote { margin: 6px auto 0; width: 100%; max-width: 318px; text-align: right; font-size: 13px; color: var(--ink2); }
+.detail-app .novote { max-width: none; text-align: center; margin-top: 12px; }
