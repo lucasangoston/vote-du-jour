@@ -445,7 +445,7 @@ class _Pager extends StatelessWidget {
                 height: 7,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: i == current ? colors.ink : colors.abstention,
+                  color: i == current ? colors.ink : colors.dot,
                 ),
               ),
             ),

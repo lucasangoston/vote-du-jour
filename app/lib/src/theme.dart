@@ -31,6 +31,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     required this.plate,
     required this.mark,
     required this.onMark,
+    required this.dot,
   });
 
   static const light = HemicycleColors(
@@ -48,6 +49,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     plate: Color(0xFFFFFFFF),
     mark: Color(0xFF4F5761),
     onMark: Color(0xFFFFFFFF),
+    dot: Color(0xFFB3B3B3),
   );
 
   static const dark = HemicycleColors(
@@ -59,12 +61,13 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     rule: Color(0xFF2A2A2A),
     pour: Color(0xFF4FB08F),
     contre: Color(0xFFE07A58),
-    abstention: Color(0xFF4A5058),
+    abstention: Color(0xFF9AA2AB),
     pressed: Color(0xFF1F1F1F),
     raised: Color(0xFF1F1F1F),
     plate: Color(0xFFFFFFFF),
     mark: Color(0xFF4A5058),
     onMark: Color(0xFFFFFFFF),
+    dot: Color(0xFF4D4D4D),
   );
 
   /// Fond des écrans (`ground` de DESIGN.md) : blanc le jour, noir la nuit.
@@ -91,8 +94,8 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
   /// Contre, rejeté (couleur des données, inchangée).
   final Color contre;
 
-  /// Abstentions (couleur des données) : le gris de jour tient 3:1 sur la
-  /// surface (arcs, jauges).
+  /// Abstentions (couleur des données, `abst-light` / `abst-dark` de
+  /// DESIGN.md) : 3:1 au moins sur le fond et la surface (arcs, jauges).
   final Color abstention;
 
   /// Fond d'un élément touché (rangée, bouton icône).
@@ -111,6 +114,10 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
   /// Texte d'une vignette à sigle ([mark]).
   final Color onMark;
 
+  /// Points inactifs de la pagination : gris neutre de l'interface,
+  /// décoratif, sans lien avec les couleurs du vote.
+  final Color dot;
+
   @override
   HemicycleColors copyWith({
     Color? background,
@@ -127,6 +134,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     Color? plate,
     Color? mark,
     Color? onMark,
+    Color? dot,
   }) => HemicycleColors(
     background: background ?? this.background,
     surface: surface ?? this.surface,
@@ -142,6 +150,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     plate: plate ?? this.plate,
     mark: mark ?? this.mark,
     onMark: onMark ?? this.onMark,
+    dot: dot ?? this.dot,
   );
 
   @override
@@ -163,6 +172,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
       plate: mix(plate, other.plate),
       mark: mix(mark, other.mark),
       onMark: mix(onMark, other.onMark),
+      dot: mix(dot, other.dot),
     );
   }
 }
