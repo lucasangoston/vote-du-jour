@@ -13,6 +13,7 @@ import '../hemicycle/result_style.dart';
 import '../hemicycle/vote_arc.dart';
 import '../hemicycle/vote_glyph.dart';
 import '../provisional_badge.dart';
+import '../skeleton.dart';
 import '../theme.dart';
 import 'decision_detail_repository.dart';
 import 'vote_arguments.dart';
@@ -23,9 +24,10 @@ import 'who_voted_what.dart';
 /// quoi » (groupes rangés par position), « Pourquoi ils ont voté ainsi »
 /// (arguments des groupes), liens vers les pages officielles et source.
 ///
-/// [summary] (la ligne de la liste) s'affiche tout de suite, arc compris ;
-/// le fichier de détail complète l'écran quand il arrive. Ouvert depuis un
-/// widget, seul [id] est connu.
+/// Tant que le fichier de détail charge, toute la page est en squelette
+/// ([DetailSkeleton]) ; [summary] (la ligne de la liste) ne sert que si le
+/// détail est introuvable : l'écran s'affiche alors avec l'arc. Ouvert
+/// depuis un widget, seul [id] est connu.
 class DecisionDetailPage extends StatefulWidget {
   const DecisionDetailPage({
     super.key,
@@ -96,12 +98,14 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
             padding: EdgeInsets.fromLTRB(20, 0, 20, 40 + padding.bottom),
             children: [
               const HemicycleBackButton(),
-              if (decision == null)
+              // Squelette de toute la page tant que le détail charge : ni
+              // l'ancien arc puis l'hémicycle, ni un écran à moitié rempli.
+              if (_detail == null && _loading)
+                const DetailSkeleton()
+              else if (decision == null)
                 Padding(
                   padding: const EdgeInsets.only(top: 120),
-                  child: _loading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _Unavailable(onRetry: _load),
+                  child: _Unavailable(onRetry: _load),
                 )
               else
                 ..._content(decision),
