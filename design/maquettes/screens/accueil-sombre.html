@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Le Perchoir, la séance du jour</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<script>try{const q=new URLSearchParams(location.search).get('pal');if(q)document.documentElement.dataset.pal=q;}catch(e){}</script>
 <script>try{const t=localStorage.getItem('perchoir-apparence');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(t==='auto')document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){}</script>
 <style>
 /* Le Perchoir — charte « Hémicycle » (gardée telle quelle), règles tasteskill v2.
@@ -327,6 +328,57 @@ ul { list-style: none; }
 /* la carte se centre entre le titre et le bouton, plutôt que de laisser le vide en bas */
 @media (max-width: 759px) { .home .deck { margin-top: auto; } .home .pager { margin-bottom: auto; } .home .primary { margin-top: 24px; } }
 .w-tally .t-contre .gly { color: var(--v-contre); } .w-tally .t-pour .gly { color: var(--v-pour); } .w-tally .t-abst .gly { color: var(--v-abst); }
+
+/* ================= Système inspiré de Wired (DESIGN.md, awesome-design-md) =================
+   Duo noir et blanc d'un magazine imprimé : aucune couleur de marque, la seule couleur vient des données
+   (groupes, vote). Serif d'affichage en graisse 400, serif pour le récit, sans pour la structure.
+   Angles droits partout, filets de 1 px au lieu des surfaces arrondies, aucune ombre. */
+:root, :root[data-theme="light"] {
+  --ground: #FFFFFF; --surface: #F5F5F5; --raised: #EBEBEB;
+  --ink: #000000; --ink2: #6B6B6B; --body: #1A1A1A; --rule: #E0E0E0; --logo-bg: #F5F5F5;
+}
+:root[data-theme="dark"] {
+  --ground: #000000; --surface: #121212; --raised: #1F1F1F;
+  --ink: #FFFFFF; --ink2: #9E9E9E; --body: #E6E6E6; --rule: #2A2A2A; --logo-bg: #FFFFFF;
+}
+/* angles droits ; les cadres du système (widgets, notification) gardent la forme imposée par le téléphone */
+.sheet, .rows, .groups, .links, .panel, .tiles3 button, .seg, .seg button, .chips button, .primary, .args,
+.vote, .arts, .about .id, .ib, .gl, .points, .tab { border-radius: 0 !important; }
+/* affichage : Newsreader 400, l'élégance vient du dessin, pas de la graisse */
+.serif, .day, .text h2, .detail h1, .verdict, .res .word, .resrow .word, .w-res, .w-m .w-t, .w-lg .w-t, .big, .w-day b, .w-nd b { font-weight: 400 !important; }
+.day { font-size: 34px; letter-spacing: -0.02em; }
+.detail h1 { font-size: 32px; line-height: 1.1; letter-spacing: -0.01em; }
+/* récit en serif, structure en sans */
+.lede, .plan li, .args p { font-family: "Newsreader", Georgia, serif; font-size: 18px; line-height: 1.5; color: var(--body); }
+.args p b { font-family: "Geist", system-ui, sans-serif; font-size: 14px; }
+.kind, .of, .wait, .w-when, .w-date, .bar-title, .source { color: var(--ink2); }
+/* listes : rangées sur la page, séparées par un filet, plus de panneau gris */
+.rows, .groups, .links, .panel { background: transparent !important; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); } /* taste-skill-ignore: rule — filet du système Wired */
+.rows a, .links a, .link-row, .switch-row { padding-left: 0 !important; padding-right: 0 !important; }
+.rows a:hover, .links a:hover, .link-row:hover { background: transparent; opacity: .7; }
+/* bouton principal : rectangle noir, libellé sans 16/700 */
+.primary { font-size: 16px; font-weight: 700; letter-spacing: .02em; }
+.primary:active { opacity: .85; }
+/* sélecteurs : rectangles, le choix en noir plein */
+.seg { background: transparent !important; border: 1px solid var(--ink); padding: 0 !important; }
+.seg button[aria-checked="true"], .chips button[aria-selected="true"] { background: var(--ink) !important; color: var(--ground) !important; box-shadow: none !important; }
+.chips button { background: transparent !important; border: 1px solid var(--rule); }
+/* tuiles de groupe : surface douce, choix au bord noir de 2 px */
+.tiles3 button { background: var(--surface); }
+/* cartes de l'accueil : feuille douce à angle droit, languette conservée */
+.sheet, .tab { background: var(--surface); }
+/* titres de page et de section : serif d'affichage 400, comme les titres du magazine */
+.app > h1, .plan h2, .who h2, .why h2 { font-family: "Newsreader", Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+.app > h1 { font-size: 34px; }
+.plan h2, .who h2, .why h2 { font-size: 26px; }
+
+/* ===== Palettes du vote à comparer (?pal=encre|terre|sourd) ===== */
+:root[data-pal="encre"] { --v-pour: #000000; --v-contre: #BDBDBD; --v-abst: #6E6E6E; --pour: #000000; --contre: #8A8A8A; --pour-ink: #000000; --contre-ink: #000000; }
+:root[data-pal="encre"][data-theme="dark"] { --v-pour: #FFFFFF; --v-contre: #4A4A4A; --v-abst: #9A9A9A; --pour: #FFFFFF; --contre: #6E6E6E; --pour-ink: #FFFFFF; --contre-ink: #FFFFFF; }
+:root[data-pal="terre"] { --v-pour: #3E5C3A; --v-contre: #C98A55; --v-abst: #D2D2D2; --pour: #3E5C3A; --contre: #B87743; --pour-ink: #3E5C3A; --contre-ink: #94552B; }
+:root[data-pal="terre"][data-theme="dark"] { --v-pour: #A9C2A0; --v-contre: #8C4A2B; --v-abst: #4A4A4A; --pour: #A9C2A0; --contre: #C98A55; --pour-ink: #A9C2A0; --contre-ink: #D9A070; }
+:root[data-pal="sourd"] { --v-pour: #2F5F55; --v-contre: #C9907A; --v-abst: #DADADA; --pour: #2F5F55; --contre: #A3523A; --pour-ink: #2F5F55; --contre-ink: #A3523A; }
+:root[data-pal="sourd"][data-theme="dark"] { --v-pour: #8DB8AC; --v-contre: #7E3E2C; --v-abst: #4A4A4A; --pour: #8DB8AC; --contre: #C98A72; --pour-ink: #8DB8AC; --contre-ink: #D49A82; }
 
 .hemi:not(.votes) .seat[data-g="LFI-NFP"] { fill: #C00D0D; stroke: #C00D0D; } .sw-g[data-g="LFI-NFP"] { background: #C00D0D; }
 .hemi:not(.votes) .seat[data-g="GDR"] { fill: #830E21; stroke: #830E21; } .sw-g[data-g="GDR"] { background: #830E21; }

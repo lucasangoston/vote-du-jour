@@ -264,7 +264,7 @@ const GLYPH = {
 const tallyLine = (c, cls = '') => `<p class="tally num ${cls}" aria-label="${c.pour} pour, ${c.contre} contre, ${c.abstentions} abstentions">${[['pour', c.pour], ['contre', c.contre], ['abst', c.abstentions]].map(([k, n]) => `<span class="t-${k}">${GLYPH[k]}${nb(n)}</span>`).join('')}</p>`;
 
 // ---------- gabarit ----------
-const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">';
+const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">';
 const BASE_CSS = readFileSync(join(root, 'perchoir.css'), 'utf8');
 function page({ title, theme, body, css = '', script = '', cls = '' }) {
   return `<!doctype html>
@@ -275,6 +275,7 @@ function page({ title, theme, body, css = '', script = '', cls = '' }) {
 <meta name="color-scheme" content="${theme}">
 <title>${esc(title)}</title>
 ${FONTS}
+<script>try{const q=new URLSearchParams(location.search).get('pal');if(q)document.documentElement.dataset.pal=q;}catch(e){}</script>
 <script>try{const t=localStorage.getItem('perchoir-apparence');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(t==='auto')document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){}</script>
 <style>
 ${BASE_CSS}
