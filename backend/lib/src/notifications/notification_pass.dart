@@ -5,6 +5,7 @@ import 'package:vote_contract/vote_contract.dart';
 import '../dossier_index.dart' show Lecture;
 import '../live/live_state.dart';
 import '../object_store.dart';
+import 'debate_notification.dart';
 import 'eve_notification.dart';
 import 'fcm_client.dart';
 
@@ -86,14 +87,17 @@ const _eveRetention = Duration(days: 30);
 
 /// Contenu de [notificationsStateKey] : les décisions déjà notifiées, avec
 /// la date d'envoi (ou de mise en service, pour celles déjà publiées avant),
-/// et les votes solennels déjà annoncés la veille.
+/// les votes solennels déjà annoncés la veille et les textes déjà annoncés
+/// en débat.
 class NotificationState {
   NotificationState({
     required this.initializedAt,
     Map<String, String>? sent,
     Map<String, String>? eve,
+    Map<String, String>? debates,
   }) : sent = sent ?? {},
-       eve = eve ?? {};
+       eve = eve ?? {},
+       debates = debates ?? {};
 
   /// Premier passage : les décisions publiées à ce moment-là ne sont pas
   /// notifiées.
@@ -107,6 +111,12 @@ class NotificationState {
   /// des mémoires écrites avant #54 : vide.
   final Map<String, String> eve;
 
+  /// Textes annoncés en débat (#77) : dossier législatif → date d'envoi
+  /// (ISO 8601) ou `initial`. Jamais oubliés : un texte n'est annoncé
+  /// qu'une fois, même s'il revient en séance (suite de la discussion,
+  /// nouvelle lecture). Absent des mémoires écrites avant #77 : vide.
+  final Map<String, String> debates;
+
   static const _version = 1;
 
   static const initialMark = 'initial';
@@ -116,6 +126,7 @@ class NotificationState {
     'initializedAt': initializedAt.toUtc().toIso8601String(),
     'sent': sent,
     'eve': eve,
+    'debates': debates,
   };
 
   static NotificationState fromJson(Object? json) {
@@ -126,13 +137,18 @@ class NotificationState {
     final eve = json is Map<String, Object?>
         ? json['eve'] ?? const <String, Object?>{}
         : null;
+    final debates = json is Map<String, Object?>
+        ? json['debates'] ?? const <String, Object?>{}
+        : null;
     if (json is! Map<String, Object?> ||
         json['version'] != _version ||
         initializedAt == null ||
         sent is! Map<String, Object?> ||
         sent.values.any((v) => v is! String) ||
         eve is! Map<String, Object?> ||
-        eve.values.any((v) => v is! String)) {
+        eve.values.any((v) => v is! String) ||
+        debates is! Map<String, Object?> ||
+        debates.values.any((v) => v is! String)) {
       throw const FormatException(
         'Mémoire des notifications : format inattendu',
       );
@@ -141,6 +157,7 @@ class NotificationState {
       initializedAt: initializedAt,
       sent: sent.cast<String, String>(),
       eve: Map.of(eve.cast<String, String>()),
+      debates: Map.of(debates.cast<String, String>()),
     );
   }
 
@@ -160,11 +177,14 @@ class NotificationReport {
   /// (identifiants des points).
   final eveSent = <String>[];
 
+  /// Textes annoncés en débat pendant ce passage (dossiers législatifs).
+  final debateSent = <String>[];
+
   /// Premier passage : décisions déjà publiées, marquées comme notifiées
   /// sans envoi ; `null` sinon.
   int? initialized;
 
-  /// Décisions importantes et annonces de la veille reportées au passage
+  /// Décisions importantes, annonces de la veille et textes en débat reportés au passage
   /// suivant (plafond atteint).
   var deferred = 0;
 
@@ -180,6 +200,8 @@ class NotificationReport {
           '${sent.isEmpty ? '' : ' (${sent.join(', ')})'}'
           ', ${eveSent.length} annonces de la veille'
           '${eveSent.isEmpty ? '' : ' (${eveSent.join(', ')})'}'
+          ', ${debateSent.length} textes en débat'
+          '${debateSent.isEmpty ? '' : ' (${debateSent.join(', ')})'}'
           '${deferred == 0 ? '' : ', $deferred reportées au passage suivant'}.',
     ...warnings.map((w) => 'Attention : $w'),
   ].join('\n');
@@ -205,6 +227,11 @@ class NotificationReport {
 /// soir-là), sous le même plafond. Si l'agenda n'a pas pu être relu à ce
 /// passage ([agendaUpToDate] faux), aucune annonce : le bloc peut être
 /// périmé ; un passage suivant de la soirée s'en charge.
+///
+/// Il annonce aussi le texte qui passe en séance (#77,
+/// [isDebateNotificationDue]) d'après le bloc « En débat » de l'index : une
+/// seule fois par texte (dossier législatif), le jour de la séance, après
+/// les annonces de la veille et avant les décisions, sous le même plafond.
 ///
 /// À lancer après la publication, les résumés et l'agenda, pour que la
 /// notification porte la phrase d'explication ; jamais depuis la détection
@@ -250,9 +277,14 @@ Future<NotificationReport> runNotificationPass({
           if (u.kind == UpcomingKind.voteSolennel)
             eveNotificationKey(u): NotificationState.initialMark,
       },
+      debates: {
+        if (index.inDebate case final d?)
+          d.dossierRef: NotificationState.initialMark,
+      },
     );
     await initial.write(store);
-    report.initialized = initial.sent.length + initial.eve.length;
+    report.initialized =
+        initial.sent.length + initial.eve.length + initial.debates.length;
     return report;
   }
 
@@ -296,6 +328,27 @@ Future<NotificationReport> runNotificationPass({
     state.eve[eveNotificationKey(u)] = now.toIso8601String();
     await state.write(store);
     report.eveSent.add(u.id);
+  }
+
+  // Texte qui passe en séance (#77) : une fois par dossier.
+  if (index.inDebate case final d?
+      when isDebateNotificationDue(d, now) &&
+          !state.debates.containsKey(d.dossierRef)) {
+    if (attempts >= maxNotificationsPerPass) {
+      report.deferred++;
+    } else {
+      attempts++;
+      try {
+        await sender.send(debateNotificationFor(d, topic: importantVotesTopic));
+        state.debates[d.dossierRef] = now.toIso8601String();
+        await state.write(store);
+        report.debateSent.add(d.dossierRef);
+      } on Object catch (e) {
+        report.warnings.add(
+          'notification du texte en débat ${d.dossierRef} non envoyée ($e)',
+        );
+      }
+    }
   }
 
   // Type de vote (solennel…) des scrutins du jeu de données.
