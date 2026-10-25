@@ -34,7 +34,9 @@ flutter:
     - assets/group_logos/
 
   # Polices de la charte (#29), embarquées : Geist et Geist Mono, licence SIL
-  # Open Font License (assets/fonts/OFL.txt).
+  # Open Font License (assets/fonts/OFL.txt). Newsreader (#76), police
+  # variable (graisse, taille optique) des titres, même licence
+  # (assets/fonts/Newsreader-OFL.txt).
   fonts:
     - family: Geist
       fonts:
@@ -48,3 +50,6 @@ flutter:
         - asset: assets/fonts/GeistMono-Regular.ttf
         - asset: assets/fonts/GeistMono-Medium.ttf
           weight: 500
+    - family: Newsreader
+      fonts:
+        - asset: assets/fonts/Newsreader.ttf

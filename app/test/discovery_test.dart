@@ -41,20 +41,15 @@ void main() {
     await tester.tap(find.byTooltip('À propos'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Source des données'), findsOneWidget);
-    expect(find.text('Licence Ouverte Etalab'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Résumés'), 200);
-    expect(
-      find.textContaining('rédigés par une IA (Claude, d\'Anthropic)'),
-      findsOneWidget,
+    expect(find.text('Le Perchoir'), findsOneWidget);
+    expect(find.text('Données de l\u2019Assemblée nationale'), findsOneWidget);
+    final footer = find.text(
+      'Résumés écrits par une IA. Seul le texte officiel fait foi. '
+      'Application non officielle.',
     );
-    expect(
-      find.text(
-        'Un groupe est classé selon le vote de la majorité de ses membres.',
-      ),
-      findsOneWidget,
-    );
-    await tester.scrollUntilVisible(find.text('Aide et contact'), 200);
-    expect(find.text('Politique de confidentialité'), findsOneWidget);
+    await tester.scrollUntilVisible(footer, 200);
+    expect(footer, findsOneWidget);
+    expect(find.text('Contact'), findsOneWidget);
+    expect(find.text('Confidentialité'), findsOneWidget);
   });
 }

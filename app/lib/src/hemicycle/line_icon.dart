@@ -52,6 +52,13 @@ class LineGlyph {
     ],
   );
 
+  /// Ouvre un écran de l'app (« Ajouter le widget »).
+  static const chevron = LineGlyph(
+    lines: [
+      [Offset(9.5, 6), Offset(15.5, 12), Offset(9.5, 18)],
+    ],
+  );
+
   /// Lien externe.
   static const external = LineGlyph(
     lines: [
