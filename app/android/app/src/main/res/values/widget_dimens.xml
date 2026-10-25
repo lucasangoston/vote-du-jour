@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Forme du cadre des widgets : celle du système (DESIGN.md, « rounded: system »).
+     Avant Android 12, le système n'en donne pas : l'arrondi des lanceurs courants. -->
+<resources>
+    <dimen name="decision_widget_radius">22dp</dimen>
+</resources>

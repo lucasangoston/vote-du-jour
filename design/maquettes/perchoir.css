@@ -298,7 +298,7 @@ ul { list-style: none; }
 /* Revue ui-ux-pro-max : le vote ne se lit pas qu'à la teinte. Pour foncé, contre clair (et l'inverse de nuit),
    abstention en gris moyen : les trois restent distincts pour un daltonien (simulation deutéranopie),
    chacun à 3:1 au moins contre la surface. */
-:root, :root[data-theme="light"] { --v-pour: #1D6B54; --v-contre: #E0683A; --v-abst: #8D949A; }
+:root, :root[data-theme="light"] { --v-pour: #1D6B54; --v-contre: #E0683A; --v-abst: #848B91; }
 :root[data-theme="dark"] { --v-pour: #4FB08F; --v-contre: #B5461F; --v-abst: #9AA2AB; }
 .hemi.votes .seat.s-pour { fill: var(--v-pour); stroke: var(--v-pour); }
 .hemi.votes .seat.s-contre { fill: var(--v-contre) !important; stroke: var(--v-contre); }

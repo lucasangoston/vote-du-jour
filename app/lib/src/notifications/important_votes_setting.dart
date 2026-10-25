@@ -50,7 +50,7 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
             ? null
             : () => notifications.setEnabled(!notifications.enabled),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
               Expanded(
@@ -59,20 +59,14 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
                   children: [
                     Text(
                       'Notifier les votes solennels',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: colors.ink,
-                      ),
+                      style: HemicycleText.label.copyWith(color: colors.ink),
                     ),
                     if (refused) ...[
                       const SizedBox(height: 4),
                       Text(
                         'Notifications refusées : activez-les dans les '
                         'Réglages.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.45,
+                        style: HemicycleText.meta.copyWith(
                           color: colors.contre,
                         ),
                       ),
@@ -82,7 +76,7 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
               ),
               const SizedBox(width: 16),
               // Piste à l'encre une fois activé, comme dans la maquette ;
-              // pastille blanche, au fond de l'écran en Nuit.
+              // pastille blanche, noire (le fond) en Nuit.
               Switch.adaptive(
                 value: notifications.enabled,
                 activeTrackColor: colors.ink,
@@ -93,7 +87,7 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
                 thumbColor: WidgetStateProperty.resolveWith(
                   (s) => s.contains(WidgetState.selected) && dark
                       ? colors.background
-                      : Colors.white,
+                      : colors.plate,
                 ),
                 onChanged: refused ? null : notifications.setEnabled,
               ),

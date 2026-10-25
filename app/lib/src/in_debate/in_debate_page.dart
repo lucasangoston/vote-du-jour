@@ -145,7 +145,7 @@ List<Widget> inDebateContent(
     if (title != inDebate.shortTitle) ...[
       Text(
         capitalize(inDebate.shortTitle),
-        style: TextStyle(fontSize: 13, height: 1.4, color: colors.ink2),
+        style: HemicycleText.meta.copyWith(color: colors.ink2),
       ),
       const SizedBox(height: 8),
     ],
@@ -153,14 +153,14 @@ List<Widget> inDebateContent(
       header: true,
       child: Text(
         capitalize(title),
-        style: HemicycleText.detailTitle.copyWith(color: colors.ink),
+        style: HemicycleText.displayMd.copyWith(color: colors.ink),
       ),
     ),
     if (summary?.explanation case final explanation?) ...[
       const SizedBox(height: 12),
       Text(
         explanation,
-        style: TextStyle(fontSize: 16, height: 1.55, color: colors.body),
+        style: HemicycleText.bodySerif.copyWith(color: colors.body),
       ),
     ],
     if (summary?.points case final points? when points.isNotEmpty) ...[
@@ -175,17 +175,18 @@ List<Widget> inDebateContent(
     if (inDebate.articles.isEmpty)
       Text(
         noArticleNotice,
-        style: TextStyle(fontSize: 14, height: 1.45, color: colors.ink2),
+        style: HemicycleText.bodySmall.copyWith(color: colors.ink2),
       )
     else
       ArticleTally(inDebate.articles),
     const SizedBox(height: 28),
-    ExternalLinkRow(label: 'Dossier législatif', url: inDebate.dossierUrl),
-    const SizedBox(height: 24),
-    Text(
-      sourceNotice,
-      style: TextStyle(fontSize: 12, height: 1.5, color: colors.ink2),
+    RuledRows(
+      children: [
+        ExternalLinkRow(label: 'Dossier législatif', url: inDebate.dossierUrl),
+      ],
     ),
+    const SizedBox(height: 24),
+    Text(sourceNotice, style: HemicycleText.meta.copyWith(color: colors.ink2)),
   ];
 }
 
@@ -222,12 +223,10 @@ class _WaitingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    // Surface douce à angle droit.
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(HemicycleRadii.card),
-      ),
+      color: colors.surface,
       child: LayoutBuilder(
         builder: (context, constraints) => Column(
           children: [
@@ -235,13 +234,13 @@ class _WaitingCard extends StatelessWidget {
             const SizedBox(height: 14),
             Text(
               'En débat',
-              style: HemicycleText.serifVerdict.copyWith(color: colors.ink),
+              style: HemicycleText.displayLg.copyWith(color: colors.ink),
             ),
             const SizedBox(height: 14),
             Text(
               finalVote,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: colors.ink2),
+              style: HemicycleText.bodySmall.copyWith(color: colors.ink2),
             ),
           ],
         ),
@@ -280,10 +279,7 @@ class ArticleTally extends StatelessWidget {
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(HemicycleRadii.tile),
-        ),
+        color: colors.surface,
         child: Row(
           children: [
             for (final (n, singular, color) in figures)
@@ -292,14 +288,11 @@ class ArticleTally extends StatelessWidget {
                   children: [
                     Text(
                       '$n',
-                      style: HemicycleText.mono.copyWith(
-                        fontSize: 26,
-                        color: color,
-                      ),
+                      style: HemicycleText.figure.copyWith(color: color),
                     ),
                     Text(
                       word(n, singular),
-                      style: TextStyle(fontSize: 13, color: colors.ink2),
+                      style: HemicycleText.meta.copyWith(color: colors.ink2),
                     ),
                   ],
                 ),
@@ -321,7 +314,7 @@ class _Heading extends StatelessWidget {
     header: true,
     child: Text(
       text,
-      style: HemicycleText.heading.copyWith(color: context.colors.ink),
+      style: HemicycleText.displaySm.copyWith(color: context.colors.ink),
     ),
   );
 }
@@ -341,14 +334,18 @@ class _NoLongerInDebate extends StatelessWidget {
       Text(
         'Ce texte n’est plus en débat.',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 15, color: context.colors.ink2),
+        style: HemicycleText.bodySmall.copyWith(color: context.colors.ink2),
       ),
       const SizedBox(height: 16),
-      ExternalLinkRow(
-        label: 'Dossier législatif',
-        url:
-            'https://www.assemblee-nationale.fr/dyn/17/dossiers/'
-            '${Uri.encodeComponent(dossierRef)}',
+      RuledRows(
+        children: [
+          ExternalLinkRow(
+            label: 'Dossier législatif',
+            url:
+                'https://www.assemblee-nationale.fr/dyn/17/dossiers/'
+                '${Uri.encodeComponent(dossierRef)}',
+          ),
+        ],
       ),
     ],
   );
@@ -366,7 +363,7 @@ class _Unavailable extends StatelessWidget {
       Text(
         'Texte indisponible.',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 15, color: context.colors.ink2),
+        style: HemicycleText.bodySmall.copyWith(color: context.colors.ink2),
       ),
       const SizedBox(height: 12),
       FilledButton(onPressed: onRetry, child: const Text('Réessayer')),

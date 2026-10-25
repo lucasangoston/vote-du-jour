@@ -270,9 +270,10 @@ private struct NextVoteBand: View {
         Text(vote.dayOfMonthLabel)
           .font(WidgetTheme.day(WidgetTheme.bandDaySize))
           .foregroundStyle(Palette.ink)
+        // À l'encre : le gris secondaire ne tient pas 4,5:1 sur la bande.
         Text(vote.monthLabel)
           .font(WidgetTheme.meta(WidgetTheme.monthSize))
-          .foregroundStyle(Palette.ink2)
+          .foregroundStyle(Palette.ink)
       }
       .lineLimit(1)
       .frame(minWidth: 40)
@@ -284,7 +285,7 @@ private struct NextVoteBand: View {
           .minimumScaleFactor(WidgetTheme.minimumScale)
         Text(vote.whenLabel)
           .font(WidgetTheme.meta())
-          .foregroundStyle(Palette.ink2)
+          .foregroundStyle(Palette.ink)
           .lineLimit(1)
       }
     }

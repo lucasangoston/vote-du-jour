@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'decision_status_label.dart';
 
-/// Badge discret « provisoire » : décision lue sur le site de l'Assemblée
+/// Badge discret « provisoire », rectangle au filet : décision lue sur le site de l'Assemblée
 /// pendant la séance, confirmée le lendemain par le jeu de données officiel.
 class ProvisionalBadge extends StatelessWidget {
   const ProvisionalBadge({super.key});
@@ -21,7 +21,6 @@ class ProvisionalBadge extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: Border.all(color: theme.colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(6),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 1, 7, 1),

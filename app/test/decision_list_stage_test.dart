@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -107,6 +108,13 @@ void main() {
       expect(find.text('Adopté'), findsNWidgets(3));
       expect(find.text('Résolution'), findsNothing);
       expect(find.text('Résolution (sans valeur de loi)'), findsNothing);
+      // La dernière rangée, sous le pli.
+      await tester.scrollUntilVisible(
+        find.text("L'ensemble d'un ancien index."),
+        200,
+        // La liste elle-même, pas la rangée des filtres.
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text("L'ensemble d'un ancien index."), findsOneWidget);
       expect(find.textContaining('loi votée'), findsNothing);
     },

@@ -16,7 +16,7 @@ import 'hemicycle/vote_arc.dart';
 import 'hemicycle/vote_glyph.dart';
 import 'relative_date.dart';
 import 'theme.dart';
-import 'upcoming_section.dart' show upcomingToShow;
+import 'upcoming.dart';
 
 /// Nombre de décisions de l'accueil, après le prochain vote solennel.
 const homeDecisionCount = 3;
@@ -201,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                         header: true,
                         child: Text(
                           formatFrenchWeekdayDay(_now),
-                          style: HemicycleText.serifDay.copyWith(
+                          style: HemicycleText.displayLg.copyWith(
                             color: context.colors.ink,
                           ),
                         ),
@@ -445,7 +445,7 @@ class _Pager extends StatelessWidget {
                 height: 7,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: i == current ? colors.ink : colors.abstention,
+                  color: i == current ? colors.ink : colors.dot,
                 ),
               ),
             ),
@@ -494,11 +494,9 @@ class _FolderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // La languette s'aligne sur l'arrondi de la feuille.
+          // La languette, en retrait du bord de la feuille.
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: HemicycleRadii.card,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: _tabInset),
             child: Align(
               alignment: tabSide,
               child: ClipPath(
@@ -510,19 +508,16 @@ class _FolderCard extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(18, 7, 18, 0),
                     child: Text(
                       tab,
-                      style: HemicycleText.tabLabel.copyWith(color: tabColor),
+                      style: HemicycleText.metaStrong.copyWith(color: tabColor),
                     ),
                   ),
                 ),
               ),
             ),
           ),
+          // Feuille à angle droit, sans ombre.
           Material(
             color: colors.surface,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(HemicycleRadii.card),
-            ),
-            clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onTap,
               child: Column(
@@ -536,6 +531,9 @@ class _FolderCard extends StatelessWidget {
     );
   }
 }
+
+/// Retrait de la languette depuis le bord de la feuille.
+const _tabInset = 24.0;
 
 /// Languette en trapèze, plus large à sa base, posée sur la feuille.
 class _TabClipper extends CustomClipper<Path> {
@@ -569,7 +567,7 @@ class _CardTitle extends StatelessWidget {
       text,
       maxLines: 4,
       overflow: TextOverflow.ellipsis,
-      style: HemicycleText.serifCardTitle.copyWith(color: context.colors.ink),
+      style: HemicycleText.displaySm.copyWith(color: context.colors.ink),
     ),
   );
 }
@@ -631,14 +629,16 @@ class _VoteCard extends StatelessWidget {
                       children: [
                         Text(
                           '${parisDay(item.startsAt).day}',
-                          style: HemicycleText.serifFigure.copyWith(
+                          style: HemicycleText.displayXl.copyWith(
                             color: colors.ink,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           upcomingVoteLine(item.startsAt),
-                          style: TextStyle(fontSize: 15, color: colors.ink2),
+                          style: HemicycleText.bodySmall.copyWith(
+                            color: colors.ink2,
+                          ),
                         ),
                       ],
                     ),
@@ -783,7 +783,7 @@ class _DecisionCard extends StatelessWidget {
             children: [
               Text(
                 resultWord(result),
-                style: HemicycleText.serifTitle.copyWith(
+                style: HemicycleText.displaySm.copyWith(
                   color: resultColor(context, result),
                 ),
               ),
@@ -827,7 +827,7 @@ class _Tally extends StatelessWidget {
   }
 }
 
-/// Bouton principal : pleine largeur, à l'encre.
+/// Bouton principal : pleine largeur, rectangle à l'encre (thème).
 class _PrimaryButton extends StatelessWidget {
   const _PrimaryButton({required this.label, required this.onPressed});
 
@@ -835,19 +835,8 @@ class _PrimaryButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return FilledButton(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: colors.ink,
-        foregroundColor: colors.background,
-        shape: const StadiumBorder(),
-        textStyle: HemicycleText.primaryButton,
-      ),
-      child: Text(label),
-    );
-  }
+  Widget build(BuildContext context) =>
+      FilledButton(onPressed: onPressed, child: Text(label));
 }
 
 class _Message extends StatelessWidget {
@@ -865,7 +854,7 @@ class _Message extends StatelessWidget {
         Text(
           text,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15, color: context.colors.ink2),
+          style: HemicycleText.bodySmall.copyWith(color: context.colors.ink2),
         ),
         if (action != null) ...[const SizedBox(height: 16), action!],
       ],

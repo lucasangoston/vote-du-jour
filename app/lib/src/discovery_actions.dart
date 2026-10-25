@@ -5,6 +5,7 @@ import 'add_widget_page.dart';
 import 'app_identity.dart';
 import 'hemicycle/hemicycle_logo.dart';
 import 'hemicycle/line_icon.dart';
+import 'theme.dart';
 
 // Boutons de l'en-tête de l'accueil vers les écrans de découverte.
 
@@ -48,12 +49,7 @@ class BrandBar extends StatelessWidget {
       children: [
         HemicycleLogo.small(),
         SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            appName,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
-        ),
+        Expanded(child: Text(appName, style: HemicycleText.labelStrong)),
         AddWidgetAction(),
         AboutAction(),
       ],

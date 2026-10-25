@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="decision_widget_background">#FF191C20</color>
-    <color name="decision_widget_primary">#FFECEEF0</color>
-    <color name="decision_widget_secondary">#FF9AA2AB</color>
-    <color name="decision_widget_rule">#FF2A2F35</color>
+    <color name="decision_widget_background">#FF121212</color>
+    <color name="decision_widget_primary">#FFFFFFFF</color>
+    <color name="decision_widget_secondary">#FF9E9E9E</color>
+    <color name="decision_widget_rule">#FF2A2A2A</color>
     <color name="decision_widget_pour">#FF4FB08F</color>
     <color name="decision_widget_contre">#FFE07A58</color>
     <color name="decision_widget_abstention">#FF4A5058</color>
-    <color name="decision_widget_raised">#FF23272C</color>
+    <color name="decision_widget_raised">#FF1F1F1F</color>
     <!-- Couleurs du vote (#78) : sièges et symboles du décompte. -->
     <color name="decision_widget_vote_pour">#FF4FB08F</color>
     <color name="decision_widget_vote_contre">#FFB5461F</color>

@@ -114,6 +114,7 @@ Après la publication, chaque exécution de `publish.yml` lit l'agenda officiel 
 - Titre court sans appel au modèle : titre (du résumé, sinon court) de la dernière décision publiée du même dossier, sinon titre du dossier (`state/dossiers.json`), sinon libellé sans formule de procédure.
 - Heure : début de la séance (l'agenda ne donne pas l'heure du point). Le point reste à venir jusqu'à la fin de la séance (`timeStampFin`, sinon 6 heures après le début).
 - Panne de l'agenda : avertissement, bloc recalculé avec le dernier agenda connu (ou laissé tel quel au premier passage) ; les décisions sont publiées normalement. Le job et le passage en direct (`live.yml`) republient l'index avec le bloc déjà publié, sans lire l'agenda.
+- Dans l'app, le bloc nourrit la carte « Vote solennel » de l'accueil (#79) ; la liste des décisions n'a plus de section « À venir » (#89).
 
 ```bash
 cd backend

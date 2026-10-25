@@ -9,7 +9,7 @@ import 'package:votedujour/src/decision_list_page.dart';
 import 'package:votedujour/src/decisions_repository.dart';
 import 'package:votedujour/src/relative_date.dart';
 import 'package:votedujour/src/theme.dart';
-import 'package:votedujour/src/upcoming_section.dart';
+import 'package:votedujour/src/upcoming.dart';
 
 /// Points de l'ordre du jour publié le 21/10/2026 (#52).
 const _dossierPlfss =
@@ -71,112 +71,36 @@ final _agenda = [
   ),
 ];
 
-Future<void> _pumpSection(
-  WidgetTester tester,
-  List<UpcomingItem>? items,
-) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      theme: buildTheme(Brightness.light),
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: UpcomingSection(items: items, now: _now),
-        ),
-      ),
-    ),
-  );
-}
-
 void main() {
-  testWidgets(
-    'affiche les 3 premiers points dans l\'ordre chronologique, jour, heure '
-    'de Paris, badge et mention',
-    (tester) async {
-      await _pumpSection(tester, _agenda);
-
-      expect(find.text('À venir'), findsOneWidget);
-      // Discussion du jour : 19 h 30 UTC, 21 h 30 à Paris (heure d'été).
-      expect(find.text("Aujourd'hui"), findsOneWidget);
-      expect(find.text('à partir de 21h30'), findsOneWidget);
-      expect(find.text('En discussion'), findsNWidgets(2));
-      // Vote solennel du 27/10 : 14 h UTC, 15 h à Paris (heure d'hiver).
-      expect(find.text('Mardi 27 oct.'), findsNWidgets(2));
-      expect(find.text('à partir de 15h'), findsNWidgets(2));
-      expect(find.text('Vote solennel'), findsOneWidget);
-      // Le 4e point (3/11) attend « Tout voir ».
-      expect(find.text('Mardi 3 nov.'), findsNothing);
-      expect(find.text('Tout voir'), findsOneWidget);
-
-      final titles = tester
-          .widgetList<Text>(find.byType(Text))
-          .map((t) => t.data)
-          .where((t) => t != null && t.startsWith('Projet'))
-          .toList();
-      expect(titles, [
-        'Projet de loi de financement de la sécurité sociale pour 2027',
-        'Projet de loi de financement de la sécurité sociale pour 2027',
-        'Projet de loi de finances pour 2027',
-      ]);
-    },
-  );
-
-  testWidgets('« Tout voir » déplie la liste complète', (tester) async {
-    await _pumpSection(tester, _agenda);
-    await tester.tap(find.text('Tout voir'));
-    await tester.pump();
-
-    expect(find.text('Tout voir'), findsNothing);
-    expect(find.text('Mardi 3 nov.'), findsOneWidget);
-    expect(
-      find.text('Projet de loi de finances pour 2027 (première partie)'),
-      findsOneWidget,
-    );
-    expect(find.text('Vote solennel'), findsNWidgets(2));
-  });
-
-  testWidgets('pas de « Tout voir » avec 3 points ou moins', (tester) async {
-    await _pumpSection(tester, _agenda.take(3).toList());
-    expect(find.text('À venir'), findsOneWidget);
-    expect(find.text('Tout voir'), findsNothing);
-  });
-
-  testWidgets('un point lu au lecteur d\'écran est un lien complet', (
-    tester,
-  ) async {
-    final handle = tester.ensureSemantics();
-    await _pumpSection(tester, [_agenda[0]]);
-    expect(
-      find.bySemanticsLabel(
-        'Mardi 3 novembre, à partir de 15h, vote solennel, '
-        'Projet de loi de finances pour 2027 (première partie)',
-      ),
-      findsOneWidget,
-    );
-    final heading = tester.getSemantics(find.text('À venir'));
-    expect(heading.flagsCollection.isHeader, isTrue);
-    handle.dispose();
-  });
-
-  testWidgets('rien sans point à venir', (tester) async {
-    for (final items in [null, <UpcomingItem>[]]) {
-      await _pumpSection(tester, items);
-      expect(find.text('À venir'), findsNothing);
-      expect(find.byType(UpcomingRow), findsNothing);
-    }
-  });
-
-  testWidgets('rien quand tous les points sont passés (index hors ligne)', (
-    tester,
-  ) async {
-    await _pumpSection(tester, [
-      _item(
-        'PT1',
-        UpcomingKind.voteSolennel,
-        DateTime.utc(2026, 10, 20, 14),
-        'Texte voté hier',
-      ),
+  test('les points à venir dans l\'ordre chronologique, ordre de l\'index '
+      'à heure égale', () {
+    expect(upcomingToShow(_agenda, now: _now).map((u) => u.id), [
+      // Discussion du jour, puis le 27/10 (vote avant discussion, comme dans
+      // l'index), puis le vote du 3/11.
+      'PT53278',
+      'PT53289',
+      'PT53435',
+      'PT53449',
     ]);
-    expect(find.text('À venir'), findsNothing);
+  });
+
+  test('rien sans point à venir', () {
+    expect(upcomingToShow(null, now: _now), isEmpty);
+    expect(upcomingToShow(const [], now: _now), isEmpty);
+  });
+
+  test('rien quand tous les points sont passés (index hors ligne)', () {
+    expect(
+      upcomingToShow([
+        _item(
+          'PT1',
+          UpcomingKind.voteSolennel,
+          DateTime.utc(2026, 10, 20, 14),
+          'Texte voté hier',
+        ),
+      ], now: _now),
+      isEmpty,
+    );
   });
 
   group('dans la liste', () {
@@ -207,7 +131,9 @@ void main() {
       'sourceUrl': 'https://www.assemblee-nationale.fr/dyn/17/scrutins/8706',
     };
 
-    testWidgets('section avant les décisions', (tester) async {
+    testWidgets('plus de section « À venir » (maquette `liste`, #89)', (
+      tester,
+    ) async {
       final soon = DateTime.now().toUtc().add(const Duration(days: 2));
       await pumpList(tester, {
         'schemaVersion': 1,
@@ -224,16 +150,9 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      expect(find.text('Texte voté bientôt'), findsOneWidget);
-      expect(find.text('Vote solennel'), findsOneWidget);
-      expect(
-        tester.getTopLeft(find.text('À venir')).dy,
-        lessThan(
-          tester
-              .getTopLeft(find.text("L'ensemble du projet de loi exemple."))
-              .dy,
-        ),
-      );
+      expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
+      expect(find.text('À venir'), findsNothing);
+      expect(find.text('Texte voté bientôt'), findsNothing);
     });
 
     testWidgets('ancien index sans `upcoming` : rien', (tester) async {

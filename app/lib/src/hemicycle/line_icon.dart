@@ -200,7 +200,6 @@ class LineIconButton extends StatelessWidget {
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
           onTap: onPressed,
           child: SizedBox.square(
             dimension: 44,

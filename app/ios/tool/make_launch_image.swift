@@ -1,7 +1,7 @@
 // Génère le logo de l'écran de lancement iOS (LaunchImage.imageset) : logo
 // « hémicycle en bandes » de make_app_icon.swift, sans fond, 120 × 60 pt.
-// - clair : encre #15181C, vert #1D6B54 ;
-// - sombre : encre #ECEEF0, vert #4FB08F.
+// - clair : encre #000000, vert #1D6B54 ;
+// - sombre : encre #FFFFFF, vert #4FB08F (DESIGN.md).
 // Le fond (couleur nommée LaunchBackground) est dans le storyboard.
 //
 // Depuis app/ios : swift tool/make_launch_image.swift
@@ -57,7 +57,7 @@ func write(_ image: CGImage, to url: URL) {
   precondition(CGImageDestinationFinalize(dest), "écriture de \(url.path)")
 }
 
-for (suffix, ink, accent) in [("", UInt32(0x15181C), UInt32(0x1D6B54)), ("Dark", 0xECEEF0, 0x4FB08F)] {
+for (suffix, ink, accent) in [("", UInt32(0x000000), UInt32(0x1D6B54)), ("Dark", 0xFFFFFF, 0x4FB08F)] {
   for scale in 1...3 {
     let name = "LaunchImage\(suffix)\(scale == 1 ? "" : "@\(scale)x").png"
     write(render(scale: scale, ink: ink, accent: accent), to: imageSet.appendingPathComponent(name))
