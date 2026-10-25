@@ -70,6 +70,8 @@ class GroupVote {
     required this.organeRef,
     required this.positionMajoritaire,
     required this.decompte,
+    this.membres,
+    this.votants = const [],
   });
 
   /// Référence de l'organe (groupe), par exemple `PO845401`.
@@ -79,4 +81,27 @@ class GroupVote {
   final String positionMajoritaire;
 
   final Decompte decompte;
+
+  /// Effectif du groupe le jour du scrutin (`nombreMembresGroupe`), s'il est
+  /// donné.
+  final int? membres;
+
+  /// Vote nominatif des membres du groupe (`decompteNominatif`, #71) : pour,
+  /// contre, abstentions et non-votants ; les absents n'y figurent pas.
+  final List<NominalVote> votants;
+}
+
+/// Vote nominatif d'un député lors d'un scrutin (#71).
+class NominalVote {
+  const NominalVote({required this.acteurRef, required this.vote, this.place});
+
+  /// Référence du député (acteur), par exemple `PA793432`.
+  final String acteurRef;
+
+  /// Place occupée dans l'hémicycle (`numPlace`), si l'open data la donne.
+  final int? place;
+
+  /// [SeatVote.pour], [SeatVote.contre], [SeatVote.abstention] ou
+  /// [SeatVote.nonVotant].
+  final SeatVote vote;
 }

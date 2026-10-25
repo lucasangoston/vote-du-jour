@@ -29,7 +29,7 @@ Données publiées dans le bucket :
 
 - `v1/latest.json` : les 50 dernières décisions, de la plus récente à la plus ancienne (format décrit dans `packages/vote_contract/README.md`). Un changement cassant du format publiera sous `v2/`.
 - `v1/latest.json` contient aussi le bloc optionnel `upcoming` : l'ordre du jour des prochains jours (#52), et le bloc optionnel `inDebate` : le texte en débat et ses articles votés au scrutin public (#55).
-- `v1/decisions/<id>.json` : le détail de chaque décision de l'index (décompte, vote par groupe ; format dans `packages/vote_contract/README.md`). Seuls les fichiers dont le contenu a changé sont réécrits.
+- `v1/decisions/<id>.json` : le détail de chaque décision de l'index (décompte, vote par groupe, sièges du scrutin ; format dans `packages/vote_contract/README.md`). Seuls les fichiers dont le contenu a changé sont réécrits.
 - `state/scrutins-dump.json` : état du job (`Last-Modified` du dernier jeu de données traité).
 - `state/scrutins-confirmes.json` : scrutins du dernier jeu de données utiles à l'index (retenus ou sur l'article unique), sans vote par groupe, et dernier numéro du jeu de données. Écrit par le job, relu par la détection en direct pour reconstruire l'index sans retélécharger l'archive.
 - `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
@@ -39,7 +39,7 @@ Données publiées dans le bucket :
 - `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
 - `state/agenda.json` : `ETag` de la dernière archive de l'agenda lue et points retenus de l'ordre du jour des séances pas finies depuis plus de 7 jours (#52, #55), relus quand l'agenda n'a pas changé.
 - `state/articles.json` : votes sur les articles (et amendements de suppression adoptés) des 30 derniers jours du dernier jeu de données des scrutins, avec dossier et séance, et dernier numéro du jeu de données (#55). Écrit par le job, relu par les passages de l'agenda et en direct.
-- `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et noms des groupes politiques qui en sont tirés. Un nouveau jeu de données ne fait republier les détails que si les noms des groupes ont changé.
+- `state/organes.json` : `Last-Modified` du jeu de données des acteurs et organes (AMO20, ~3 Mo) et l'annuaire qui en est tiré (nom et couleur des groupes politiques, place de chaque député). Un nouveau jeu de données ne fait republier les détails que si l'annuaire a changé.
 
 ## Job de publication
 

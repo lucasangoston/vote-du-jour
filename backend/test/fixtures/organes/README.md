@@ -38,3 +38,11 @@ moyenne de son groupe, plus `PA840721` (UDR, ancien membre de `PO845520` et de
 | PA330240 | UDR | 99 |
 | PA840721 | UDR | 104 |
 | PA795966 | RN | 76 |
+
+Ajouté pour le ticket #71 (sièges du scrutin) : `hemicycle_acteurs.json`, les
+574 députés en exercice de la même archive téléchargée le 25/10/2026
+(`Last-Modified: Sun, 25 Oct 2026 00:00:34 GMT`), réduits aux champs que lit
+le job : `uid` (`#text`) et, parmi les mandats de la 17e législature, ceux de
+type `ASSEMBLEE` (`dateFin`, `mandature.placeHemicycle`) et `GP` (`dateFin`,
+`organes.organeRef`). Avec les scrutins 8706 et 8610, ils redonnent les sièges
+de `design/maquettes/data/seats.json`.

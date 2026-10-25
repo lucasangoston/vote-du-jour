@@ -28,6 +28,7 @@ class PoliticalGroup {
     required this.name,
     this.abbreviation,
     this.place,
+    this.color,
   });
 
   /// Référence officielle (organe), par exemple `PO845401`.
@@ -46,15 +47,32 @@ class PoliticalGroup {
   /// gauche. Pour un groupe dissous ou renommé, la place actuelle de ses
   /// anciens membres. `null` si aucun siège n'est connu.
   final double? place;
+
+  /// Couleur officielle (`couleurAssociee`, #71), au format `#RRGGBB`, si
+  /// l'open data la donne.
+  final String? color;
 }
+
+/// Place d'un député en exercice dans l'hémicycle (`placeHemicycle`) et son
+/// groupe actuel (organe), s'il en a un (#71).
+typedef DeputySeat = ({int place, String? group});
 
 /// Annuaire des groupes politiques (organes de type `GP`), pour donner un nom
 /// lisible aux votes par groupe des scrutins, qui ne citent que la référence
 /// de l'organe.
 class GroupDirectory {
-  GroupDirectory(Map<String, PoliticalGroup> groups) : _groups = groups;
+  GroupDirectory(
+    Map<String, PoliticalGroup> groups, {
+    Map<String, DeputySeat> seats = const {},
+  }) : _groups = groups,
+       seats = Map.unmodifiable(seats);
 
   final Map<String, PoliticalGroup> _groups;
+
+  /// Place et groupe actuel de chaque député en exercice, par référence
+  /// d'acteur (`PA793432`) : les sièges de l'hémicycle « places réelles »
+  /// (#71). Vide si l'archive ne donne aucun siège.
+  final Map<String, DeputySeat> seats;
 
   /// Nombre de groupes connus.
   int get length => _groups.length;
@@ -88,15 +106,22 @@ class GroupDirectory {
       throw const FormatException('Organes : aucun groupe politique trouvé');
     }
     final places = groupPlaces(seats);
-    return GroupDirectory({
-      for (final MapEntry(:key, :value) in groups.entries)
-        key: PoliticalGroup(
-          uid: value.uid,
-          name: value.name,
-          abbreviation: value.abbreviation,
-          place: places[key],
-        ),
-    });
+    return GroupDirectory(
+      {
+        for (final MapEntry(:key, :value) in groups.entries)
+          key: PoliticalGroup(
+            uid: value.uid,
+            name: value.name,
+            abbreviation: value.abbreviation,
+            place: places[key],
+            color: value.color,
+          ),
+      },
+      seats: {
+        for (final s in seats)
+          ?s.acteur: (place: s.seat, group: s.currentGroup),
+      },
+    );
   }
 
   /// Relit un annuaire enregistré par [toJson]. Lève [FormatException] s'il
@@ -106,24 +131,34 @@ class GroupDirectory {
       throw const FormatException('Annuaire des groupes : version inattendue');
     }
     final groups = json['groups'];
-    if (groups is! Map<String, Object?>) {
+    final seats = json['seats'];
+    if (groups is! Map<String, Object?> || seats is! Map<String, Object?>) {
       throw const FormatException('Annuaire des groupes : objet attendu');
     }
-    return GroupDirectory({
-      for (final MapEntry(:key, :value) in groups.entries)
-        if (value is Map<String, Object?> && value['name'] is String)
-          key: PoliticalGroup(
-            uid: key,
-            name: value['name'] as String,
-            abbreviation: value['abbreviation'] as String?,
-            place: (value['place'] as num?)?.toDouble(),
-          ),
-    });
+    return GroupDirectory(
+      {
+        for (final MapEntry(:key, :value) in groups.entries)
+          if (value is Map<String, Object?> && value['name'] is String)
+            key: PoliticalGroup(
+              uid: key,
+              name: value['name'] as String,
+              abbreviation: value['abbreviation'] as String?,
+              place: (value['place'] as num?)?.toDouble(),
+              color: value['color'] as String?,
+            ),
+      },
+      seats: {
+        for (final MapEntry(:key, :value) in seats.entries)
+          if (value case [final int place, final String? group])
+            key: (place: place, group: group),
+      },
+    );
   }
 
-  /// Version 2 (#67) : place des groupes dans l'hémicycle. Un annuaire de
-  /// version 1 est illisible : il est reconstruit au passage suivant.
-  static const _cacheVersion = 2;
+  /// Version 3 (#71) : place de chaque député et couleur des groupes. Un
+  /// annuaire de version antérieure est illisible : il est reconstruit au
+  /// passage suivant.
+  static const _cacheVersion = 3;
 
   Map<String, Object?> toJson() => {
     'version': _cacheVersion,
@@ -133,7 +168,12 @@ class GroupDirectory {
           'name': _groups[uid]!.name,
           'abbreviation': ?_groups[uid]!.abbreviation,
           'place': ?_groups[uid]!.place,
+          'color': ?_groups[uid]!.color,
         },
+    },
+    'seats': {
+      for (final acteur in seats.keys.toList()..sort())
+        acteur: [seats[acteur]!.place, seats[acteur]!.group],
     },
   };
 }
@@ -150,11 +190,15 @@ PoliticalGroup? parseOrganeJson(String json) {
     final name = organe['libelle'];
     if (uid is! String || name is! String || name.trim().isEmpty) return null;
     final abbreviation = organe['libelleAbrege'] ?? organe['libelleAbrev'];
+    final color = organe['couleurAssociee'];
     return PoliticalGroup(
       uid: uid,
       name: name.trim(),
       abbreviation: abbreviation is String && abbreviation.trim().isNotEmpty
           ? abbreviation.trim()
+          : null,
+      color: color is String && RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(color)
+          ? color.toUpperCase()
           : null,
     );
   } on Object {
@@ -166,9 +210,13 @@ PoliticalGroup? parseOrganeJson(String json) {
 class ActeurSeat {
   const ActeurSeat({
     required this.seat,
+    this.acteur,
     this.currentGroup,
     this.formerGroups = const {},
   });
+
+  /// Référence de l'acteur (`PA793432`), si le JSON la donne.
+  final String? acteur;
 
   /// Numéro du siège dans l'hémicycle (`placeHemicycle`).
   final int seat;
@@ -211,8 +259,15 @@ ActeurSeat? parseActeurSeat(String json) {
       }
     }
     if (seat == null || seat <= 0) return null;
+    // `uid` est un objet `{"#text": "PA…"}` issu de la conversion XML → JSON.
+    final uid = switch (acteur['uid']) {
+      {'#text': final String text} => text,
+      final String text => text,
+      _ => null,
+    };
     return ActeurSeat(
       seat: seat,
+      acteur: uid,
       currentGroup: current,
       formerGroups: former..remove(current),
     );

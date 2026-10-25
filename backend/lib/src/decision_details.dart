@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:vote_contract/vote_contract.dart';
 
 import 'group_directory.dart';
+import 'hemicycle_seats.dart';
 import 'index_builder.dart';
 import 'object_store.dart';
 import 'scrutin.dart';
@@ -15,18 +16,36 @@ const detailCacheControl = 'public, max-age=300';
 /// scrutin correspondant dans [scrutins]. Une décision sans scrutin (texte
 /// adopté à main levée) a un détail sans décompte ni vote par groupe.
 ///
-/// [groups] donne le nom des groupes ; sans lui, ou pour un groupe inconnu,
-/// le nom est [unknownGroupName].
+/// [groups] donne le nom et la couleur des groupes ; sans lui, ou pour un
+/// groupe inconnu, le nom est [unknownGroupName]. Il donne aussi la place
+/// des députés, pour les sièges du scrutin (#71) : les décisions dont les
+/// sièges ne passent pas les vérifications sont publiées sans sièges, et un
+/// avertissement les résume dans [warnings].
 List<DecisionDetail> buildDecisionDetails(
   Iterable<Scrutin> scrutins,
   DecisionIndex index, {
   GroupDirectory? groups,
+  List<String>? warnings,
 }) {
   final byUid = {for (final s in scrutins) s.uid: s};
-  return [
+  final mismatches = <String>[];
+  final details = [
     for (final d in index.decisions)
-      buildDecisionDetail(d, scrutin: byUid[d.id], groups: groups),
+      buildDecisionDetail(
+        d,
+        scrutin: byUid[d.id],
+        groups: groups,
+        onSeatsMismatch: (e) => mismatches.add('${d.numero} : ${e.message}'),
+      ),
   ];
+  if (mismatches.isNotEmpty) {
+    warnings?.add(
+      'sièges incohérents, non publiés pour ${mismatches.length} décisions '
+      '(${mismatches.take(3).join(' ; ')}'
+      '${mismatches.length > 3 ? ' ; …' : ''})',
+    );
+  }
+  return details;
 }
 
 /// Détails des décisions provisoires de [index] (détection en direct, #10)
@@ -48,13 +67,27 @@ List<DecisionDetail> buildProvisionalDetails(
 }
 
 /// Détail d'une décision : [decision] (champs de l'index), plus le décompte
-/// et le vote par groupe de son [scrutin].
+/// et le vote par groupe de son [scrutin], et ses sièges (#71) si [groups]
+/// donne la place des députés. Une décision provisoire (le site ne donne pas
+/// le vote nominatif) n'a pas de sièges ; des sièges incohérents
+/// ([SeatsMismatch], passé à [onSeatsMismatch]) ne sont pas publiés.
 DecisionDetail buildDecisionDetail(
   DecisionSummary decision, {
   Scrutin? scrutin,
   GroupDirectory? groups,
+  void Function(SeatsMismatch)? onSeatsMismatch,
 }) {
   if (scrutin == null) return DecisionDetail(decision: decision);
+  List<HemicycleSeat>? seats;
+  if (groups != null &&
+      groups.seats.isNotEmpty &&
+      decision.status == DecisionStatus.confirmee) {
+    try {
+      seats = hemicycleSeats(scrutin, groups);
+    } on SeatsMismatch catch (e) {
+      onSeatsMismatch?.call(e);
+    }
+  }
   return DecisionDetail(
     decision: decision,
     count: voteCountOf(scrutin.decompte),
@@ -64,12 +97,14 @@ DecisionDetail buildDecisionDetail(
           organeRef: g.organeRef,
           name: groups?[g.organeRef]?.name ?? unknownGroupName,
           abbreviation: groups?[g.organeRef]?.abbreviation,
+          color: groups?[g.organeRef]?.color,
           // Calculée sur le décompte : `positionMajoritaire` vaut « pour »
           // quand aucun membre n'a voté.
           position: GroupPosition.fromCount(voteCountOf(g.decompte)),
           count: voteCountOf(g.decompte),
         ),
     ],
+    seats: seats,
   );
 }
 
