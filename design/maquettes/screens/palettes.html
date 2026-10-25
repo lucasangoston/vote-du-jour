@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palettes du vote</title>
+<style>
+:root{--g:#E8EAEC;--i:#15181C;--i2:#4F5761}:root[data-t="sombre"]{--g:#050607;--i:#ECEEF0;--i2:#9AA2AB}
+body{margin:0;background:var(--g);color:var(--i);font:15px/1.4 system-ui,sans-serif}
+header{position:sticky;top:0;z-index:1;display:flex;gap:16px;align-items:center;padding:14px 24px;background:var(--g)}
+h1{margin:0;font-size:17px}button{font:inherit;padding:6px 14px;border:1px solid var(--i);background:none;color:var(--i);cursor:pointer}
+button[aria-pressed="true"]{background:var(--i);color:var(--g)}
+main{display:grid;grid-template-columns:repeat(4,max-content);gap:28px;padding:8px 24px 32px;overflow-x:auto}
+section{display:flex;flex-direction:column;gap:10px}h2{margin:0;font-size:15px}h2 span{font-weight:400;color:var(--i2)}
+iframe{width:390px;height:844px;border:0;background:#fff}
+</style></head><body>
+<header><h1>Palettes du vote</h1><button data-t="clair">Jour</button><button data-t="sombre" aria-pressed="true">Nuit</button>
+<span>Écran : </span><button data-s="widgets" aria-pressed="true">Widgets</button><button data-s="detail-8610">Détail</button><button data-s="liste">Liste</button><button data-s="accueil">Accueil</button></header>
+<main id="m"></main>
+<script>
+const P=[['','Actuelle','vert et orange'],['sourd','Sourde','vert sapin et brique'],['terre','Terre','olive et ocre'],['encre','Encre','noir et gris, sans couleur']];
+let t='sombre',sc='widgets';const m=document.getElementById('m');
+function r(){document.documentElement.dataset.t=t;document.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));document.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.s===sc)));
+m.innerHTML=P.map(([k,n,d])=>`<section><h2>${n} <span>${d}</span></h2><iframe src="${sc}-${t}.html?pal=${k}&v=${Date.now()}"></iframe></section>`).join('')}
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{t=b.dataset.t;r()});document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{sc=b.dataset.s;r()});r();
+</script></body></html>
