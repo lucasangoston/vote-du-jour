@@ -150,7 +150,7 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
         const SizedBox(height: 32),
         const _Heading(summaryPointsHeading),
         const SizedBox(height: 12),
-        _SummaryPoints(points),
+        SummaryPoints(points),
       ],
       if (detail != null)
         ..._groupSections(detail)
@@ -550,9 +550,9 @@ class _Heading extends StatelessWidget {
   );
 }
 
-/// Points du résumé, en liste à puces.
-class _SummaryPoints extends StatelessWidget {
-  const _SummaryPoints(this.points);
+/// Points du résumé, en liste à puces (détail, écran « En débat »).
+class SummaryPoints extends StatelessWidget {
+  const SummaryPoints(this.points, {super.key});
 
   final List<String> points;
 

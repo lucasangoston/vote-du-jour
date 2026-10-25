@@ -28,6 +28,7 @@ export 'src/live/paris_time.dart';
 export 'src/live/reconciler.dart';
 export 'src/live/site_reader.dart';
 export 'src/live/site_source.dart';
+export 'src/notifications/debate_notification.dart';
 export 'src/notifications/eve_notification.dart';
 export 'src/notifications/fcm_client.dart';
 export 'src/notifications/notification_pass.dart';

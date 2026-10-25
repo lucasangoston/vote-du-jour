@@ -35,7 +35,7 @@ Données publiées dans le bucket :
 - `state/live.json` : état de la détection en direct (scrutins provisoires en attente du jeu de données, dernier numéro vu sur le site).
 - `state/dossiers.json` : `Last-Modified` du jeu de données des dossiers législatifs et index qui en est tiré (titres, actes citant chaque scrutin, adoptions sans scrutin, texte déposé de chaque dossier), réutilisé tant que ce jeu de données ne change pas. Son format est versionné : un cache d'une ancienne version est reconstruit.
 - `state/resumes.json` : cache des résumés, par décision et par texte en débat (résumé, source, texte, modèle ; ou « à régénérer » avec la raison et le nombre d'échecs ; ou abandonné).
-- `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service) et, sous `eve`, votes solennels déjà annoncés la veille (« séance dossier » → date d'envoi, oubliés après 30 jours).
+- `state/notifications.json` : décisions déjà notifiées (identifiant → date d'envoi, ou `initial` pour celles déjà publiées à la mise en service) et, sous `eve`, votes solennels déjà annoncés la veille (« séance dossier » → date d'envoi, oubliés après 30 jours), sous `debates`, textes déjà annoncés en débat (dossier → date d'envoi, jamais oubliés).
 - `state/arguments.json` : état des arguments (#35) : `Last-Modified` de la dernière archive des comptes rendus lue, et par décision rattachée : arguments faits (avec la version de la consigne et le compte rendu), en attente d'appel, ou abandonnés.
 - `state/agenda.json` : `ETag` de la dernière archive de l'agenda lue et points retenus de l'ordre du jour des séances pas finies depuis plus de 7 jours (#52, #55), relus quand l'agenda n'a pas changé.
 - `state/articles.json` : votes sur les articles (et amendements de suppression adoptés) des 30 derniers jours du dernier jeu de données des scrutins, avec dossier et séance, et dernier numéro du jeu de données (#55). Écrit par le job, relu par les passages de l'agenda et en direct.
@@ -148,6 +148,13 @@ Le même passage annonce, la veille au soir, les votes solennels du lendemain (#
 - message : titre « Vote solennel demain », corps « À partir de 15h : <titre court> » (heure de Paris du début de la séance), données `upcomingId` et `link` (`votedujour://decisions`, la liste) ;
 - une annonce par séance et dossier, avant les décisions, sous le même plafond de 3 envois par passage ; au premier passage, les points déjà à venir sont marqués sans envoi ;
 - limite : le cron de GitHub est irrégulier (#51) ; sans aucun passage entre 18h et minuit, l'annonce n'est pas envoyée (jamais le jour même).
+
+Il annonce aussi le texte qui passe en séance (#77, `debate_notification.dart`), d'après le bloc `inDebate` :
+
+- le jour de la séance (heure de Paris), une fois celle-ci commencée ; un texte repéré un jour suivant n'est pas annoncé ;
+- résumé du texte présent (`inDebate.summary`), pour un titre court lisible et un écran complet à l'ouverture ; sans résumé à 18h (heure de Paris), l'annonce part quand même avec le titre court du bloc ;
+- message : titre « En débat aujourd’hui », corps « <titre court> : les députés examinent le texte. » (titre court du résumé, sinon celui du bloc), données `dossierRef` et `link` (`votedujour://en-debat/<dossier>`, l'écran « En débat » de l'app) ;
+- une seule annonce par texte (dossier), jamais oubliée : la suite de la discussion ne rappelle pas le texte ; mémoire `debates` de `state/notifications.json` ; après les annonces de la veille et avant les décisions, sous le même plafond ; au premier passage, le texte déjà en débat est marqué sans envoi.
 
 ## App
 

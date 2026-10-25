@@ -13,6 +13,9 @@ import 'package:votedujour/src/decision_detail/decision_detail_page.dart';
 import 'package:votedujour/src/decision_detail/decision_detail_repository.dart';
 import 'package:votedujour/src/decision_detail/decision_route.dart';
 import 'package:votedujour/src/decisions_repository.dart';
+import 'package:votedujour/src/home_page.dart';
+import 'package:votedujour/src/in_debate/in_debate_page.dart';
+import 'package:votedujour/src/in_debate/in_debate_route.dart';
 import 'package:votedujour/src/notifications/important_votes_notifications.dart';
 import 'package:votedujour/src/notifications/push_messaging.dart';
 
@@ -81,11 +84,22 @@ final _summary = DecisionSummary(
   shortTitle: 'Restitution de biens culturels',
 );
 
+final _inDebate = InDebate(
+  dossierRef: 'DLR5L17N52100',
+  shortTitle: 'Sécurité sociale 2027',
+  dossierUrl:
+      'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52100',
+  seanceRef: 'RUANR5L17S2027IDS31000',
+  startsAt: DateTime.utc(2026, 10, 17, 7),
+);
+
 MockClient _server() => MockClient((request) async {
   final body = switch (request.url.path) {
     '/v1/latest.json' => DecisionIndex(
       generatedAt: DateTime.utc(2026, 10, 17),
       decisions: [_summary],
+      // Texte en débat sans article voté : absent de l'accueil.
+      inDebate: _inDebate,
     ).toJson(),
     '/v1/decisions/VTANR5L17V6346.json' => DecisionDetail(
       decision: _summary,
@@ -315,6 +329,56 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(DecisionDetailPage), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('texte en débat (#77) : ouvre l\'écran du texte', (
+      tester,
+    ) async {
+      final messaging = FakePushMessaging(current: PushPermission.granted);
+      await _pumpApp(tester, messaging);
+      messaging.openedController.add(
+        const PushNotification(
+          title: 'En débat aujourd’hui',
+          body: 'Sécurité sociale 2027 : les députés examinent le texte.',
+          data: {
+            'dossierRef': 'DLR5L17N52100',
+            'link': 'votedujour://en-debat/DLR5L17N52100',
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      final page = find.byType(InDebatePage);
+      expect(tester.widget<InDebatePage>(page).dossierRef, 'DLR5L17N52100');
+      expect(
+        ModalRoute.of(tester.element(page))!.settings.name,
+        inDebateRouteName('DLR5L17N52100'),
+      );
+      expect(find.text('Sécurité sociale 2027'), findsOneWidget);
+      expect(find.text('En débat'), findsOneWidget);
+
+      // Retour : l'accueil.
+      await tester.tap(find.byTooltip('Retour'));
+      await tester.pumpAndSettle();
+      expect(page, findsNothing);
+      expect(find.byType(HomePage), findsOneWidget);
+    });
+
+    testWidgets('texte en débat, app fermée : lien seul, retour à l\'accueil', (
+      tester,
+    ) async {
+      final messaging = FakePushMessaging(
+        current: PushPermission.granted,
+        initial: const PushNotification(
+          data: {'link': 'votedujour://en-debat/DLR5L17N52100'},
+        ),
+      );
+      await _pumpApp(tester, messaging);
+      final page = find.byType(InDebatePage);
+      expect(tester.widget<InDebatePage>(page).dossierRef, 'DLR5L17N52100');
+      await tester.tap(find.byTooltip('Retour'));
+      await tester.pumpAndSettle();
+      expect(page, findsNothing);
+      expect(find.byType(HomePage), findsOneWidget);
     });
 
     testWidgets('app fermée : ouvre le détail au lancement', (tester) async {

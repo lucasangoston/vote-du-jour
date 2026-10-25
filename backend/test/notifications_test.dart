@@ -64,21 +64,47 @@ UpcomingItem vote(
   dossierRef: dossierRef,
 );
 
+/// Résumé du texte en débat de test.
+const debateSummary = PlainSummary(
+  title: 'Le budget de la Sécurité sociale pour 2027',
+  shortTitle: 'Sécurité sociale 2027',
+  explanation: 'Le texte fixe le budget de la Sécurité sociale.',
+  promptVersion: 1,
+);
+
+/// Texte en débat de test : projet de loi de financement de la sécurité
+/// sociale, séance S1, résumé [debateSummary] (aucun sans [summarized]).
+InDebate debate({
+  String dossierRef = 'DLR1',
+  String seanceRef = 'S1',
+  DateTime? startsAt,
+  String shortTitle =
+      'Projet de loi de financement de la sécurité sociale pour 2027',
+  bool summarized = true,
+}) => InDebate(
+  dossierRef: dossierRef,
+  shortTitle: shortTitle,
+  dossierUrl: 'https://www.assemblee-nationale.fr/dyn/17/dossiers/$dossierRef',
+  seanceRef: seanceRef,
+  startsAt: startsAt ?? DateTime.utc(2026, 10, 20, 13),
+  summary: summarized ? debateSummary : null,
+);
+
 /// Envoi simulé : garde les messages, échoue pour les décisions de [failFor].
 class FakeSender implements PushSender {
   final messages = <PushMessage>[];
   final failFor = <String>{};
 
-  /// Décisions et points annoncés la veille, dans l'ordre d'envoi.
-  List<String> get ids => [
-    for (final m in messages) (m.data['decisionId'] ?? m.data['upcomingId'])!,
-  ];
+  /// Décisions, points annoncés la veille et textes en débat, dans l'ordre
+  /// d'envoi.
+  List<String> get ids => [for (final m in messages) _idOf(m)!];
+
+  static String? _idOf(PushMessage m) =>
+      m.data['decisionId'] ?? m.data['upcomingId'] ?? m.data['dossierRef'];
 
   @override
   Future<void> send(PushMessage message) async {
-    if (failFor.contains(
-      message.data['decisionId'] ?? message.data['upcomingId'],
-    )) {
+    if (failFor.contains(_idOf(message))) {
       throw const FcmException('HTTP 503');
     }
     messages.add(message);
@@ -612,6 +638,275 @@ void main() {
         await pass();
         expect((await readState())['eve'], isEmpty);
       });
+    });
+  });
+
+  group('notification « En débat » (#77)', () {
+    // Heure d'été jusqu'au 25 octobre 2026 : Paris = UTC+2.
+    final seance15h = DateTime.utc(2026, 10, 20, 13);
+
+    test('message : titre court du résumé, lien vers l’écran du texte', () {
+      final message = debateNotificationFor(
+        debate(),
+        topic: importantVotesTopic,
+      );
+      expect(message.topic, 'votes-importants');
+      expect(message.title, 'En débat aujourd’hui');
+      expect(
+        message.body,
+        'Sécurité sociale 2027 : les députés examinent le texte.',
+      );
+      expect(message.data, {
+        'dossierRef': 'DLR1',
+        'link': 'votedujour://en-debat/DLR1',
+      });
+    });
+
+    test('sans résumé : titre court du bloc, raccourci s’il est long', () {
+      expect(
+        debateNotificationFor(
+          debate(summarized: false),
+          topic: importantVotesTopic,
+        ).body,
+        'Projet de loi de financement de la sécurité sociale pour 2027 : '
+        'les députés examinent le texte.',
+      );
+      final long = debateNotificationFor(
+        debate(shortTitle: 'Texte ${'très ' * 60}long', summarized: false),
+        topic: importantVotesTopic,
+      ).body;
+      expect(long, endsWith('… : les députés examinent le texte.'));
+      expect(long.length, lessThan(160));
+    });
+
+    test('le jour de la séance seulement (heure de Paris)', () {
+      final d = debate(startsAt: seance15h);
+      bool due(DateTime now) => isDebateNotificationDue(d, now);
+      expect(due(DateTime.utc(2026, 10, 20, 14)), isTrue); // 16h
+      expect(due(DateTime.utc(2026, 10, 20, 21, 59)), isTrue); // 23h59
+      expect(due(DateTime.utc(2026, 10, 20, 22)), isFalse); // lendemain 0h
+      expect(due(DateTime.utc(2026, 10, 21, 14)), isFalse);
+      expect(due(DateTime.utc(2026, 10, 20, 12)), isFalse); // avant la séance
+      // Séance de nuit : 0h30 à Paris le 21.
+      expect(
+        isDebateNotificationDue(
+          debate(startsAt: DateTime.utc(2026, 10, 20, 22, 30)),
+          DateTime.utc(2026, 10, 21, 6),
+        ),
+        isTrue,
+      );
+    });
+
+    test('sans résumé : attendu jusqu’à 18h (heure de Paris)', () {
+      final d = debate(startsAt: seance15h, summarized: false);
+      bool due(DateTime now) => isDebateNotificationDue(d, now);
+      expect(due(DateTime.utc(2026, 10, 20, 14)), isFalse); // 16h
+      expect(due(DateTime.utc(2026, 10, 20, 15, 59)), isFalse); // 17h59
+      expect(due(DateTime.utc(2026, 10, 20, 16)), isTrue); // 18h
+      expect(due(DateTime.utc(2026, 10, 20, 21, 59)), isTrue); // 23h59
+      expect(due(DateTime.utc(2026, 10, 20, 22)), isFalse); // lendemain 0h
+      // Séance commencée après 18h : annoncée sans attendre.
+      expect(
+        isDebateNotificationDue(
+          debate(startsAt: DateTime.utc(2026, 10, 20, 19), summarized: false),
+          DateTime.utc(2026, 10, 20, 19, 30),
+        ),
+        isTrue,
+      );
+    });
+
+    test('le lien profond est celui que lit l’app', () {
+      expect(
+        inDebateDeepLink('DLR5L17N54951'),
+        'votedujour://en-debat/DLR5L17N54951',
+      );
+    });
+
+    group('runNotificationPass', () {
+      late Directory dir;
+      late LocalDirectoryStore store;
+      late FakeSender sender;
+      var now = DateTime.utc(2026, 10, 20, 14); // 16h à Paris
+
+      setUp(() {
+        dir = Directory.systemTemp.createTempSync('debate_notifications_test');
+        store = LocalDirectoryStore(dir.path);
+        sender = FakeSender();
+        now = DateTime.utc(2026, 10, 20, 14);
+      });
+      tearDown(() => dir.deleteSync(recursive: true));
+
+      Future<void> publish(
+        InDebate? inDebate, {
+        List<DecisionSummary> decisions = const [],
+      }) async {
+        await store.write(
+          indexPath,
+          jsonEncode(
+            DecisionIndex(
+              generatedAt: now,
+              decisions: decisions,
+              inDebate: inDebate,
+            ).toJson(),
+          ),
+        );
+        await ConfirmedSnapshot(lastNumero: 9999, scrutins: []).write(store);
+      }
+
+      Future<NotificationReport> pass() =>
+          runNotificationPass(store: store, sender: sender, clock: () => now);
+
+      Future<Map<String, Object?>> readState() async =>
+          jsonDecode((await store.read(notificationsStateKey))!)
+              as Map<String, Object?>;
+
+      Future<void> initialized() async {
+        await publish(null);
+        await pass();
+      }
+
+      test('un texte qui passe en séance : une seule notification', () async {
+        await initialized();
+        await publish(debate(startsAt: seance15h));
+        final report = await pass();
+        expect(report.debateSent, ['DLR1']);
+        expect(report.toString(), contains('1 textes en débat (DLR1)'));
+        expect(sender.messages.single.title, 'En débat aujourd’hui');
+        expect((await readState())['debates'], {'DLR1': now.toIso8601String()});
+
+        // Passages suivants, puis suite de la discussion le lendemain.
+        now = DateTime.utc(2026, 10, 20, 18);
+        expect((await pass()).debateSent, isEmpty);
+        now = DateTime.utc(2026, 10, 21, 14);
+        await publish(
+          debate(seanceRef: 'S2', startsAt: DateTime.utc(2026, 10, 21, 7)),
+        );
+        expect((await pass()).debateSent, isEmpty);
+        expect(sender.ids, ['DLR1']);
+      });
+
+      test(
+        'résumé absent avant 18h : attendu, envoyé dès qu’il arrive',
+        () async {
+          await initialized();
+          await publish(debate(startsAt: seance15h, summarized: false));
+          expect((await pass()).debateSent, isEmpty);
+          expect((await readState())['debates'], isEmpty);
+          now = DateTime.utc(2026, 10, 20, 15); // 17h
+          await publish(debate(startsAt: seance15h));
+          expect((await pass()).debateSent, ['DLR1']);
+          expect(
+            sender.messages.single.body,
+            'Sécurité sociale 2027 : les députés examinent le texte.',
+          );
+        },
+      );
+
+      test(
+        'résumé toujours absent à 18h : envoyé avec le titre du bloc',
+        () async {
+          await initialized();
+          await publish(debate(startsAt: seance15h, summarized: false));
+          now = DateTime.utc(2026, 10, 20, 15, 59); // 17h59
+          expect((await pass()).debateSent, isEmpty);
+          now = DateTime.utc(2026, 10, 20, 16); // 18h
+          expect((await pass()).debateSent, ['DLR1']);
+          expect(
+            sender.messages.single.body,
+            'Projet de loi de financement de la sécurité sociale pour 2027 : '
+            'les députés examinent le texte.',
+          );
+          // Le résumé arrivé ensuite ne renvoie rien.
+          now = DateTime.utc(2026, 10, 20, 17);
+          await publish(debate(startsAt: seance15h));
+          expect((await pass()).debateSent, isEmpty);
+          expect(sender.messages, hasLength(1));
+        },
+      );
+
+      test('autre texte en séance : notifié à son tour', () async {
+        await initialized();
+        await publish(debate(startsAt: seance15h));
+        await pass();
+        now = DateTime.utc(2026, 10, 20, 20);
+        await publish(
+          debate(
+            dossierRef: 'DLR2',
+            seanceRef: 'S2',
+            startsAt: DateTime.utc(2026, 10, 20, 19),
+          ),
+        );
+        expect((await pass()).debateSent, ['DLR2']);
+        expect(sender.ids, ['DLR1', 'DLR2']);
+      });
+
+      test('séance d’un jour précédent : pas de notification', () async {
+        await initialized();
+        now = DateTime.utc(2026, 10, 21, 10);
+        await publish(debate(startsAt: seance15h));
+        expect((await pass()).debateSent, isEmpty);
+        expect(sender.messages, isEmpty);
+      });
+
+      test('premier passage : le texte en débat est marqué, rien n’est '
+          'envoyé', () async {
+        await publish(debate(startsAt: seance15h));
+        final report = await pass();
+        expect(sender.messages, isEmpty);
+        expect(report.initialized, 1);
+        expect((await readState())['debates'], {'DLR1': 'initial'});
+        expect((await pass()).debateSent, isEmpty);
+      });
+
+      test(
+        'mémoire d’avant #77 (sans « debates ») : relue sans perte',
+        () async {
+          await publish(debate(startsAt: seance15h));
+          await store.write(
+            notificationsStateKey,
+            jsonEncode({
+              'version': 1,
+              'initializedAt': '2026-10-18T12:00:00.000Z',
+              'sent': {'A': 'initial'},
+              'eve': <String, String>{},
+            }),
+          );
+          final report = await pass();
+          expect(report.warnings, isEmpty);
+          expect(report.debateSent, ['DLR1']);
+          expect((await readState())['sent'], {'A': 'initial'});
+        },
+      );
+
+      test('échec d’envoi : retenté au passage suivant', () async {
+        await initialized();
+        await publish(debate(startsAt: seance15h));
+        sender.failFor.add('DLR1');
+        final report = await pass();
+        expect(report.debateSent, isEmpty);
+        expect(report.warnings.single, contains('DLR1'));
+        sender.failFor.clear();
+        expect((await pass()).debateSent, ['DLR1']);
+      });
+
+      test(
+        'plafond commun avec les décisions, texte en débat d’abord',
+        () async {
+          await initialized();
+          await publish(
+            debate(startsAt: seance15h),
+            decisions: [
+              for (var i = 1; i <= 3; i++)
+                decision('D$i', numero: i, date: DateTime.utc(2026, 10, 19)),
+            ],
+          );
+          final first = await pass();
+          expect(first.debateSent, ['DLR1']);
+          expect(first.sent, ['D1', 'D2']);
+          expect(first.deferred, 1);
+          expect((await pass()).sent, ['D3']);
+        },
+      );
     });
   });
 

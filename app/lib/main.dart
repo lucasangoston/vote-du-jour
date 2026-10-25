@@ -10,6 +10,7 @@ import 'src/decision_detail/decision_route.dart';
 import 'src/decisions_cache.dart';
 import 'src/decisions_repository.dart';
 import 'src/home_page.dart';
+import 'src/in_debate/in_debate_route.dart';
 import 'src/home_widget/home_widget_sync.dart';
 import 'src/home_widget/widget_data_source.dart';
 import 'src/notifications/important_votes_notifications.dart';
@@ -126,10 +127,12 @@ class _VoteDuJourAppState extends State<VoteDuJourApp> {
           repository: widget.repository,
           detailRepository: widget.detailRepository,
         ),
-        onGenerateRoute: (settings) => generateDecisionRoute(
-          settings,
-          repository: widget.detailRepository,
-        ),
+        onGenerateRoute: (settings) =>
+            generateDecisionRoute(
+              settings,
+              repository: widget.detailRepository,
+            ) ??
+            generateInDebateRoute(settings, repository: widget.repository),
       ),
     );
   }
