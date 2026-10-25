@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:vote_contract/vote_contract.dart';
 import 'package:votedujour/src/decision_detail/decision_detail_page.dart';
+import 'package:votedujour/src/skeleton.dart';
 import 'package:votedujour/src/decision_detail/decision_detail_repository.dart';
 import 'package:votedujour/src/decision_detail/who_voted_what.dart';
 import 'package:votedujour/src/hemicycle/hemicycle_places.dart';
@@ -206,6 +208,44 @@ void main() {
       );
     });
   });
+
+  testWidgets(
+    'squelette pendant le chargement, jamais l’arc puis l’hémicycle',
+    (tester) async {
+      final detail = _fixture(8706);
+      final answer = Completer<http.Response>();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildTheme(Brightness.light),
+          home: DecisionDetailPage(
+            id: detail.decision.id,
+            summary: detail.decision,
+            repository: DecisionDetailRepository(
+              baseUrl: 'https://example.test',
+              client: MockClient((_) => answer.future),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      // Le résumé de la liste est connu, mais on n'affiche ni arc ni titre :
+      // tout l'écran est en squelette.
+      expect(find.byType(DetailSkeleton), findsOneWidget);
+      expect(find.byType(VoteArc), findsNothing);
+      expect(find.byType(HemicycleSeats), findsNothing);
+      expect(
+        find.bySemanticsLabel('Chargement de la décision'),
+        findsOneWidget,
+      );
+
+      answer.complete(
+        http.Response.bytes(utf8.encode(jsonEncode(detail.toJson())), 200),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(DetailSkeleton), findsNothing);
+      expect(find.byType(HemicycleSeats), findsOneWidget);
+    },
+  );
 
   group('sièges sans vote', () {
     test('absents et non-votants comptés, dits en clair', () {
