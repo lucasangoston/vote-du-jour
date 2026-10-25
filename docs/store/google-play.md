@@ -12,10 +12,10 @@ Les longueurs entre parenthèses sont comptées en caractères Unicode par
   Le Perchoir
   ```
 
-- **Description courte** (76) [80] :
+- **Description courte** (77) [80] :
 
   ```text
-  Les décisions de l'Assemblée nationale en bref : résultat, votes, arguments.
+  Les décisions de l'Assemblée nationale en bref : hémicycle, votes, arguments.
   ```
 
 - **Catégorie** : Actualités et magazines (application).
@@ -25,35 +25,42 @@ Les longueurs entre parenthèses sont comptées en caractères Unicode par
 - **Règles de confidentialité** :
   https://lucasangoston.github.io/vote-du-jour/confidentialite.html
 
-## Description complète (2239) [4000]
+## Description complète (3015) [4000]
 
 Même texte que l'App Store.
 
 ```text
 Le Perchoir résume les décisions de l'Assemblée nationale : chaque vote sur l'ensemble d'un texte, chaque motion de censure, chaque résolution, en quelques mots.
 
+L'ACCUEIL EN CARTES
+Chaque jour, des cartes à faire défiler : le prochain vote solennel inscrit à l'ordre du jour, puis les dernières décisions, chacune avec son résultat et son hémicycle. Le bouton « Toutes les décisions » ouvre la liste complète, jour par jour, filtrable : textes, résolutions, motions.
+
 POUR CHAQUE DÉCISION
-• Un titre clair et une ligne d'explication
+• L'hémicycle aux 574 places : chaque député à sa place réelle, à la couleur officielle de son groupe, et son vote d'un coup d'œil (rond plein pour, anneau contre, petit point abstention)
 • Le résultat : adopté ou rejeté, avec le décompte des voix pour les scrutins publics
-• Qui a voté quoi, groupe par groupe
+• Un titre clair et une ligne d'explication
 • Ce que prévoit le texte, en quelques points
-• Les principaux arguments pour et contre, tirés des débats
+• Qui a voté quoi, groupe par groupe : touchez un groupe pour allumer ses sièges
+• Pourquoi ils ont voté ainsi : les arguments des groupes, pour et contre, tirés des débats
 • Les liens vers le scrutin et le dossier législatif officiels
 
-À VENIR ET EN DÉBAT
-En tête de liste, les prochains points de l'ordre du jour de l'Assemblée, dont les votes solennels annoncés, et le texte en cours de débat avec ses derniers articles votés au scrutin public.
+EN DÉBAT
+Le jour où un texte passe en séance, une notification (si vous les avez activées) l'annonce et ouvre l'écran « En débat » : ce que prévoit le texte, ses articles déjà votés au scrutin public et la date du vote final quand elle est connue.
 
-WIDGET
-Les dernières décisions sur l'écran d'accueil, en trois tailles : la dernière décision, la dernière décision expliquée, ou les trois dernières.
+WIDGETS
+Les dernières décisions sur l'écran d'accueil, en trois tailles : la dernière décision avec son hémicycle coloré par le vote, et, en grand, le prochain vote solennel en bas. Sans décision récente, le petit et le moyen widget annoncent le prochain vote solennel.
 
 NOTIFICATIONS, SI VOUS LE SOUHAITEZ
-Une notification pour les votes importants seulement : votes solennels, motions de censure, textes de compromis et lectures définitives, et la veille au soir l'annonce d'un vote solennel. Une à trois par semaine environ, désactivables à tout moment.
+Une notification pour les votes importants seulement : votes solennels, motions de censure, textes de compromis et lectures définitives ; la veille au soir, l'annonce d'un vote solennel ; le jour même, le texte qui passe en débat. Désactivables à tout moment.
 
 DÉLAI
 Une décision apparaît 10 à 30 minutes après le vote, marquée « provisoire », puis est confirmée le lendemain avec le décompte complet et le vote de chaque groupe. Les votes sur les amendements et les articles n'ont pas de fiche détaillée.
 
+JOUR OU NUIT
+Apparence jour, nuit, ou celle du téléphone.
+
 SANS COMPTE, SANS PUBLICITÉ, SANS SUIVI
-Aucune inscription. Aucune mesure d'audience. Mode sombre inclus.
+Aucune inscription. Aucune mesure d'audience.
 
 SOURCES ET RÉSUMÉS PAR IA
 Les données viennent de l'open data de l'Assemblée nationale (Licence Ouverte Etalab). Les titres, explications, points clés et arguments sont rédigés automatiquement par une IA (Claude, d'Anthropic), avec une consigne de neutralité, à partir des textes et des comptes rendus des débats, sans relecture humaine. Ils peuvent contenir des erreurs : seuls le texte officiel et le résultat du vote font foi. Chaque décision renvoie vers les pages officielles.
@@ -64,19 +71,35 @@ Le Perchoir est une application indépendante. Elle n'est liée ni à l'Assembl�
 Une question, une erreur dans un résumé ? lucasangostonpro@gmail.com
 ```
 
+## Notes de version 1.0.0 (282) [500]
+
+À coller dans la release (Tests internes, puis fermés, puis production), entre
+les balises de langue proposées par la Console : `<fr-FR>` … `</fr-FR>`.
+
+```text
+Première version : les décisions de l'Assemblée nationale en bref. Accueil en cartes, hémicycle aux 574 places aux couleurs des groupes, « Qui a voté quoi » et les arguments de chaque groupe, écran « En débat », notifications des votes importants, widgets et apparence jour ou nuit.
+```
+
 ## Éléments graphiques
 
-Specs relues le 21 octobre 2026 sur
+Specs relues le 25 octobre 2026 sur
 https://support.google.com/googleplay/android-developer/answer/9866151 :
 
 - **Icône** : `docs/store/visuels/icone-512.png` (512 × 512, PNG 32 bits,
   carré plein, Google applique le masque).
 - **Image de présentation** : `docs/store/visuels/feature-graphic-1024x500.png`
-  (1024 × 500, PNG 24 bits sans alpha).
-- **Captures téléphone** : `docs/store/visuels/android/` (5 PNG, 1080 × 1920,
-  9:16). Au moins 4 captures d'au moins 1080 px sont requises pour être
-  éligible aux recommandations ; le côté long ne doit pas dépasser deux fois
-  le côté court (d'où le recadrage des captures 1080 × 2400 de l'émulateur).
+  (1024 × 500, PNG 24 bits sans alpha ; logo et nom « Le Perchoir » aux
+  couleurs de DESIGN.md).
+- **Captures téléphone** : `docs/store/visuels/android/` (7 PNG, 1080 × 1920,
+  9:16, 24 bits sans alpha), même ordre et mêmes écrans que l'App Store :
+  accueil en cartes, détail adopté, « Qui a voté quoi », « En débat »,
+  liste, écran d'accueil avec le grand et le petit widget posés pour de vrai,
+  détail rejeté en apparence nuit. Jusqu'à 8 captures par type d'appareil ;
+  au moins 4 captures d'au moins 1080 px (portrait 1080 × 1920, 9:16) sont
+  requises pour être éligible aux recommandations ; le côté long ne doit pas
+  dépasser deux fois le côté court. Prises le 25 octobre 2026 sur l'émulateur
+  (API 37) passé en 1080 × 1920 (`adb shell wm size 1080x1920`)
+  plutôt que recadrées, barre d'état en mode démo (9:41).
 
 ## Contenu de l'application (Règles › Contenu de l'application)
 
@@ -124,7 +147,11 @@ Réponses :
 | Finalité | **Fonctionnalité de l'application** |
 
 Aucun autre type (position, informations personnelles, activité, infos et
-performances de l'app, etc.).
+performances de l'app, etc.). Revérifié le 25 octobre 2026 sur la nouvelle
+app : mêmes dépendances Firebase (`firebase_core`, `firebase_messaging`, pas
+d'Analytics ni de Crashlytics) ; préférences (`shared_preferences` :
+notifications, apparence), cache des décisions et données des widgets
+stockés sur l'appareil seulement, donc hors « collecte ».
 
 Sources :
 
@@ -171,8 +198,7 @@ Réponses proposées :
 
 - **Coordonnées** : URL https://lucasangoston.github.io/vote-du-jour/support.html
   (e-mail). Google exige que cette URL soit **accessible depuis l'app** :
-  aujourd'hui la page À propos ne la contient pas. À ajouter avant la
-  soumission (ligne « Assistance » vers cette URL dans `about_page.dart`).
+  c'est le cas, ligne « Contact » de la page À propos (`about_page.dart`).
   Des liens vers des réseaux sociaux seuls ne suffisent pas.
 - **Type d'entité mère** : Autre, avec la description « Développeur
   indépendant (personne physique), sans lien avec l'Assemblée nationale ».
@@ -201,7 +227,8 @@ Non. Aucun SDK publicitaire.
 
 **Identifiant publicitaire** (déclaration obligatoire, cible Android 13+) :
 « Non, l'app n'utilise pas l'identifiant publicitaire ». Vérifié sur le
-manifeste fusionné de la build release (21 octobre 2026) : pas de permission
+manifeste fusionné de la build release (21 octobre 2026, revérifié le
+25 octobre 2026) : pas de permission
 `com.google.android.gms.permission.AD_ID` (seulement INTERNET,
 POST_NOTIFICATIONS, WAKE_LOCK, ACCESS_NETWORK_STATE, RECEIVE_BOOT_COMPLETED,
 FOREGROUND_SERVICE, c2dm RECEIVE). À revérifier sur l'AAB final dans
