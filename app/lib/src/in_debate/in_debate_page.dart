@@ -93,32 +93,31 @@ class _InDebatePageState extends State<InDebatePage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: ListView(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            padding.top,
-            20,
-            40 + padding.bottom,
+        // Le contenu ne passe jamais sous la barre d'état, même en défilant.
+        body: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 40 + padding.bottom),
+            children: [
+              const HemicycleBackButton(),
+              if (inDebate != null)
+                ...inDebateContent(
+                  context,
+                  inDebate,
+                  upcoming: index!.upcoming,
+                  now: widget.now ?? DateTime.now(),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.only(top: 120),
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _fresh
+                      ? _NoLongerInDebate(dossierRef: widget.dossierRef)
+                      : _Unavailable(onRetry: _load),
+                ),
+            ],
           ),
-          children: [
-            const HemicycleBackButton(),
-            if (inDebate != null)
-              ...inDebateContent(
-                context,
-                inDebate,
-                upcoming: index!.upcoming,
-                now: widget.now ?? DateTime.now(),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.only(top: 120),
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _fresh
-                    ? _NoLongerInDebate(dossierRef: widget.dossierRef)
-                    : _Unavailable(onRetry: _load),
-              ),
-          ],
         ),
       ),
     );
