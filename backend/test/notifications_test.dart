@@ -64,22 +64,30 @@ UpcomingItem vote(
   dossierRef: dossierRef,
 );
 
+/// Résumé du texte en débat de test.
+const debateSummary = PlainSummary(
+  title: 'Le budget de la Sécurité sociale pour 2027',
+  shortTitle: 'Sécurité sociale 2027',
+  explanation: 'Le texte fixe le budget de la Sécurité sociale.',
+  promptVersion: 1,
+);
+
 /// Texte en débat de test : projet de loi de financement de la sécurité
-/// sociale, séance S1.
+/// sociale, séance S1, résumé [debateSummary] (aucun sans [summarized]).
 InDebate debate({
   String dossierRef = 'DLR1',
   String seanceRef = 'S1',
   DateTime? startsAt,
   String shortTitle =
       'Projet de loi de financement de la sécurité sociale pour 2027',
-  PlainSummary? summary,
+  bool summarized = true,
 }) => InDebate(
   dossierRef: dossierRef,
   shortTitle: shortTitle,
   dossierUrl: 'https://www.assemblee-nationale.fr/dyn/17/dossiers/$dossierRef',
   seanceRef: seanceRef,
   startsAt: startsAt ?? DateTime.utc(2026, 10, 20, 13),
-  summary: summary,
+  summary: summarized ? debateSummary : null,
 );
 
 /// Envoi simulé : garde les messages, échoue pour les décisions de [failFor].
@@ -639,14 +647,7 @@ void main() {
 
     test('message : titre court du résumé, lien vers l’écran du texte', () {
       final message = debateNotificationFor(
-        debate(
-          summary: const PlainSummary(
-            title: 'Le budget de la Sécurité sociale pour 2027',
-            shortTitle: 'Sécurité sociale 2027',
-            explanation: 'Le texte fixe le budget de la Sécurité sociale.',
-            promptVersion: 1,
-          ),
-        ),
+        debate(),
         topic: importantVotesTopic,
       );
       expect(message.topic, 'votes-importants');
@@ -663,12 +664,15 @@ void main() {
 
     test('sans résumé : titre court du bloc, raccourci s’il est long', () {
       expect(
-        debateNotificationFor(debate(), topic: importantVotesTopic).body,
+        debateNotificationFor(
+          debate(summarized: false),
+          topic: importantVotesTopic,
+        ).body,
         'Projet de loi de financement de la sécurité sociale pour 2027 : '
         'les députés examinent le texte.',
       );
       final long = debateNotificationFor(
-        debate(shortTitle: 'Texte ${'très ' * 60}long'),
+        debate(shortTitle: 'Texte ${'très ' * 60}long', summarized: false),
         topic: importantVotesTopic,
       ).body;
       expect(long, endsWith('… : les députés examinent le texte.'));
@@ -688,6 +692,24 @@ void main() {
         isDebateNotificationDue(
           debate(startsAt: DateTime.utc(2026, 10, 20, 22, 30)),
           DateTime.utc(2026, 10, 21, 6),
+        ),
+        isTrue,
+      );
+    });
+
+    test('sans résumé : attendu jusqu’à 18h (heure de Paris)', () {
+      final d = debate(startsAt: seance15h, summarized: false);
+      bool due(DateTime now) => isDebateNotificationDue(d, now);
+      expect(due(DateTime.utc(2026, 10, 20, 14)), isFalse); // 16h
+      expect(due(DateTime.utc(2026, 10, 20, 15, 59)), isFalse); // 17h59
+      expect(due(DateTime.utc(2026, 10, 20, 16)), isTrue); // 18h
+      expect(due(DateTime.utc(2026, 10, 20, 21, 59)), isTrue); // 23h59
+      expect(due(DateTime.utc(2026, 10, 20, 22)), isFalse); // lendemain 0h
+      // Séance commencée après 18h : annoncée sans attendre.
+      expect(
+        isDebateNotificationDue(
+          debate(startsAt: DateTime.utc(2026, 10, 20, 19), summarized: false),
+          DateTime.utc(2026, 10, 20, 19, 30),
         ),
         isTrue,
       );
@@ -762,6 +784,45 @@ void main() {
         expect((await pass()).debateSent, isEmpty);
         expect(sender.ids, ['DLR1']);
       });
+
+      test(
+        'résumé absent avant 18h : attendu, envoyé dès qu’il arrive',
+        () async {
+          await initialized();
+          await publish(debate(startsAt: seance15h, summarized: false));
+          expect((await pass()).debateSent, isEmpty);
+          expect((await readState())['debates'], isEmpty);
+          now = DateTime.utc(2026, 10, 20, 15); // 17h
+          await publish(debate(startsAt: seance15h));
+          expect((await pass()).debateSent, ['DLR1']);
+          expect(
+            sender.messages.single.body,
+            'Sécurité sociale 2027 : les députés examinent le texte.',
+          );
+        },
+      );
+
+      test(
+        'résumé toujours absent à 18h : envoyé avec le titre du bloc',
+        () async {
+          await initialized();
+          await publish(debate(startsAt: seance15h, summarized: false));
+          now = DateTime.utc(2026, 10, 20, 15, 59); // 17h59
+          expect((await pass()).debateSent, isEmpty);
+          now = DateTime.utc(2026, 10, 20, 16); // 18h
+          expect((await pass()).debateSent, ['DLR1']);
+          expect(
+            sender.messages.single.body,
+            'Projet de loi de financement de la sécurité sociale pour 2027 : '
+            'les députés examinent le texte.',
+          );
+          // Le résumé arrivé ensuite ne renvoie rien.
+          now = DateTime.utc(2026, 10, 20, 17);
+          await publish(debate(startsAt: seance15h));
+          expect((await pass()).debateSent, isEmpty);
+          expect(sender.messages, hasLength(1));
+        },
+      );
 
       test('autre texte en séance : notifié à son tour', () async {
         await initialized();

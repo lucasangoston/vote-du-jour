@@ -152,6 +152,7 @@ Le même passage annonce, la veille au soir, les votes solennels du lendemain (#
 Il annonce aussi le texte qui passe en séance (#77, `debate_notification.dart`), d'après le bloc `inDebate` :
 
 - le jour de la séance (heure de Paris), une fois celle-ci commencée ; un texte repéré un jour suivant n'est pas annoncé ;
+- résumé du texte présent (`inDebate.summary`), pour un titre court lisible et un écran complet à l'ouverture ; sans résumé à 18h (heure de Paris), l'annonce part quand même avec le titre court du bloc ;
 - message : titre « En débat aujourd’hui », corps « <titre court> : les députés examinent le texte. » (titre court du résumé, sinon celui du bloc), données `dossierRef` et `link` (`votedujour://en-debat/<dossier>`, l'écran « En débat » de l'app) ;
 - une seule annonce par texte (dossier), jamais oubliée : la suite de la discussion ne rappelle pas le texte ; mémoire `debates` de `state/notifications.json` ; après les annonces de la veille et avant les décisions, sous le même plafond ; au premier passage, le texte déjà en débat est marqué sans envoi.
 
