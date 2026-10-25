@@ -465,7 +465,7 @@ class _SeatsVoteCard extends StatelessWidget {
   }
 }
 
-/// Un des trois chiffres de la carte, en Geist Mono. Avec [glyph], le
+/// Un des trois chiffres de la carte, en Geist à chiffres tabulaires. Avec [glyph], le
 /// libellé est précédé du symbole du vote (forme des sièges) et le chiffre
 /// est plus grand.
 class _Figure extends StatelessWidget {
@@ -485,7 +485,7 @@ class _Figure extends StatelessWidget {
         children: [
           Text(
             '$value',
-            style: HemicycleText.mono.copyWith(
+            style: HemicycleText.figures.copyWith(
               fontSize: glyph == null ? 22 : 26,
               fontWeight: FontWeight.w500,
               color: color,
