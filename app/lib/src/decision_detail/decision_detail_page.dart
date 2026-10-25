@@ -131,17 +131,13 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       const SizedBox(height: 8),
       Text(
         capitalize(decision.displayTitle),
-        style: HemicycleText.detailTitle.copyWith(color: context.colors.ink),
+        style: HemicycleText.displayMd.copyWith(color: context.colors.ink),
       ),
       if (decision.explanation case final explanation?) ...[
         const SizedBox(height: 12),
         Text(
           explanation,
-          style: TextStyle(
-            fontSize: 16,
-            height: 1.55,
-            color: context.colors.body,
-          ),
+          style: HemicycleText.bodySerif.copyWith(color: context.colors.body),
         ),
       ],
       // Résumé en points (#9) : dans le fichier de détail seulement.
@@ -171,7 +167,7 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       const SizedBox(height: 24),
       Text(
         sourceNotice,
-        style: TextStyle(fontSize: 12, height: 1.5, color: context.colors.ink2),
+        style: HemicycleText.meta.copyWith(color: context.colors.ink2),
       ),
     ];
   }
@@ -276,12 +272,10 @@ class _VoteCard extends StatelessWidget {
     final color = resultColor(context, decision.result);
     final mainLevee = decision.voteMode == VoteMode.mainLevee;
     final hemicycle = !mainLevee && decision.arc != null;
+    // Surface douce à angle droit.
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(HemicycleRadii.card),
-      ),
+      color: colors.surface,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = math.min(280.0, constraints.maxWidth);
@@ -315,11 +309,7 @@ class _VoteCard extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             resultWord(decision.result),
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.6,
-                              height: 1.15,
+                            style: HemicycleText.displayLg.copyWith(
                               color: color,
                             ),
                           ),
@@ -343,7 +333,7 @@ class _VoteCard extends StatelessWidget {
                           for (final label in [leftLabel, rightLabel])
                             Text(
                               label,
-                              style: TextStyle(
+                              style: HemicycleText.meta.copyWith(
                                 fontSize: 11,
                                 color: colors.ink2,
                               ),
@@ -359,7 +349,7 @@ class _VoteCard extends StatelessWidget {
                   child: Text(
                     mainLeveeNotice,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: colors.ink2),
+                    style: HemicycleText.meta.copyWith(color: colors.ink2),
                   ),
                 )
               else if (tally != null) ...[
@@ -406,12 +396,10 @@ class _SeatsVoteCard extends StatelessWidget {
     final colors = context.colors;
     final result = detail.decision.result;
     final tally = count.tally;
+    // Surface douce à angle droit.
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(HemicycleRadii.card),
-      ),
+      color: colors.surface,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = math.min(340.0, constraints.maxWidth);
@@ -428,7 +416,7 @@ class _SeatsVoteCard extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 resultWord(result),
-                style: HemicycleText.serifVerdict.copyWith(
+                style: HemicycleText.displayLg.copyWith(
                   color: resultColor(context, result),
                 ),
               ),
@@ -465,9 +453,9 @@ class _SeatsVoteCard extends StatelessWidget {
   }
 }
 
-/// Un des trois chiffres de la carte, en Geist à chiffres tabulaires. Avec [glyph], le
-/// libellé est précédé du symbole du vote (forme des sièges) et le chiffre
-/// est plus grand.
+/// Un des trois chiffres de la carte, en Geist à chiffres tabulaires
+/// (`figure`). Avec [glyph], le libellé est précédé du symbole du vote (forme
+/// des sièges) ; sans, le chiffre est un peu plus petit, sous le grand arc.
 class _Figure extends StatelessWidget {
   const _Figure(this.value, this.label, this.color, {this.glyph});
 
@@ -479,15 +467,14 @@ class _Figure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink2 = context.colors.ink2;
-    final text = Text(label, style: TextStyle(fontSize: 13, color: ink2));
+    final text = Text(label, style: HemicycleText.meta.copyWith(color: ink2));
     return Expanded(
       child: Column(
         children: [
           Text(
             '$value',
-            style: HemicycleText.figures.copyWith(
-              fontSize: glyph == null ? 22 : 26,
-              fontWeight: FontWeight.w500,
+            style: HemicycleText.figure.copyWith(
+              fontSize: glyph == null ? 22 : null,
               color: color,
             ),
           ),
@@ -517,7 +504,7 @@ class _Meta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MetaLine(
-    style: TextStyle(fontSize: 13, height: 1.4, color: context.colors.ink2),
+    style: HemicycleText.meta.copyWith(color: context.colors.ink2),
     parts: [
       if (decision.numero case final numero?
           when decision.voteMode == VoteMode.scrutinPublic)
@@ -545,7 +532,7 @@ class _Heading extends StatelessWidget {
     header: true,
     child: Text(
       text,
-      style: HemicycleText.heading.copyWith(color: context.colors.ink),
+      style: HemicycleText.displaySm.copyWith(color: context.colors.ink),
     ),
   );
 }
@@ -558,11 +545,7 @@ class SummaryPoints extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
-      fontSize: 15,
-      height: 1.5,
-      color: context.colors.body,
-    );
+    final style = HemicycleText.bodySerif.copyWith(color: context.colors.body);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -610,11 +593,11 @@ class _Field extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: colors.ink2)),
+          Text(label, style: HemicycleText.meta.copyWith(color: colors.ink2)),
           const SizedBox(height: 2),
           Text(
             value,
-            style: TextStyle(fontSize: 14, height: 1.45, color: colors.body),
+            style: HemicycleText.bodySmall.copyWith(color: colors.body),
           ),
         ],
       ),
@@ -635,15 +618,12 @@ class _SourceLinks extends StatelessWidget {
     final mainLevee = decision.voteMode == VoteMode.mainLevee;
     final dossierUrl =
         decision.dossierUrl ?? (mainLevee ? decision.sourceUrl : null);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return RuledRows(
       children: [
         if (!mainLevee)
           ExternalLinkRow(label: 'Voir le scrutin', url: decision.sourceUrl),
-        if (dossierUrl != null) ...[
-          if (!mainLevee) const SizedBox(height: 8),
+        if (dossierUrl != null)
           ExternalLinkRow(label: 'Dossier législatif', url: dossierUrl),
-        ],
       ],
     );
   }
@@ -661,7 +641,7 @@ class _Unavailable extends StatelessWidget {
       Text(
         'Détail indisponible.',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 15, color: context.colors.ink2),
+        style: HemicycleText.bodySmall.copyWith(color: context.colors.ink2),
       ),
       const SizedBox(height: 12),
       FilledButton(onPressed: onRetry, child: const Text('Réessayer')),
@@ -677,6 +657,6 @@ class _Muted extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: TextStyle(fontSize: 14, height: 1.45, color: context.colors.ink2),
+    style: HemicycleText.bodySmall.copyWith(color: context.colors.ink2),
   );
 }

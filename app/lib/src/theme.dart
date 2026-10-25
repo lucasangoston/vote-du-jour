@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Police des textes (titres en semi-gras, interlettrage serré).
+/// Police de la structure (rangées, dates, chiffres, boutons), chiffres
+/// tabulaires pour les décomptes ([HemicycleText.figures]).
 const geist = 'Geist';
 
-/// Police des chiffres (décomptes).
-const geistMono = 'GeistMono';
-
-/// Police des titres éditoriaux (#76), à empattements. Fichier variable :
-/// la graisse passe par `fontVariations` (voir [HemicycleText.serif]).
+/// Police du récit et de l'affichage (#76, DESIGN.md), à empattements, en
+/// graisse 400. Fichier variable : la graisse passe par `fontVariations`
+/// (voir [HemicycleText.serif]).
 const newsreader = 'Newsreader';
 
-/// Couleurs de la charte « Hémicycle » (#29) : fond, surface, encres et filet
-/// neutres ; seuls le pour (vert) et le contre (brique) portent une couleur,
-/// jamais de couleur de parti ni de bleu-blanc-rouge.
+/// Couleurs de la charte (DESIGN.md, système inspiré de Wired) : un duo noir
+/// et blanc de magazine imprimé, fond, surface, encres et filet neutres ;
+/// seules les données portent une couleur (le vote et le résultat, les
+/// groupes), jamais de couleur de marque.
 @immutable
 class HemicycleColors extends ThemeExtension<HemicycleColors> {
   const HemicycleColors({
@@ -28,69 +28,87 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     required this.abstention,
     required this.pressed,
     required this.raised,
+    required this.plate,
+    required this.mark,
+    required this.onMark,
   });
 
   static const light = HemicycleColors(
-    background: Color(0xFFF3F4F5),
-    surface: Color(0xFFFFFFFF),
-    ink: Color(0xFF15181C),
-    ink2: Color(0xFF4F5761),
-    body: Color(0xFF2E343B),
-    rule: Color(0xFFE2E5E8),
+    background: Color(0xFFFFFFFF),
+    surface: Color(0xFFF5F5F5),
+    ink: Color(0xFF000000),
+    ink2: Color(0xFF6B6B6B),
+    body: Color(0xFF1A1A1A),
+    rule: Color(0xFFE0E0E0),
     pour: Color(0xFF1D6B54),
     contre: Color(0xFFB4472B),
     abstention: Color(0xFFAEB4BB),
-    pressed: Color(0xFFE8EAEC),
-    raised: Color(0xFFE8EAEC),
+    pressed: Color(0xFFEBEBEB),
+    raised: Color(0xFFEBEBEB),
+    plate: Color(0xFFFFFFFF),
+    mark: Color(0xFF4F5761),
+    onMark: Color(0xFFFFFFFF),
   );
 
   static const dark = HemicycleColors(
-    background: Color(0xFF0F1113),
-    surface: Color(0xFF191C20),
-    ink: Color(0xFFECEEF0),
-    ink2: Color(0xFF9AA2AB),
-    body: Color(0xFFC9CED3),
-    rule: Color(0xFF2A2F35),
+    background: Color(0xFF000000),
+    surface: Color(0xFF121212),
+    ink: Color(0xFFFFFFFF),
+    ink2: Color(0xFF9E9E9E),
+    body: Color(0xFFE6E6E6),
+    rule: Color(0xFF2A2A2A),
     pour: Color(0xFF4FB08F),
     contre: Color(0xFFE07A58),
     abstention: Color(0xFF4A5058),
-    pressed: Color(0xFF1F2328),
-    raised: Color(0xFF23272C),
+    pressed: Color(0xFF1F1F1F),
+    raised: Color(0xFF1F1F1F),
+    plate: Color(0xFFFFFFFF),
+    mark: Color(0xFF4A5058),
+    onMark: Color(0xFFFFFFFF),
   );
 
-  /// Fond des écrans.
+  /// Fond des écrans (`ground` de DESIGN.md) : blanc le jour, noir la nuit.
   final Color background;
 
-  /// Cartes et boutons de lien.
+  /// Surface douce : cartes de l'accueil, carte du vote, tuiles, panneaux.
   final Color surface;
 
-  /// Encre principale (titres, texte).
+  /// Encre pleine : titres, texte, bouton principal, choix d'un sélecteur.
   final Color ink;
 
-  /// Encre secondaire (méta, légendes).
+  /// Encre secondaire (méta, légendes), à 4,5:1 au moins sur [surface].
   final Color ink2;
 
-  /// Texte courant des explications, entre [ink] et [ink2].
+  /// Texte du récit (explication, points, arguments), entre [ink] et [ink2].
   final Color body;
 
-  /// Filets de séparation.
+  /// Filets de 1 point entre les rangées.
   final Color rule;
 
-  /// Pour, adopté.
+  /// Pour, adopté (couleur des données, inchangée).
   final Color pour;
 
-  /// Contre, rejeté.
+  /// Contre, rejeté (couleur des données, inchangée).
   final Color contre;
 
-  /// Abstentions.
+  /// Abstentions (couleur des données, inchangée).
   final Color abstention;
 
-  /// Fond d'un élément touché (ligne de liste, bouton icône).
+  /// Fond d'un élément touché (rangée, bouton icône).
   final Color pressed;
 
-  /// Fond en creux d'un sélecteur segmenté (Auto / Jour / Nuit), sous le
-  /// segment choisi qui prend [surface].
+  /// Surface relevée : tuile de groupe choisie, bande d'un widget.
   final Color raised;
+
+  /// Blanc constant : plaque sous un logo de groupe, même la nuit (les logos
+  /// sont dessinés pour un fond blanc), pastille d'un interrupteur.
+  final Color plate;
+
+  /// Vignette à sigle d'un groupe sans logo, et son texte ([onMark]).
+  final Color mark;
+
+  /// Texte d'une vignette à sigle ([mark]).
+  final Color onMark;
 
   @override
   HemicycleColors copyWith({
@@ -105,6 +123,9 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     Color? abstention,
     Color? pressed,
     Color? raised,
+    Color? plate,
+    Color? mark,
+    Color? onMark,
   }) => HemicycleColors(
     background: background ?? this.background,
     surface: surface ?? this.surface,
@@ -117,6 +138,9 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     abstention: abstention ?? this.abstention,
     pressed: pressed ?? this.pressed,
     raised: raised ?? this.raised,
+    plate: plate ?? this.plate,
+    mark: mark ?? this.mark,
+    onMark: onMark ?? this.onMark,
   );
 
   @override
@@ -135,6 +159,9 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
       abstention: mix(abstention, other.abstention),
       pressed: mix(pressed, other.pressed),
       raised: mix(raised, other.raised),
+      plate: mix(plate, other.plate),
+      mark: mix(mark, other.mark),
+      onMark: mix(onMark, other.onMark),
     );
   }
 }
@@ -182,6 +209,8 @@ ThemeData buildTheme(Brightness brightness) {
   final overlay = brightness == Brightness.dark
       ? SystemUiOverlayStyle.light
       : SystemUiOverlayStyle.dark;
+  // Angle droit partout : aucun arrondi, aucune ombre (DESIGN.md).
+  const square = RoundedRectangleBorder(borderRadius: HemicycleRadii.none);
   return base.copyWith(
     extensions: [c],
     splashFactory: InkRipple.splashFactory,
@@ -202,176 +231,195 @@ ThemeData buildTheme(Brightness brightness) {
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: c.ink,
-      contentTextStyle: TextStyle(fontFamily: geist, color: c.background),
+      contentTextStyle: HemicycleText.bodySmall.copyWith(color: c.background),
       behavior: SnackBarBehavior.floating,
+      shape: square,
+      elevation: 0,
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
         color: c.ink,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: HemicycleRadii.none,
       ),
-      textStyle: TextStyle(
-        fontFamily: geist,
-        fontSize: 13,
-        color: c.background,
-      ),
+      textStyle: HemicycleText.meta.copyWith(color: c.background),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(color: c.ink2),
+    // Sélecteur segmenté : un rectangle au filet d'encre, le choix en encre
+    // pleine.
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
+        shape: const WidgetStatePropertyAll(square),
         backgroundColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? c.surface : c.background,
+          (s) => s.contains(WidgetState.selected) ? c.ink : c.background,
         ),
-        foregroundColor: WidgetStatePropertyAll(c.ink),
-        side: WidgetStatePropertyAll(BorderSide(color: c.rule)),
-        textStyle: const WidgetStatePropertyAll(
-          TextStyle(
-            fontFamily: geist,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? c.background : c.ink,
         ),
+        side: WidgetStatePropertyAll(BorderSide(color: c.ink)),
+        textStyle: const WidgetStatePropertyAll(HemicycleText.control),
       ),
     ),
+    // Bouton principal : rectangle à l'encre pleine, 48 points de haut.
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: c.surface,
-        foregroundColor: c.ink,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        backgroundColor: c.ink,
+        foregroundColor: c.background,
+        shape: square,
+        elevation: 0,
         minimumSize: const Size(0, 48),
-        textStyle: const TextStyle(
-          fontFamily: geist,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
+        textStyle: HemicycleText.button,
       ),
     ),
   );
 }
 
-/// Rayons d'angle de la charte, en points : à changer ici seulement.
+/// Rayons d'angle de la charte : angle droit partout (cartes, rangées,
+/// boutons, sélecteurs, tuiles). Seuls les points de pagination et les
+/// symboles du vote sont ronds, et les cadres imposés par le système
+/// (widgets, notifications) gardent sa forme.
 abstract final class HemicycleRadii {
-  /// Carte du vote du détail.
-  static const card = 24.0;
-
-  /// Vignette d'un groupe (« Qui a voté quoi »).
-  static const tile = 14.0;
+  /// Angle droit.
+  static const none = BorderRadius.zero;
 }
 
-/// Styles de texte de la charte, d'après les maquettes (tailles en points
-/// logiques, interlettrage converti des `em` de la maquette).
+/// Styles de texte de la charte, d'après DESIGN.md (tailles en points
+/// logiques, interlettrage converti des `em`). Newsreader 400 pour tout ce
+/// qui se lit comme un titre et pour le récit ; Geist pour la structure.
 abstract final class HemicycleText {
-  /// Grand titre d'écran (« Décisions »).
-  static const largeTitle = TextStyle(
-    fontSize: 34,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -1.02,
-    height: 1.15,
-  );
-
-  /// Titre d'une page annexe.
-  static const pageTitle = TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.9,
-    height: 1.15,
-  );
-
-  /// Titre d'une décision dans le détail.
-  static const detailTitle = TextStyle(
-    fontSize: 26,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.65,
-    height: 1.2,
-  );
-
-  /// Intertitre (« Ce que prévoit le texte »).
-  static const heading = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.18,
-    height: 1.3,
-  );
-
-  /// Titre d'une ligne de la liste.
-  static const rowTitle = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.16,
-    height: 1.3,
-  );
-
-  /// Chiffres en Geist Mono.
-  static const mono = TextStyle(
-    fontFamily: geistMono,
-    fontFeatures: [FontFeature.tabularFigures()],
-  );
-
-  /// Chiffres alignés en Geist (`tabular-nums` des maquettes), à fusionner
-  /// avec le style du texte qui les porte.
-  static const figures = TextStyle(
-    fontFeatures: [FontFeature.tabularFigures()],
-  );
-
-  /// Newsreader de [weight] et de [size] points. La police est variable : la
-  /// graisse est donnée à l'axe `wght` (en plus de [TextStyle.fontWeight],
+  /// Newsreader de [size] points, en graisse 400. La police est variable :
+  /// la graisse est donnée à l'axe `wght` (en plus de [TextStyle.fontWeight],
   /// que le moteur n'applique pas seul à un fichier variable) et la taille
   /// optique suit la taille, comme `font-optical-sizing: auto`.
   static TextStyle serif({
     required double size,
-    FontWeight weight = FontWeight.w600,
     double letterSpacing = 0,
     double? height,
   }) => TextStyle(
     fontFamily: newsreader,
     fontSize: size,
-    fontWeight: weight,
+    fontWeight: FontWeight.w400,
     fontVariations: [
-      FontVariation.weight(weight.value.toDouble()),
+      const FontVariation.weight(400),
       FontVariation.opticalSize(size.clamp(6, 72).toDouble()),
     ],
     letterSpacing: letterSpacing,
     height: height,
   );
 
-  /// Titre en Newsreader (« Adopté » du résultat, titre d'un widget).
-  static final serifTitle = serif(size: 28, letterSpacing: -0.28, height: 1.15);
-
-  /// Résultat en grand sous l'hémicycle du détail (#74).
-  static final serifVerdict = serif(size: 34, letterSpacing: -0.34, height: 1);
-
-  /// Grand chiffre en Newsreader (jour d'un vote à venir), chiffres
-  /// alignés sur la ligne de base.
-  static final serifFigure = serif(
+  /// `display-xl` : grand chiffre (jour d'un vote à venir), chiffres alignés
+  /// sur la ligne de base.
+  static final displayXl = serif(
     size: 72,
-    weight: FontWeight.w500,
     letterSpacing: -1.44,
     height: 1,
   ).copyWith(fontFeatures: const [FontFeature.liningFigures()]);
 
-  /// Date du jour en tête de l'accueil (#79).
-  static final serifDay = serif(size: 30, letterSpacing: -0.45, height: 1.08);
+  /// `display-lg` : titre d'écran (« Décisions », date de l'accueil),
+  /// « Adopté » du détail.
+  static final displayLg = serif(size: 34, letterSpacing: -0.68, height: 1.08);
 
-  /// Titre court d'une carte de l'accueil.
-  static final serifCardTitle = serif(
-    size: 26,
-    letterSpacing: -0.26,
-    height: 1.12,
+  /// `display-md` : titre de la décision.
+  static final displayMd = serif(size: 32, letterSpacing: -0.32, height: 1.1);
+
+  /// `display-sm` : intertitres, titre d'une carte, résultat d'une carte.
+  static final displaySm = serif(size: 26, height: 1.12);
+
+  /// `body-serif` : récit (explication, points, arguments).
+  static final bodySerif = serif(size: 18, height: 1.5);
+
+  /// `body-strong` : titre d'une rangée de liste.
+  static const bodyStrong = TextStyle(
+    fontFamily: geist,
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    height: 1.3,
   );
 
-  /// Languette d'une carte de l'accueil (« Vote solennel », « 13 oct. »).
-  static const tabLabel = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
+  /// `body-sm` : texte courant en Geist (messages, étapes).
+  static const bodySmall = TextStyle(
+    fontFamily: geist,
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    height: 1.45,
+  );
+
+  /// Libellé d'une rangée de réglage ou de lien.
+  static const label = TextStyle(
+    fontFamily: geist,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
+
+  /// Libellé appuyé : nom de l'app, camp d'une rangée de groupes.
+  static const labelStrong = TextStyle(
+    fontFamily: geist,
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+  );
+
+  /// Texte d'un sélecteur (filtres, apparence).
+  static const control = TextStyle(
+    fontFamily: geist,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+  );
+
+  /// `meta` : date, intitulé, source.
+  static const meta = TextStyle(
+    fontFamily: geist,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+  );
+
+  /// Méta appuyée : jour d'un groupe de la liste, mot du résultat d'une
+  /// rangée, languette d'une carte.
+  static const metaStrong = TextStyle(
+    fontFamily: geist,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+  );
+
+  /// Légende sous le logo d'une tuile de groupe.
+  static const caption = TextStyle(
+    fontFamily: geist,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 1.25,
+  );
+
+  /// Sigle d'une vignette sans logo (taille donnée par la vignette).
+  static const mark = TextStyle(fontFamily: geist, fontWeight: FontWeight.w700);
+
+  /// Chiffres alignés en Geist (`tabular-nums`), à fusionner avec le style
+  /// du texte qui les porte.
+  static const figures = TextStyle(
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  /// `figure` : chiffres d'un décompte (503 · 0 · 67), Geist à chiffres
+  /// tabulaires.
+  static const figure = TextStyle(
+    fontFamily: geist,
+    fontSize: 26,
+    fontWeight: FontWeight.w600,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
 
   /// Décompte d'une carte de l'accueil, après le symbole de chaque vote.
   static const tally = TextStyle(
+    fontFamily: geist,
     fontSize: 13,
     fontWeight: FontWeight.w500,
     fontFeatures: [FontFeature.tabularFigures()],
   );
 
-  /// Bouton principal (« Toutes les décisions »).
-  static const primaryButton = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
+  /// `button` : bouton principal (« Toutes les décisions »).
+  static const button = TextStyle(
+    fontFamily: geist,
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.32,
   );
 }

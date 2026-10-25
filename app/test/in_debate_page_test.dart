@@ -209,7 +209,7 @@ void main() {
           tester,
           _index(_plfss()),
           brightness: brightness,
-          size: const Size(390, 1560),
+          size: const Size(390, 1860),
         );
         expect(find.byType(WaitingHemicycle), findsOneWidget);
         expect(find.byType(HemicycleSeats), findsNothing);
@@ -339,8 +339,8 @@ void main() {
       'sourceUrl': 'https://www.assemblee-nationale.fr/dyn/17/scrutins/8706',
     };
 
-    testWidgets('plus dans la liste : « À venir » et les décisions seulement '
-        '(#77, #79)', (tester) async {
+    testWidgets('plus dans la liste : les décisions seulement, sans « À '
+        'venir » (#77, #79, #89)', (tester) async {
       final now = DateTime.now().toUtc();
       final plfss = _plfss();
       final inDebate = InDebate(
@@ -369,7 +369,7 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      expect(find.text('À venir'), findsOneWidget);
+      expect(find.text('À venir'), findsNothing);
       expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
       expect(find.text('En débat'), findsNothing);
     });

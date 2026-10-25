@@ -37,7 +37,7 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
       children: [
         Text(
           'Les dernières décisions sur votre écran d\'accueil.',
-          style: TextStyle(fontSize: 16, height: 1.55, color: colors.body),
+          style: HemicycleText.bodySerif.copyWith(color: colors.body),
         ),
         const SizedBox(height: 20),
         SegmentedButton<WidgetPlatform>(
@@ -53,12 +53,10 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
           onSelectionChanged: (s) => setState(() => _selected = s.single),
         ),
         const SizedBox(height: 16),
+        // Étapes sur une surface douce à angle droit.
         Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(24),
-          ),
+          color: colors.surface,
           child: Column(
             children: [
               for (final (i, step) in steps.indexed)
@@ -69,7 +67,7 @@ class _AddWidgetPageState extends State<AddWidgetPage> {
         const SizedBox(height: 16),
         Text(
           '3 tailles : 1 décision, 1 décision expliquée, ou les 3 dernières.',
-          style: TextStyle(fontSize: 14, height: 1.5, color: colors.ink2),
+          style: HemicycleText.meta.copyWith(color: colors.ink2),
         ),
       ],
     );
@@ -113,17 +111,13 @@ class _Step extends StatelessWidget {
                 width: 28,
                 height: 28,
                 alignment: Alignment.center,
+                // Numéro dans un carré au filet : angle droit partout.
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.rule, width: 1.5),
+                  border: Border.all(color: colors.ink2),
                 ),
                 child: Text(
                   '$number',
-                  style: HemicycleText.mono.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: colors.ink,
-                  ),
+                  style: HemicycleText.tally.copyWith(color: colors.ink),
                 ),
               ),
               if (!last)
@@ -142,7 +136,7 @@ class _Step extends StatelessWidget {
               padding: EdgeInsets.only(top: 3, bottom: last ? 8 : 20),
               child: Text(
                 text,
-                style: TextStyle(fontSize: 15, height: 1.5, color: colors.body),
+                style: HemicycleText.bodySmall.copyWith(color: colors.body),
               ),
             ),
           ),

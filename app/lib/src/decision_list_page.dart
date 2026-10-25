@@ -11,7 +11,6 @@ import 'hemicycle/vote_arc.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'theme.dart';
-import 'upcoming_section.dart';
 
 export 'relative_date.dart' show formatShortFrenchDate;
 
@@ -127,15 +126,11 @@ class _DecisionListPageState extends State<DecisionListPage> {
         ),
       ];
     }
-    // Ordre du jour de l'Assemblée, avant les décisions (#53) ; rien sans
-    // point à venir. Le texte en débat n'y est plus : il est annoncé par une
+    // Plus de section « À venir » (maquette `liste`, #89) : le prochain vote
+    // solennel est une carte de l'accueil, le texte en débat une
     // notification (#77).
-    final upcoming = SliverToBoxAdapter(
-      child: UpcomingSection(items: index.upcoming),
-    );
     if (index.decisions.isEmpty) {
       return [
-        upcoming,
         const SliverFillRemaining(
           hasScrollBody: false,
           child: _Message(text: 'Aucune décision publiée pour le moment.'),
@@ -148,7 +143,6 @@ class _DecisionListPageState extends State<DecisionListPage> {
         if (_filter.accepts(d.type)) d,
     ];
     return [
-      upcoming,
       // Filtres par type (#75), au-dessus des décisions qu'ils trient.
       SliverToBoxAdapter(
         child: _FilterChips(
@@ -167,12 +161,20 @@ class _DecisionListPageState extends State<DecisionListPage> {
         SliverToBoxAdapter(
           child: _DayHeading(dayGroupLabel(day.first.date, now: now)),
         ),
-        SliverList.separated(
+        // Rangées sur le fond, un filet de 1 point sous chacune.
+        SliverList.builder(
           itemCount: day.length,
-          separatorBuilder: (_, _) => const _RowSeparator(),
           // Le tap ouvre le détail de la décision.
-          itemBuilder: (context, i) =>
-              OpenDecisionOnTap(decision: day[i], child: DecisionRow(day[i])),
+          itemBuilder: (context, i) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OpenDecisionOnTap(decision: day[i], child: DecisionRow(day[i])),
+                const Divider(),
+              ],
+            ),
+          ),
         ),
       ],
       const SliverToBoxAdapter(child: _SourceNotice()),
@@ -222,9 +224,14 @@ class _Header extends StatelessWidget {
             )
           else
             const BrandBar(),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
-            child: Text('Décisions', style: HemicycleText.largeTitle),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: Text(
+              'Décisions',
+              style: HemicycleText.displayLg.copyWith(
+                color: context.colors.ink,
+              ),
+            ),
           ),
         ],
       ),
@@ -239,28 +246,22 @@ class _DayHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 22, 20, 6),
-    child: Semantics(
-      header: true,
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: context.colors.ink2,
+    padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          header: true,
+          child: Text(
+            label,
+            style: HemicycleText.meta.copyWith(color: context.colors.ink2),
+          ),
         ),
-      ),
+        const SizedBox(height: 10),
+        // Filet au-dessus de la première rangée du jour.
+        const Divider(),
+      ],
     ),
-  );
-}
-
-class _RowSeparator extends StatelessWidget {
-  const _RowSeparator();
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 74, right: 20),
-    child: Divider(height: 1, color: context.colors.rule),
   );
 }
 
@@ -275,7 +276,7 @@ class DecisionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -296,16 +297,15 @@ class DecisionRow extends StatelessWidget {
                   capitalize(decision.compactTitle),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: HemicycleText.rowTitle.copyWith(color: colors.ink),
+                  style: HemicycleText.bodyStrong.copyWith(color: colors.ink),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 MetaLine(
-                  style: const TextStyle(fontSize: 13),
+                  style: HemicycleText.meta,
                   parts: [
                     Text(
                       resultWord(decision.result),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
+                      style: HemicycleText.labelStrong.copyWith(
                         color: resultColor(context, decision.result),
                       ),
                     ),
@@ -355,8 +355,8 @@ enum DecisionFilter {
   };
 }
 
-/// Pastilles des filtres : la pastille choisie à l'encre, les autres sur la
-/// surface ; défilent si l'écran est étroit.
+/// Filtres : rectangles au filet, le choix en encre pleine ; défilent si
+/// l'écran est étroit.
 class _FilterChips extends StatelessWidget {
   const _FilterChips({required this.selected, required this.onSelected});
 
@@ -377,20 +377,19 @@ class _FilterChips extends StatelessWidget {
               button: true,
               selected: f == selected,
               child: Material(
-                color: f == selected ? colors.ink : colors.surface,
-                shape: const StadiumBorder(),
-                clipBehavior: Clip.antiAlias,
+                color: f == selected ? colors.ink : colors.background,
+                shape: Border.all(
+                  color: f == selected ? colors.ink : colors.rule,
+                ),
                 child: InkWell(
                   onTap: () => onSelected(f),
                   child: Container(
                     height: 36,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     alignment: Alignment.center,
                     child: Text(
                       f.label,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
+                      style: HemicycleText.control.copyWith(
                         color: f == selected ? colors.background : colors.ink,
                       ),
                     ),
@@ -419,7 +418,7 @@ class _SourceNotice extends StatelessWidget {
     ),
     child: Text(
       sourceNotice,
-      style: TextStyle(fontSize: 12, height: 1.5, color: context.colors.ink2),
+      style: HemicycleText.meta.copyWith(color: context.colors.ink2),
     ),
   );
 }
@@ -446,7 +445,9 @@ class _Message extends StatelessWidget {
             Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: context.colors.ink2),
+              style: HemicycleText.bodySmall.copyWith(
+                color: context.colors.ink2,
+              ),
             ),
             if (action != null) ...[const SizedBox(height: 16), action!],
           ],

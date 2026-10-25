@@ -30,14 +30,12 @@ class AboutPage extends StatelessWidget {
     return HemicyclePage(
       title: 'À propos',
       children: [
-        // Logo et nom, comme sur la planche d'identité.
+        // Logo et nom, comme sur la planche d'identité : surface douce à
+        // angle droit.
         Container(
           margin: const EdgeInsets.only(top: 2),
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(22),
-          ),
+          color: colors.surface,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -45,9 +43,8 @@ class AboutPage extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 appName,
-                style: TextStyle(
+                style: HemicycleText.labelStrong.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.w600,
                   letterSpacing: -0.48,
                   color: colors.ink,
                 ),
@@ -92,15 +89,15 @@ class AboutPage extends StatelessWidget {
         Text(
           'Résumés écrits par une IA. Seul le texte officiel fait foi. '
           'Application non officielle.',
-          style: TextStyle(fontSize: 13, height: 1.5, color: colors.ink2),
+          style: HemicycleText.meta.copyWith(color: colors.ink2),
         ),
       ],
     );
   }
 }
 
-/// Sélecteur d'apparence Auto / Jour / Nuit : segments sur un fond en
-/// creux, le choix sur la surface.
+/// Sélecteur d'apparence Auto / Jour / Nuit : rectangle au filet d'encre,
+/// le choix en encre pleine.
 class AppearanceSelector extends StatelessWidget {
   const AppearanceSelector({super.key});
 
@@ -118,16 +115,13 @@ class AppearanceSelector extends StatelessWidget {
     return Semantics(
       label: 'Apparence',
       container: true,
-      child: Container(
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: colors.raised,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      // Le filet par-dessus les segments, que leur fond ne masque pas.
+      child: DecoratedBox(
+        position: DecorationPosition.foreground,
+        decoration: BoxDecoration(border: Border.all(color: colors.ink)),
         child: Row(
           children: [
-            for (final (i, (mode, label)) in _options.indexed) ...[
-              if (i > 0) const SizedBox(width: 2),
+            for (final (mode, label) in _options)
               Expanded(
                 child: _Segment(
                   label: label,
@@ -135,7 +129,6 @@ class AppearanceSelector extends StatelessWidget {
                   onTap: () => appearance.setMode(mode),
                 ),
               ),
-            ],
           ],
         ),
       ),
@@ -162,20 +155,16 @@ class _Segment extends StatelessWidget {
       checked: selected,
       button: true,
       child: Material(
-        color: selected ? colors.surface : Colors.transparent,
-        borderRadius: BorderRadius.circular(9),
+        color: selected ? colors.ink : colors.background,
         child: InkWell(
-          borderRadius: BorderRadius.circular(9),
           onTap: onTap,
           child: SizedBox(
-            height: 32,
+            height: 36,
             child: Center(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: selected ? colors.ink : colors.ink2,
+                style: HemicycleText.control.copyWith(
+                  color: selected ? colors.background : colors.ink2,
                 ),
               ),
             ),
@@ -198,14 +187,7 @@ class _VoteKey extends StatelessWidget {
       children: [
         VoteGlyph(position, color: color),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: color,
-          ),
-        ),
+        Text(label, style: HemicycleText.bodySmall.copyWith(color: color)),
       ],
     );
     return Padding(
@@ -225,8 +207,8 @@ class _VoteKey extends StatelessWidget {
   }
 }
 
-/// Panneau de la page, à 28 points du précédent : lignes séparées par un
-/// filet, ou contenu à 12 points du bord ([padded]).
+/// Groupe de la page, à 28 points du précédent : rangées sur le fond entre
+/// des filets, ou contenu à 12 points des filets et des bords ([padded]).
 class _Group extends StatelessWidget {
   const _Group({required this.children, this.padded = false});
 
@@ -234,32 +216,18 @@ class _Group extends StatelessWidget {
   final bool padded;
 
   @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Padding(
-      padding: const EdgeInsets.only(top: 28),
-      child: Material(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: EdgeInsets.all(padded ? 12 : 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (i, row) in children.indexed) ...[
-                if (i > 0) const Divider(),
-                row,
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 28),
+    child: RuledRows(
+      children: [
+        for (final row in children)
+          padded ? Padding(padding: const EdgeInsets.all(12), child: row) : row,
+      ],
+    ),
+  );
 }
 
-/// Ligne d'un panneau : libellé et pictogramme à droite, 52 points de haut.
+/// Rangée d'un groupe : libellé et pictogramme à droite, 52 points de haut.
 class _PanelRow extends StatelessWidget {
   const _PanelRow({
     required this.label,
@@ -286,17 +254,13 @@ class _PanelRow extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 52),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: colors.ink,
-                    ),
+                    style: HemicycleText.label.copyWith(color: colors.ink),
                   ),
                 ),
                 const SizedBox(width: 12),

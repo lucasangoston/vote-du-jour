@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Écran de lancement : fond, encre et vert de la charte (thème clair). -->
-    <color name="launch_background">#FFF3F4F5</color>
-    <color name="launch_ink">#FF15181C</color>
+    <color name="launch_background">#FFFFFFFF</color>
+    <color name="launch_ink">#FF000000</color>
     <color name="launch_accent">#FF1D6B54</color>
 </resources>

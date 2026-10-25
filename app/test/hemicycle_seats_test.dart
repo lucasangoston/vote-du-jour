@@ -261,6 +261,9 @@ void main() {
 
         final rn = find.widgetWithText(GroupTile, 'RN');
         await tester.scrollUntilVisible(rn, 300);
+        // La tuile entière à l'écran, pas seulement son bord.
+        await tester.ensureVisible(rn);
+        await tester.pumpAndSettle();
         expect(
           find.bySemanticsLabel('RN, pour, montrer ses sièges'),
           findsOneWidget,
@@ -289,6 +292,8 @@ void main() {
 
         // La tuile choisie est annoncée comme telle.
         await tester.scrollUntilVisible(rn, 300);
+        await tester.ensureVisible(rn);
+        await tester.pumpAndSettle();
         expect(
           tester.getSemantics(rn),
           isSemantics(isButton: true, isSelected: true),

@@ -67,18 +67,20 @@ private fun detailUri(decision: WidgetDecision): Uri =
     Uri.parse("votedujour://decisions/${Uri.encode(decision.id)}?homeWidget")
 
 /**
- * Couleurs de la charte Hémicycle (#29), clair / sombre, en un seul endroit. Les aperçus du
+ * Couleurs de la charte (DESIGN.md, système inspiré de Wired), clair / sombre, en un seul endroit :
+ * l'interface en noir, blanc et gris, la couleur aux seules données (vote, résultat). Les aperçus du
  * sélecteur reprennent les mêmes valeurs (`values/widget_colors.xml`,
  * `values-night/widget_colors.xml`).
  */
 private object WidgetColors {
-  val surface = ColorProvider(day = Color(0xFFFFFFFF), night = Color(0xFF191C20))
+  /** Fond du widget : la surface douce de l'app. */
+  val surface = ColorProvider(day = Color(0xFFF5F5F5), night = Color(0xFF121212))
   /** Bande du prochain vote du grand widget. */
-  val raised = ColorProvider(day = Color(0xFFE8EAEC), night = Color(0xFF23272C))
-  val ink = ColorProvider(day = Color(0xFF15181C), night = Color(0xFFECEEF0))
-  val ink2 = ColorProvider(day = Color(0xFF4F5761), night = Color(0xFF9AA2AB))
-  val rule = ColorProvider(day = Color(0xFFE2E5E8), night = Color(0xFF2A2F35))
-  /** Texte du résultat et des chiffres du décompte. */
+  val raised = ColorProvider(day = Color(0xFFEBEBEB), night = Color(0xFF1F1F1F))
+  val ink = ColorProvider(day = Color(0xFF000000), night = Color(0xFFFFFFFF))
+  val ink2 = ColorProvider(day = Color(0xFF6B6B6B), night = Color(0xFF9E9E9E))
+  val rule = ColorProvider(day = Color(0xFFE0E0E0), night = Color(0xFF2A2A2A))
+  /** Texte du résultat et des chiffres du décompte (inchangés). */
   val pour = ColorProvider(day = Color(0xFF1D6B54), night = Color(0xFF4FB08F))
   val contre = ColorProvider(day = Color(0xFFB4472B), night = Color(0xFFE07A58))
 
@@ -119,8 +121,9 @@ private object WidgetColors {
 
 /**
  * Typographie des widgets, en un seul endroit (#78) : familles, graisses et tailles des titres.
- * Glance n'a que les polices du système : serif à la place de Newsreader, sans-serif à la place de
- * Geist.
+ * Glance n'a que les polices du système : serif à la place de Newsreader (affichage en graisse
+ * normale, DESIGN.md), sans-serif à la place de Geist. Le cadre garde la forme du système
+ * (`R.dimen.decision_widget_radius`).
  */
 private object WidgetType {
   /** Mot du résultat (« Adopté ») : petit et moyen, grand. */
@@ -151,7 +154,7 @@ private object WidgetType {
       TextStyle(
           color = color,
           fontSize = size,
-          fontWeight = FontWeight.Medium,
+          fontWeight = FontWeight.Normal,
           fontFamily = FontFamily.Serif,
       )
 
@@ -168,7 +171,12 @@ private object WidgetType {
       )
 
   /** Lignes secondaires. */
-  fun meta(size: TextUnit = metaSize) = TextStyle(color = WidgetColors.ink2, fontSize = size)
+  fun meta(size: TextUnit = metaSize, color: GlanceColor = WidgetColors.ink2) =
+      TextStyle(color = color, fontSize = size)
+
+  /** Chiffre du décompte, après le symbole du vote. */
+  fun tally(color: GlanceColor) =
+      TextStyle(color = color, fontSize = metaSize, fontWeight = FontWeight.Medium)
 }
 
 /** Marge des widgets (maquette : 14 ; 18 pour le grand). */
@@ -201,7 +209,7 @@ abstract class BaseDecisionWidget : GlanceAppWidget() {
               GlanceModifier.fillMaxSize()
                   .appWidgetBackground()
                   .background(WidgetColors.surface)
-                  .cornerRadius(22.dp)
+                  .cornerRadius(R.dimen.decision_widget_radius)
                   .clickable(actionStartActivity<MainActivity>(context, tapUri(decision, upcoming))),
           contentAlignment = Alignment.TopStart,
       ) {
@@ -425,12 +433,17 @@ class LargeDecisionWidget : BaseDecisionWidget() {
           horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Text(vote.dayOfMonthLabel, style = WidgetType.day(WidgetType.bandDaySize), maxLines = 1)
-        Text(vote.monthLabel, style = WidgetType.meta(WidgetType.monthSize), maxLines = 1)
+        // À l'encre : le gris secondaire ne tient pas 4,5:1 sur la bande.
+        Text(
+            vote.monthLabel,
+            style = WidgetType.meta(WidgetType.monthSize, WidgetColors.ink),
+            maxLines = 1,
+        )
       }
       Spacer(GlanceModifier.width(14.dp))
       Column(modifier = GlanceModifier.defaultWeight()) {
         Text(vote.title, style = WidgetType.title(15.sp, bold = true), maxLines = 1)
-        Text(vote.whenLabel, style = WidgetType.meta(), maxLines = 1)
+        Text(vote.whenLabel, style = WidgetType.meta(color = WidgetColors.ink), maxLines = 1)
       }
     }
   }
@@ -574,7 +587,7 @@ private fun TallyItem(glyph: Int, glyphColor: GlanceColor, n: Int, color: Glance
     Spacer(GlanceModifier.width(4.dp))
     Text(
         n.toString(),
-        style = TextStyle(color = color, fontSize = WidgetType.metaSize, fontWeight = FontWeight.Medium),
+        style = WidgetType.tally(color),
         maxLines = 1,
     )
   }

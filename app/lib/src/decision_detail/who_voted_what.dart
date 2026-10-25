@@ -81,11 +81,7 @@ class _RowHeader extends StatelessWidget {
           ],
           Text(
             groupRowLabel(position),
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            style: HemicycleText.labelStrong.copyWith(color: color),
           ),
         ],
       ),
@@ -142,17 +138,16 @@ String groupTileButtonLabel(GroupVoteDetail group) =>
     '${groupPositionLabel(group.position).toLowerCase()}, '
     'montrer ses sièges';
 
-/// Vignette d'un groupe : logo (ou sigle sur fond graphite) et légende.
-/// Avec [onTap], un bouton ; choisie ([selected]), elle prend un fond en
-/// creux et un bord plein de 2 points : l'état ne tient pas à une nuance.
+/// Vignette d'un groupe, à angle droit : logo (ou sigle sur fond graphite)
+/// et légende. Avec [onTap], un bouton ; choisie ([selected]), elle prend un
+/// fond relevé et un bord intérieur plein de 2 points : l'état ne tient pas
+/// à une nuance.
 class GroupTile extends StatelessWidget {
   const GroupTile(this.group, {super.key, this.selected = false, this.onTap});
 
   final GroupVoteDetail group;
   final bool selected;
   final VoidCallback? onTap;
-
-  static final _radius = BorderRadius.circular(HemicycleRadii.tile);
 
   @override
   Widget build(BuildContext context) {
@@ -162,10 +157,7 @@ class GroupTile extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(6, 12, 6, 10),
       // Le bord en avant-plan ne décale pas le contenu.
       foregroundDecoration: selected
-          ? BoxDecoration(
-              border: Border.all(color: colors.ink, width: 2),
-              borderRadius: _radius,
-            )
+          ? BoxDecoration(border: Border.all(color: colors.ink, width: 2))
           : null,
       child: Column(
         children: [
@@ -176,12 +168,7 @@ class GroupTile extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              height: 1.25,
-              color: colors.ink,
-            ),
+            style: HemicycleText.caption.copyWith(color: colors.ink),
           ),
         ],
       ),
@@ -195,7 +182,7 @@ class GroupTile extends StatelessWidget {
             '${c.pour} pour, ${c.contre} contre, ${c.abstentions} abstentions',
         excludeSemantics: true,
         child: DecoratedBox(
-          decoration: BoxDecoration(color: background, borderRadius: _radius),
+          decoration: BoxDecoration(color: background),
           child: content,
         ),
       );
@@ -208,8 +195,6 @@ class GroupTile extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         color: background,
-        borderRadius: _radius,
-        clipBehavior: Clip.antiAlias,
         child: InkWell(onTap: onTap, child: content),
       ),
     );
@@ -224,10 +209,9 @@ class _Logo extends StatelessWidget {
 
   final GroupVoteDetail group;
 
-  static const _graphite = Color(0xFF4F5761);
-
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final asset = groupLogoAsset(group);
     if (asset == null) {
@@ -235,19 +219,15 @@ class _Logo extends StatelessWidget {
         width: 44,
         height: 44,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: dark ? HemicycleColors.dark.abstention : _graphite,
-          borderRadius: BorderRadius.circular(12),
-        ),
+        color: colors.mark,
         alignment: Alignment.center,
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
             groupMark(group),
-            style: const TextStyle(
+            style: HemicycleText.mark.copyWith(
               fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFFFFFFFF),
+              color: colors.onMark,
             ),
           ),
         ),
@@ -263,10 +243,7 @@ class _Logo extends StatelessWidget {
     if (!dark) return image;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-      decoration: BoxDecoration(
-        color: HemicycleColors.light.background,
-        borderRadius: BorderRadius.circular(8),
-      ),
+      color: colors.plate,
       child: image,
     );
   }

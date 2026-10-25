@@ -1,17 +1,19 @@
 import SwiftUI
 import UIKit
 
-/// Charte Hémicycle (#29) : couleurs claires et sombres, polices Geist, Geist
-/// Mono et Newsreader embarquées (`Fonts/`, déclarées dans `Info.plist`),
-/// hémicycle, arc du vote et logo.
+/// Charte (DESIGN.md, système inspiré de Wired) : couleurs claires et
+/// sombres, polices Geist et Newsreader embarquées (`Fonts/`, déclarées dans
+/// `Info.plist`), hémicycle, arc du vote et logo. L'interface est en noir,
+/// blanc et gris ; seules les données (vote, résultat) portent une couleur.
 enum Palette {
-  static let surface = dynamic(light: 0xFFFFFF, dark: 0x191C20)
+  /// Fond du widget : la surface douce de l'app.
+  static let surface = dynamic(light: 0xF5F5F5, dark: 0x121212)
   /// Bande du prochain vote du grand widget.
-  static let raised = dynamic(light: 0xE8EAEC, dark: 0x23272C)
-  static let ink = dynamic(light: 0x15181C, dark: 0xECEEF0)
-  static let ink2 = dynamic(light: 0x4F5761, dark: 0x9AA2AB)
-  static let rule = dynamic(light: 0xE2E5E8, dark: 0x2A2F35)
-  /// Texte du résultat et des chiffres du décompte.
+  static let raised = dynamic(light: 0xEBEBEB, dark: 0x1F1F1F)
+  static let ink = dynamic(light: 0x000000, dark: 0xFFFFFF)
+  static let ink2 = dynamic(light: 0x6B6B6B, dark: 0x9E9E9E)
+  static let rule = dynamic(light: 0xE0E0E0, dark: 0x2A2A2A)
+  /// Texte du résultat et des chiffres du décompte (inchangés).
   static let pour = dynamic(light: 0x1D6B54, dark: 0x4FB08F)
   static let contre = dynamic(light: 0xB4472B, dark: 0xE07A58)
   /// Sièges absents et non-votants, à 28 % d'opacité.
@@ -54,8 +56,7 @@ enum Palette {
 
 /// Instances de Newsreader embarquées.
 enum NewsreaderWeight: String {
-  case medium = "NewsreaderRoman-Medium"
-  case semibold = "NewsreaderRoman-SemiBold"
+  case regular = "NewsreaderRoman-Regular"
 }
 
 extension Font {
@@ -72,18 +73,19 @@ extension Font {
     .custom("Geist-Medium", size: size, relativeTo: style)
   }
 
-  /// Newsreader (police variable, instance nommée par son nom PostScript),
-  /// pour le résultat, les titres des widgets moyen et grand et le jour du
-  /// prochain vote (#78).
+  /// Newsreader en graisse 400 (police variable, instance nommée par son nom
+  /// PostScript), pour le résultat, les titres des widgets moyen et grand et
+  /// le jour du prochain vote (#78, DESIGN.md).
   static func newsreader(
-    _ size: CGFloat, weight: NewsreaderWeight = .semibold, relativeTo style: TextStyle = .title3
+    _ size: CGFloat, weight: NewsreaderWeight = .regular, relativeTo style: TextStyle = .title3
   ) -> Font {
     .custom(weight.rawValue, size: size, relativeTo: style)
   }
 }
 
 /// Typographie des widgets, en un seul endroit (#78) : polices, graisses et
-/// tailles des titres. Une autre charte ne change que ces valeurs.
+/// tailles des titres. Une autre charte ne change que ces valeurs. Affichage
+/// en Newsreader 400, structure en Geist (DESIGN.md).
 enum WidgetTheme {
   /// Mot du résultat (« Adopté ») : petit et moyen, grand.
   static let resultSize: CGFloat = 20
@@ -108,7 +110,7 @@ enum WidgetTheme {
 
   /// Jour du prochain vote.
   static func day(_ size: CGFloat) -> Font {
-    .newsreader(size, weight: .medium, relativeTo: .largeTitle)
+    .newsreader(size, relativeTo: .largeTitle)
   }
 
   /// Titre court du petit widget et de la bande du prochain vote.

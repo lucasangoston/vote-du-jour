@@ -69,12 +69,10 @@ class _SideCard extends StatelessWidget {
       GroupPosition.contre => (LineGlyph.cross, colors.contre),
       _ => (LineGlyph.dash, colors.ink2),
     };
+    // Surface douce à angle droit.
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      color: colors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -88,11 +86,7 @@ class _SideCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     argumentsSideLabel(position),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: color,
-                    ),
+                    style: HemicycleText.labelStrong.copyWith(color: color),
                   ),
                 ],
               ),
@@ -105,7 +99,8 @@ class _SideCard extends StatelessWidget {
   }
 }
 
-/// Un argument : petit logo du groupe, sigle en gras, puis le texte.
+/// Un argument : petit logo du groupe, sigle en Geist appuyé, puis le texte
+/// en serif (le récit).
 class _ArgumentItem extends StatelessWidget {
   const _ArgumentItem(this.argument);
 
@@ -133,19 +128,15 @@ class _ArgumentItem extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: '${argument.group} ',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
+                    style: HemicycleText.labelStrong.copyWith(
+                      fontSize: 14,
                       color: colors.ink,
                     ),
                   ),
                   TextSpan(text: argument.text),
                 ],
               ),
-              style: TextStyle(
-                fontSize: 14.5,
-                height: 1.45,
-                color: colors.body,
-              ),
+              style: HemicycleText.bodySerif.copyWith(color: colors.body),
             ),
           ),
         ],
@@ -163,10 +154,9 @@ class _SmallLogo extends StatelessWidget {
 
   static const _width = 36.0;
   static const _height = 24.0;
-  static const _graphite = Color(0xFF4F5761);
-
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final asset = groupLogoAssets[abbreviation];
     if (asset == null) {
@@ -174,19 +164,15 @@ class _SmallLogo extends StatelessWidget {
         width: _width,
         height: _height,
         padding: const EdgeInsets.symmetric(horizontal: 3),
-        decoration: BoxDecoration(
-          color: dark ? HemicycleColors.dark.abstention : _graphite,
-          borderRadius: BorderRadius.circular(6),
-        ),
+        color: colors.mark,
         alignment: Alignment.center,
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
             abbreviation,
-            style: const TextStyle(
+            style: HemicycleText.mark.copyWith(
               fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFFFFFFFF),
+              color: colors.onMark,
             ),
           ),
         ),
@@ -205,10 +191,7 @@ class _SmallLogo extends StatelessWidget {
       width: _width,
       height: _height,
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-      decoration: BoxDecoration(
-        color: HemicycleColors.light.background,
-        borderRadius: BorderRadius.circular(5),
-      ),
+      color: colors.plate,
       child: Image.asset(
         asset,
         fit: BoxFit.contain,
@@ -250,7 +233,7 @@ class _SourceLine extends StatelessWidget {
               const TextSpan(text: ')'),
             ],
           ),
-          style: TextStyle(fontSize: 12.5, height: 1.5, color: colors.ink2),
+          style: HemicycleText.meta.copyWith(color: colors.ink2),
         ),
       ),
     );

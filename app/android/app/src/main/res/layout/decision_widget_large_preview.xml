@@ -125,7 +125,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="nov."
-                android:textColor="@color/decision_widget_secondary"
+                android:textColor="@color/decision_widget_primary"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -150,7 +150,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Vote · mar. 15 h"
-                android:textColor="@color/decision_widget_secondary"
+                android:textColor="@color/decision_widget_primary"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
