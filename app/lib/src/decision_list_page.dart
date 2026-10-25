@@ -87,15 +87,18 @@ class _DecisionListPageState extends State<DecisionListPage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: RefreshIndicator(
-          onRefresh: _refresh,
-          edgeOffset: MediaQuery.paddingOf(context).top,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              const SliverToBoxAdapter(child: _Header()),
-              ..._body(context),
-            ],
+        // Le contenu ne passe jamais sous la barre d'état, même en défilant.
+        body: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                const SliverToBoxAdapter(child: _Header()),
+                ..._body(context),
+              ],
+            ),
           ),
         ),
       ),
@@ -206,9 +209,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.paddingOf(context).top;
     return Padding(
-      padding: EdgeInsets.only(top: top + 4),
+      padding: const EdgeInsets.only(top: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
