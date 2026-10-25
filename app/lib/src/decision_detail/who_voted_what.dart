@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vote_contract/vote_contract.dart';
 
 import '../hemicycle/vote_glyph.dart';
+import '../hemicycle/hemicycle_seats.dart';
 import '../theme.dart';
 import 'group_logo.dart';
 import 'group_ranking.dart';
@@ -139,9 +140,10 @@ String groupTileButtonLabel(GroupVoteDetail group) =>
     'montrer ses sièges';
 
 /// Vignette d'un groupe, à angle droit : logo (ou sigle sur fond graphite)
-/// et légende. Avec [onTap], un bouton ; choisie ([selected]), elle prend un
-/// fond relevé et un bord intérieur plein de 2 points : l'état ne tient pas
-/// à une nuance.
+/// et légende, cerclée de la couleur de ses sièges dans l'hémicycle (le lien
+/// entre la tuile et les sièges se voit sans explication). Avec [onTap], un
+/// bouton ; choisie ([selected]), son bord passe de 2 à 4 points sur un fond
+/// relevé : l'état ne tient pas à une nuance.
 class GroupTile extends StatelessWidget {
   const GroupTile(this.group, {super.key, this.selected = false, this.onTap});
 
@@ -153,12 +155,18 @@ class GroupTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final c = group.count;
+    final brightness = Theme.of(context).brightness;
+    final official = groupColor(group.color);
+    // Même couleur que les sièges ; de jour, une couleur trop pâle prend la
+    // teinte de leur contour.
+    final edge =
+        seatOutline(official, brightness) ?? seatColor(official, brightness);
     final content = Container(
       padding: const EdgeInsets.fromLTRB(6, 12, 6, 10),
       // Le bord en avant-plan ne décale pas le contenu.
-      foregroundDecoration: selected
-          ? BoxDecoration(border: Border.all(color: colors.ink, width: 2))
-          : null,
+      foregroundDecoration: BoxDecoration(
+        border: Border.all(color: edge, width: selected ? 4 : 2),
+      ),
       child: Column(
         children: [
           _Logo(group),

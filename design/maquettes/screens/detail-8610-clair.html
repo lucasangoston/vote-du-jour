@@ -412,6 +412,19 @@ ul { list-style: none; }
 :root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="Dem"]:not(.s-contre) { stroke: color-mix(in srgb, #F07E26 65%, #000); stroke-width: .55; }
 :root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="HOR"]:not(.s-contre) { stroke: color-mix(in srgb, #B5E2F9 65%, #000); stroke-width: .55; }
 :root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="DR"]:not(.s-contre) { stroke: color-mix(in srgb, #8CB0DC 65%, #000); stroke-width: .55; }
+.tiles3 button[data-g="LFI-NFP"] { --edge: #C00D0D; } :root[data-theme="dark"] .tiles3 button[data-g="LFI-NFP"] { --edge: color-mix(in srgb, #C00D0D 70%, #ffffff); }
+.tiles3 button[data-g="GDR"] { --edge: #830E21; } :root[data-theme="dark"] .tiles3 button[data-g="GDR"] { --edge: color-mix(in srgb, #830E21 70%, #ffffff); }
+.tiles3 button[data-g="EcoS"] { --edge: color-mix(in srgb, #77AA79 65%, #000); } :root[data-theme="dark"] .tiles3 button[data-g="EcoS"] { --edge: color-mix(in srgb, #77AA79 70%, #ffffff); }
+.tiles3 button[data-g="SOC"] { --edge: color-mix(in srgb, #F5B4CE 65%, #000); } :root[data-theme="dark"] .tiles3 button[data-g="SOC"] { --edge: color-mix(in srgb, #F5B4CE 70%, #ffffff); }
+.tiles3 button[data-g="LIOT"] { --edge: color-mix(in srgb, #FFD96F 65%, #000); } :root[data-theme="dark"] .tiles3 button[data-g="LIOT"] { --edge: color-mix(in srgb, #FFD96F 70%, #ffffff); }
+.tiles3 button[data-g="Dem"] { --edge: color-mix(in srgb, #F07E26 65%, #000); } :root[data-theme="dark"] .tiles3 button[data-g="Dem"] { --edge: color-mix(in srgb, #F07E26 70%, #ffffff); }
+.tiles3 button[data-g="EPR"] { --edge: #7B4591; } :root[data-theme="dark"] .tiles3 button[data-g="EPR"] { --edge: color-mix(in srgb, #7B4591 70%, #ffffff); }
+.tiles3 button[data-g="HOR"] { --edge: color-mix(in srgb, #B5E2F9 65%, #000); } :root[data-theme="dark"] .tiles3 button[data-g="HOR"] { --edge: color-mix(in srgb, #B5E2F9 70%, #ffffff); }
+.tiles3 button[data-g="DR"] { --edge: color-mix(in srgb, #8CB0DC 65%, #000); } :root[data-theme="dark"] .tiles3 button[data-g="DR"] { --edge: color-mix(in srgb, #8CB0DC 70%, #ffffff); }
+.tiles3 button[data-g="NI"] { --edge: #8D949A; } :root[data-theme="dark"] .tiles3 button[data-g="NI"] { --edge: color-mix(in srgb, #8D949A 70%, #ffffff); }
+.tiles3 button[data-g="UDR"] { --edge: #3367A7; } :root[data-theme="dark"] .tiles3 button[data-g="UDR"] { --edge: color-mix(in srgb, #3367A7 70%, #ffffff); }
+.tiles3 button[data-g="RN"] { --edge: #313567; } :root[data-theme="dark"] .tiles3 button[data-g="RN"] { --edge: color-mix(in srgb, #313567 70%, #ffffff); }
+.tiles3 button { box-shadow: inset 0 0 0 2px var(--edge, var(--rule)) !important; } .tiles3 button[aria-pressed="true"] { box-shadow: inset 0 0 0 4px var(--edge, var(--ink)) !important; }
 
 .detail-app .vote { padding: 22px 18px 20px; }
 .detail-app .hemi-wrap .hemi { width: 100%; max-width: 340px; display: block; margin: 0 auto; }
