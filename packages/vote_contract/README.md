@@ -221,7 +221,7 @@ l'hémicycle « places réelles ». Un tableau compact `[place, groupe, vote]` p
 siège, trié par place :
 
 ```json
-"seats": [[1, "PO845401", "p"], [2, "PO845401", "p"], [4, "PO845401", "x"], "…"]
+"seats": [[1, "PO845401", "p"], [2, "PO845401", "p"], "…", [181, "PO845425", "x"], "…", [518, "PO845413", "a"], "…"]
 ```
 
 - `place` : numéro de la place (`placeHemicycle` de AMO20, `numPlace` du vote
