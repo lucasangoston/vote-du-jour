@@ -7,17 +7,19 @@ import 'package:vote_contract/vote_contract.dart';
 import '../decision_list_page.dart'
     show capitalize, formatShortFrenchDate, sourceNotice;
 import '../hemicycle/external_link_row.dart';
+import '../hemicycle/hemicycle_seats.dart';
 import '../hemicycle/line_icon.dart';
 import '../hemicycle/result_style.dart';
 import '../hemicycle/vote_arc.dart';
+import '../hemicycle/vote_glyph.dart';
 import '../provisional_badge.dart';
 import '../theme.dart';
 import 'decision_detail_repository.dart';
 import 'vote_arguments.dart';
 import 'who_voted_what.dart';
 
-/// Écran de détail d'une décision : carte du vote (grand arc, résultat,
-/// décompte), méta, titre, explication, points du résumé, « Qui a voté
+/// Écran de détail d'une décision : carte du vote (hémicycle aux places
+/// réelles ou grand arc, résultat, décompte), méta, titre, explication, points du résumé, « Qui a voté
 /// quoi » (groupes rangés par position), « Pourquoi ils ont voté ainsi »
 /// (arguments des groupes), liens vers les pages officielles et source.
 ///
@@ -44,6 +46,18 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
   DecisionDetail? _detail;
   Object? _error;
   bool _loading = false;
+
+  /// Groupe dont les sièges sont allumés (tuile touchée, #74).
+  String? _lit;
+
+  final _voteCardKey = GlobalKey();
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -75,6 +89,7 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
         body: ListView(
+          controller: _scroll,
           padding: EdgeInsets.fromLTRB(
             20,
             padding.top,
@@ -102,7 +117,15 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
     final detail = _detail;
     return [
       const SizedBox(height: 8),
-      _VoteCard(decision: decision, count: detail?.count),
+      if (_seatsOf(detail) case (final detail, final count)?)
+        _SeatsVoteCard(
+          key: _voteCardKey,
+          detail: detail,
+          count: count,
+          lit: _lit,
+        )
+      else
+        _VoteCard(decision: decision, count: detail?.count),
       const SizedBox(height: 24),
       _Meta(decision),
       const SizedBox(height: 8),
@@ -153,6 +176,42 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
     ];
   }
 
+  /// Le détail et son décompte s'il se dessine aux places réelles (#74) ;
+  /// `null` sinon (ancien détail, provisoire, main levée, place inconnue) :
+  /// la carte garde l'arc.
+  (DecisionDetail, VoteCount)? _seatsOf(DecisionDetail? detail) {
+    if (detail == null ||
+        detail.decision.voteMode == VoteMode.mainLevee ||
+        !canDrawSeats(detail.seats)) {
+      return null;
+    }
+    final count = detail.count;
+    return count == null ? null : (detail, count);
+  }
+
+  /// Allume les sièges du groupe, ou les rallume tous s'il l'était déjà ; en
+  /// allumant, ramène l'hémicycle à l'écran.
+  void _toggleGroup(GroupVoteDetail group) {
+    final on = _lit != group.organeRef;
+    setState(() => _lit = on ? group.organeRef : null);
+    if (!on) return;
+    const duration = Duration(milliseconds: 300);
+    const curve = Curves.easeOutCubic;
+    final card = _voteCardKey.currentContext;
+    if (card != null) {
+      Scrollable.ensureVisible(
+        card,
+        duration: duration,
+        curve: curve,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      );
+    } else if (_scroll.hasClients) {
+      // La carte, sortie de la liste paresseuse, n'est plus construite : elle
+      // est en tête de l'écran.
+      _scroll.animateTo(0, duration: duration, curve: curve);
+    }
+  }
+
   List<Widget> _groupSections(DecisionDetail detail) => [
     // Décision provisoire (détection en direct, #10) : le site ne donne pas
     // le vote par groupe, le jeu de données du lendemain le complète.
@@ -168,7 +227,11 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
       const SizedBox(height: 32),
       const _Heading(groupsHeading),
       const SizedBox(height: 14),
-      WhoVotedWhat(detail.groups),
+      WhoVotedWhat(
+        detail.groups,
+        selected: _lit,
+        onSelect: _seatsOf(detail) == null ? null : _toggleGroup,
+      ),
     ],
     // Arguments des groupes (#35) : absents sans explications de vote.
     if (detail.arguments case final arguments?) ...[
@@ -217,7 +280,7 @@ class _VoteCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(HemicycleRadii.card),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -323,30 +386,126 @@ class _VoteCard extends StatelessWidget {
   }
 }
 
-/// Un des trois chiffres de la carte, en Geist Mono.
+/// Carte du vote aux places réelles (#74) : l'hémicycle, le résultat en
+/// grand dessous (jamais dans le creux, il touchait le premier rang), puis
+/// les trois chiffres, chacun avec le symbole de sa forme dans l'hémicycle.
+class _SeatsVoteCard extends StatelessWidget {
+  const _SeatsVoteCard({
+    super.key,
+    required this.detail,
+    required this.count,
+    this.lit,
+  });
+
+  final DecisionDetail detail;
+  final VoteCount count;
+  final String? lit;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final result = detail.decision.result;
+    final tally = count.tally;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(HemicycleRadii.card),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.min(340.0, constraints.maxWidth);
+          return Column(
+            children: [
+              HemicycleSeats(
+                seats: detail.seats!,
+                groups: detail.groups,
+                result: result,
+                count: tally,
+                width: width,
+                lit: lit,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                resultWord(result),
+                style: HemicycleText.serifVerdict.copyWith(
+                  color: resultColor(context, result),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  _Figure(
+                    tally.pour,
+                    'pour',
+                    colors.pour,
+                    glyph: VotePosition.pour,
+                  ),
+                  const SizedBox(width: 8),
+                  _Figure(
+                    tally.contre,
+                    'contre',
+                    colors.contre,
+                    glyph: VotePosition.contre,
+                  ),
+                  const SizedBox(width: 8),
+                  _Figure(
+                    tally.abstentions,
+                    tally.abstentions > 1 ? 'abstentions' : 'abstention',
+                    colors.ink,
+                    glyph: VotePosition.abstention,
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Un des trois chiffres de la carte, en Geist à chiffres tabulaires. Avec [glyph], le
+/// libellé est précédé du symbole du vote (forme des sièges) et le chiffre
+/// est plus grand.
 class _Figure extends StatelessWidget {
-  const _Figure(this.value, this.label, this.color);
+  const _Figure(this.value, this.label, this.color, {this.glyph});
 
   final int value;
   final String label;
   final Color color;
+  final VotePosition? glyph;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      children: [
-        Text(
-          '$value',
-          style: HemicycleText.mono.copyWith(
-            fontSize: 22,
-            fontWeight: FontWeight.w500,
-            color: color,
+  Widget build(BuildContext context) {
+    final ink2 = context.colors.ink2;
+    final text = Text(label, style: TextStyle(fontSize: 13, color: ink2));
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            '$value',
+            style: HemicycleText.figures.copyWith(
+              fontSize: glyph == null ? 22 : 26,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
           ),
-        ),
-        Text(label, style: TextStyle(fontSize: 13, color: context.colors.ink2)),
-      ],
-    ),
-  );
+          if (glyph case final glyph?)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                VoteGlyph(glyph, color: ink2),
+                const SizedBox(width: 5),
+                Flexible(child: text),
+              ],
+            )
+          else
+            text,
+        ],
+      ),
+    );
+  }
 }
 
 /// « Scrutin n° 8706 · 13 oct. 2026 · 1re lecture » ; « 13 oct. 2026 ·
