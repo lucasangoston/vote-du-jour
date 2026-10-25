@@ -179,7 +179,8 @@ void main() {
       'sourceUrl': 'https://www.assemblee-nationale.fr/dyn/17/scrutins/8706',
     };
 
-    testWidgets('sous « À venir », avant les décisions', (tester) async {
+    testWidgets('plus dans la liste : « À venir » et les décisions seulement '
+        '(#77, #79)', (tester) async {
       final now = DateTime.now().toUtc();
       final inDebate = InDebate(
         dossierRef: _plf.dossierRef,
@@ -207,13 +208,9 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      double top(Finder f) => tester.getTopLeft(f).dy;
-      expect(top(find.text('À venir')), lessThan(top(find.text('En débat'))));
-      expect(
-        top(find.text('En débat')),
-        lessThan(top(find.text("L'ensemble du projet de loi exemple."))),
-      );
-      expect(_articleTexts(tester), ['Art. 40 rejeté', 'Art. 39 supprimé']);
+      expect(find.text('À venir'), findsOneWidget);
+      expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
+      expect(find.text('En débat'), findsNothing);
     });
 
     testWidgets('ancien index sans `inDebate` : rien', (tester) async {

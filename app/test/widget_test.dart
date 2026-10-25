@@ -9,7 +9,9 @@ import 'package:votedujour/src/decisions_repository.dart';
 import 'package:votedujour/src/relative_date.dart';
 
 void main() {
-  testWidgets('affiche les décisions publiées et la source', (tester) async {
+  testWidgets('accueil, puis la liste des décisions et la source', (
+    tester,
+  ) async {
     // Dates relatives : un vote du jour et un vote plus ancien.
     final now = DateTime.now();
     final today = DateTime.utc(now.year, now.month, now.day);
@@ -58,8 +60,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(requested.single.toString(), 'https://example.test/v1/latest.json');
-    // Nom de l'app dans l'en-tête (#36).
+    // Accueil (#79) : nom de l'app (#36), date du jour, une carte par
+    // décision, bouton vers la liste.
     expect(find.text('Le Perchoir'), findsOneWidget);
+    expect(find.text(formatFrenchWeekdayDay(now)), findsOneWidget);
+    expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
+    expect(find.text('Adopté'), findsOneWidget);
+
+    await tester.tap(find.text('Toutes les décisions'));
+    await tester.pumpAndSettle();
+
     expect(find.text("L'ensemble du projet de loi exemple."), findsOneWidget);
     expect(find.text('Adopté'), findsOneWidget);
     expect(find.text('Rejeté'), findsOneWidget);
@@ -68,5 +78,10 @@ void main() {
     expect(find.text("Aujourd'hui"), findsOneWidget);
     expect(find.text(dayGroupLabel(older, now: now)), findsOneWidget);
     expect(find.textContaining('Licence Ouverte'), findsOneWidget);
+
+    // Retour à l'accueil.
+    await tester.tap(find.byTooltip('Retour'));
+    await tester.pumpAndSettle();
+    expect(find.text('Toutes les décisions'), findsOneWidget);
   });
 }

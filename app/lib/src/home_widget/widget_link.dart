@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../decision_detail/decision_route.dart';
 
 /// Ouvre l'écran demandé par un tap sur un widget : le détail de la décision
-/// pour `votedujour://decisions/<id>?homeWidget`, la liste sinon
-/// (`votedujour://decisions?homeWidget`). L'app revient d'abord à la liste,
+/// pour `votedujour://decisions/<id>?homeWidget`, l'accueil sinon
+/// (`votedujour://decisions?homeWidget`). L'app revient d'abord à l'accueil,
 /// pour qu'un retour depuis le détail y mène.
 void openWidgetLink(NavigatorState navigator, Uri? uri) {
   navigator.popUntil((route) => route.isFirst);

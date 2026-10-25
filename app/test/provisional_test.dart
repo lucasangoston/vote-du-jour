@@ -66,6 +66,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // La liste s'ouvre depuis l'accueil (#79).
+    await tester.tap(find.text('Toutes les décisions'));
+    await tester.pumpAndSettle();
 
     expect(find.byType(ProvisionalBadge), findsOneWidget);
     expect(find.text('provisoire'), findsOneWidget);
