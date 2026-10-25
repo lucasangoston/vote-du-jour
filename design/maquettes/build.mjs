@@ -211,6 +211,13 @@ function hemicycle(seq, { R = 150, inner = 0.44, label = '', id = 'h', band = fa
 const lum = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
 const LIGHT_GROUPS = Object.entries(GROUP_COLORS).filter(([, c]) => 1.05 / (lum(c) + 0.05) < 3).map(([g]) => g);
 const OUTLINE_CSS = LIGHT_GROUPS.map((g) => `:root:not([data-theme="dark"]) .hemi:not(.votes) .seat[data-g="${g}"]:not(.s-contre) { stroke: color-mix(in srgb, ${GROUP_COLORS[g]} 65%, #000); stroke-width: .55; }`).join('\n');
+// Tuiles de « Qui a voté quoi » cerclées de la couleur de leurs sièges (2 px, 4 px choisie) ;
+// de jour, les couleurs pâles prennent la teinte du contour des sièges, de nuit l'éclaircie.
+const TILE_CSS = Object.entries(GROUP_COLORS).map(([g, c]) => {
+  const day = LIGHT_GROUPS.includes(g) ? `color-mix(in srgb, ${c} 65%, #000)` : c;
+  const night = `color-mix(in srgb, ${c} 70%, #ffffff)`;
+  return `.tiles3 button[data-g="${g}"] { --edge: ${day}; } :root[data-theme="dark"] .tiles3 button[data-g="${g}"] { --edge: ${night}; }`;
+}).join('\n') + '\n.tiles3 button { box-shadow: inset 0 0 0 2px var(--edge, var(--rule)) !important; } .tiles3 button[aria-pressed="true"] { box-shadow: inset 0 0 0 4px var(--edge, var(--ink)) !important; }';
 const PARTY_CSS = Object.entries(GROUP_COLORS).map(([g, c]) => `.hemi:not(.votes) .seat[data-g="${g}"] { fill: ${c}; stroke: ${c}; } .sw-g[data-g="${g}"] { background: ${c}; }`).join('\n');
 // Nuit : les couleurs officielles très sombres (RN, GDR, UDR) disparaissent sur la surface #191C20 ; on les éclaircit de 30 % vers le blanc, teinte inchangée.
 const PARTY_CSS_DARK = Object.entries(GROUP_COLORS).map(([g, c]) => `:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="${g}"] { fill: color-mix(in srgb, ${c} 70%, #ffffff); stroke: color-mix(in srgb, ${c} 70%, #ffffff); }`).join('\n');
@@ -285,6 +292,7 @@ ${BASE_CSS}
 ${PARTY_CSS}
 ${PARTY_CSS_DARK}
 ${OUTLINE_CSS}
+${TILE_CSS}
 ${css}
 </style>
 </head>

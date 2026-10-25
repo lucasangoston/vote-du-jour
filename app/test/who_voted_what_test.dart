@@ -48,6 +48,8 @@ List<String?> _abbreviations(GroupRow row) => [
 ];
 
 void main() {
+  _tileBorderTests();
+
   group('rankGroups', () {
     test('scrutin 8706 : Pour, Abstention (personne contre)', () {
       final rows = rankGroups(_scrutin8706);
@@ -189,5 +191,83 @@ void main() {
     expect(find.byType(GroupTile), findsNWidgets(5));
     expect(find.text('71'), findsNothing);
     expect(find.text('RN'), findsOneWidget);
+  });
+}
+
+void _tileBorderTests() {
+  // Vignette cerclée de la couleur de ses sièges : RN tel quel de jour,
+  // éclairci de nuit ; HOR, trop pâle de jour, prend la teinte du contour.
+  BoxBorder? border(WidgetTester tester) {
+    final box = tester
+        .widgetList<Container>(
+          find.descendant(
+            of: find.byType(GroupTile),
+            matching: find.byType(Container),
+          ),
+        )
+        .map((c) => c.foregroundDecoration)
+        .whereType<BoxDecoration>()
+        .first;
+    return box.border;
+  }
+
+  Future<void> pump(
+    WidgetTester tester,
+    GroupVoteDetail group,
+    Brightness brightness, {
+    bool selected = false,
+  }) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(brightness),
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 110,
+              child: GroupTile(group, selected: selected, onTap: () {}),
+            ),
+          ),
+        ),
+      ),
+    );
+    // Le thème change en fondu (AnimatedTheme) : attendre la fin.
+    await tester.pumpAndSettle();
+  }
+
+  GroupVoteDetail withColor(String abbr, String color) => GroupVoteDetail(
+    organeRef: 'PO$abbr',
+    name: 'Groupe $abbr',
+    abbreviation: abbr,
+    position: GroupPosition.pour,
+    count: const VoteCount(pour: 1, contre: 0, abstentions: 0, nonVotants: 0),
+    color: color,
+  );
+
+  testWidgets('tuile cerclée de la couleur des sièges du groupe', (
+    tester,
+  ) async {
+    await pump(tester, withColor('RN', '#313567'), Brightness.light);
+    expect((border(tester)! as Border).top.color, const Color(0xFF313567));
+    expect((border(tester)! as Border).top.width, 2);
+
+    await pump(tester, withColor('RN', '#313567'), Brightness.dark);
+    expect(
+      (border(tester)! as Border).top.color,
+      Color.lerp(const Color(0xFF313567), const Color(0xFFFFFFFF), 0.3),
+    );
+
+    await pump(tester, withColor('HOR', '#B5E2F9'), Brightness.light);
+    expect(
+      (border(tester)! as Border).top.color,
+      Color.lerp(const Color(0xFFB5E2F9), const Color(0xFF000000), 0.35),
+    );
+
+    await pump(
+      tester,
+      withColor('RN', '#313567'),
+      Brightness.light,
+      selected: true,
+    );
+    expect((border(tester)! as Border).top.width, 4);
   });
 }
