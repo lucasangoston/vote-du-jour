@@ -11,6 +11,7 @@ export 'src/decision_arguments.dart';
 export 'src/decision_detail.dart';
 export 'src/decision_index.dart';
 export 'src/hemicycle_arc.dart';
+export 'src/hemicycle_seat.dart';
 export 'src/in_debate.dart';
 export 'src/paths.dart';
 export 'src/plain_summary.dart';
