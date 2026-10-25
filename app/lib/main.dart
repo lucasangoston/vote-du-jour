@@ -7,9 +7,9 @@ import 'src/appearance.dart';
 import 'src/config.dart';
 import 'src/decision_detail/decision_detail_repository.dart';
 import 'src/decision_detail/decision_route.dart';
-import 'src/decision_list_page.dart';
 import 'src/decisions_cache.dart';
 import 'src/decisions_repository.dart';
+import 'src/home_page.dart';
 import 'src/home_widget/home_widget_sync.dart';
 import 'src/home_widget/widget_data_source.dart';
 import 'src/notifications/important_votes_notifications.dart';
@@ -122,7 +122,10 @@ class _VoteDuJourAppState extends State<VoteDuJourApp> {
           }
           return page;
         },
-        home: DecisionListPage(repository: widget.repository),
+        home: HomePage(
+          repository: widget.repository,
+          detailRepository: widget.detailRepository,
+        ),
         onGenerateRoute: (settings) => generateDecisionRoute(
           settings,
           repository: widget.detailRepository,

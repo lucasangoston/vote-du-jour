@@ -47,10 +47,17 @@ String dayGroupLabel(DateTime day, {required DateTime now}) {
   final days = today.difference(voteDay).inDays;
   if (days <= 0) return "Aujourd'hui";
   if (days == 1) return 'Hier';
-  final dayOfMonth = day.day == 1 ? '1er' : '${day.day}';
   final year = day.year == now.year ? '' : ' ${day.year}';
-  return '${_weekdays[voteDay.weekday - 1]} $dayOfMonth '
-      '${_months[day.month - 1]}$year';
+  return '${formatFrenchWeekdayDay(day)}$year';
+}
+
+/// « Vendredi 23 octobre » (« 1er » pour le premier du mois), sans l'année :
+/// titre de l'accueil (#79). Seuls l'année, le mois et le jour de [day]
+/// comptent.
+String formatFrenchWeekdayDay(DateTime day) {
+  final date = DateTime.utc(day.year, day.month, day.day);
+  final dayOfMonth = day.day == 1 ? '1er' : '${day.day}';
+  return '${_weekdays[date.weekday - 1]} $dayOfMonth ${_months[day.month - 1]}';
 }
 
 const _shortMonths = [
@@ -114,4 +121,18 @@ DateTime _lastSundayAt1Utc(int year, int month) {
   // Dernier jour du mois, puis recul jusqu'au dimanche.
   final last = DateTime.utc(year, month + 1, 0, 1);
   return last.subtract(Duration(days: last.weekday % 7));
+}
+
+/// Ligne sous le quantième en grand de la carte d'un vote solennel de
+/// l'accueil (#79), en heure de Paris : « Novembre · mardi 15 h »,
+/// « Novembre · mardi 15 h 30 ».
+String upcomingVoteLine(DateTime instant) {
+  final time = toParisTime(instant);
+  final month = _months[time.month - 1];
+  final weekday = _weekdays[time.weekday - 1].toLowerCase();
+  final minutes = time.minute == 0
+      ? ''
+      : ' ${time.minute.toString().padLeft(2, '0')}';
+  return '${month[0].toUpperCase()}${month.substring(1)} · '
+      '$weekday ${time.hour}\u00A0h$minutes';
 }

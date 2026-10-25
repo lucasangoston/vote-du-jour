@@ -2,27 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vote_contract/vote_contract.dart';
 
-import 'app_identity.dart';
 import 'decision_detail/decision_route.dart';
 import 'decisions_repository.dart';
 import 'discovery_actions.dart';
-import 'hemicycle/hemicycle_logo.dart';
+import 'hemicycle/line_icon.dart';
 import 'hemicycle/result_style.dart';
 import 'hemicycle/vote_arc.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'theme.dart';
-import 'in_debate_section.dart';
 import 'upcoming_section.dart';
 
 export 'relative_date.dart' show formatShortFrenchDate;
 
-/// Liste des dernières décisions, groupées par jour. Se rafraîchit à
-/// l'ouverture et à chaque retour de l'app au premier plan.
+/// Liste des dernières décisions, groupées par jour, ouverte par « Toutes
+/// les décisions » de l'accueil (#79). Se rafraîchit à l'ouverture et à
+/// chaque retour de l'app au premier plan.
 class DecisionListPage extends StatefulWidget {
-  const DecisionListPage({super.key, required this.repository});
+  const DecisionListPage({super.key, required this.repository, this.initial});
 
   final DecisionsRepository repository;
+
+  /// Index déjà lu par l'accueil, affiché pendant le rafraîchissement.
+  final DecisionIndex? initial;
 
   @override
   State<DecisionListPage> createState() => _DecisionListPageState();
@@ -30,7 +32,7 @@ class DecisionListPage extends StatefulWidget {
 
 class _DecisionListPageState extends State<DecisionListPage> {
   late final AppLifecycleListener _lifecycle;
-  DecisionIndex? _index;
+  late DecisionIndex? _index = widget.initial;
   Object? _error;
   bool _loading = false;
   DecisionFilter _filter = DecisionFilter.tout;
@@ -125,18 +127,15 @@ class _DecisionListPageState extends State<DecisionListPage> {
         ),
       ];
     }
-    // Ordre du jour de l'Assemblée, avant les décisions (#53), puis le texte
-    // en débat (#55) ; rien sans point à venir ni texte en débat.
+    // Ordre du jour de l'Assemblée, avant les décisions (#53) ; rien sans
+    // point à venir. Le texte en débat n'y est plus : il est annoncé par une
+    // notification (#77).
     final upcoming = SliverToBoxAdapter(
       child: UpcomingSection(items: index.upcoming),
-    );
-    final inDebate = SliverToBoxAdapter(
-      child: InDebateSection(inDebate: index.inDebate),
     );
     if (index.decisions.isEmpty) {
       return [
         upcoming,
-        inDebate,
         const SliverFillRemaining(
           hasScrollBody: false,
           child: _Message(text: 'Aucune décision publiée pour le moment.'),
@@ -150,7 +149,6 @@ class _DecisionListPageState extends State<DecisionListPage> {
     ];
     return [
       upcoming,
-      inDebate,
       // Filtres par type (#75), au-dessus des décisions qu'ils trient.
       SliverToBoxAdapter(
         child: _FilterChips(
@@ -199,7 +197,8 @@ List<List<DecisionSummary>> groupByDay(List<DecisionSummary> decisions) {
   return days;
 }
 
-/// Logo et nom, boutons « Ajouter le widget » et « À propos », grand titre.
+/// Retour à l'accueil et « À propos » (la barre de l'accueil si la liste
+/// est le premier écran), grand titre.
 class _Header extends StatelessWidget {
   const _Header();
 
@@ -211,23 +210,18 @@ class _Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 10),
-            child: Row(
-              children: [
-                const HemicycleLogo.small(),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    appName,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const AddWidgetAction(),
-                const AboutAction(),
-              ],
-            ),
-          ),
+          if (Navigator.of(context).canPop())
+            const Padding(
+              padding: EdgeInsets.only(left: 20, right: 10),
+              child: Row(
+                children: [
+                  Expanded(child: HemicycleBackButton()),
+                  AboutAction(),
+                ],
+              ),
+            )
+          else
+            const BrandBar(),
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
             child: Text('Décisions', style: HemicycleText.largeTitle),

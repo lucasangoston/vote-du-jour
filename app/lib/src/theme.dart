@@ -348,4 +348,30 @@ abstract final class HemicycleText {
     letterSpacing: -1.44,
     height: 1,
   ).copyWith(fontFeatures: const [FontFeature.liningFigures()]);
+
+  /// Date du jour en tête de l'accueil (#79).
+  static final serifDay = serif(size: 30, letterSpacing: -0.45, height: 1.08);
+
+  /// Titre court d'une carte de l'accueil.
+  static final serifCardTitle = serif(
+    size: 26,
+    letterSpacing: -0.26,
+    height: 1.12,
+  );
+
+  /// Languette d'une carte de l'accueil (« Vote solennel », « 13 oct. »).
+  static const tabLabel = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
+
+  /// Décompte d'une carte de l'accueil, après le symbole de chaque vote.
+  static const tally = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  /// Bouton principal (« Toutes les décisions »).
+  static const primaryButton = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+  );
 }
