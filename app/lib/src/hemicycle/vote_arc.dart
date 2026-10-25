@@ -171,6 +171,8 @@ double gaugeShare({
     VoteResult.adopte => count.pour,
     VoteResult.rejete => count.contre,
   };
+  // Camp gagnant minoritaire (censure, rejet préalable, majorité spéciale) : jauge pleine.
+  if (won * 2 <= count.total) return 1;
   return won / count.total;
 }
 

@@ -159,6 +159,33 @@ void main() {
       );
     });
 
+    test('camp gagnant minoritaire parmi les votants : jauge pleine', () {
+      // Scrutin 7979 : motion de censure rejetée, seuls les pour comptés.
+      expect(
+        gaugeShare(
+          result: VoteResult.rejete,
+          count: const VoteTally(pour: 132, contre: 0, abstentions: 0),
+        ),
+        1,
+      );
+      // Scrutin 7351 : rejet préalable rejeté avec plus de pour que de contre.
+      expect(
+        gaugeShare(
+          result: VoteResult.rejete,
+          count: const VoteTally(pour: 145, contre: 82, abstentions: 0),
+        ),
+        1,
+      );
+      // Majorité spéciale : adopté sans la majorité des votants.
+      expect(
+        gaugeShare(
+          result: VoteResult.adopte,
+          count: const VoteTally(pour: 200, contre: 150, abstentions: 100),
+        ),
+        1,
+      );
+    });
+
     test('main levée ou sans décompte : jauge pleine', () {
       expect(
         gaugeShare(result: VoteResult.adopte, voteMode: VoteMode.mainLevee),
