@@ -42,7 +42,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     rule: Color(0xFFE0E0E0),
     pour: Color(0xFF1D6B54),
     contre: Color(0xFFB4472B),
-    abstention: Color(0xFFAEB4BB),
+    abstention: Color(0xFF848B91),
     pressed: Color(0xFFEBEBEB),
     raised: Color(0xFFEBEBEB),
     plate: Color(0xFFFFFFFF),
@@ -91,7 +91,8 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
   /// Contre, rejeté (couleur des données, inchangée).
   final Color contre;
 
-  /// Abstentions (couleur des données, inchangée).
+  /// Abstentions (couleur des données) : le gris de jour tient 3:1 sur la
+  /// surface (arcs, jauges).
   final Color abstention;
 
   /// Fond d'un élément touché (rangée, bouton icône).

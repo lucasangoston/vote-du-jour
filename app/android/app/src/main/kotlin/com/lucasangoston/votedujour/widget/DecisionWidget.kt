@@ -91,7 +91,7 @@ private object WidgetColors {
    */
   val votePour = ColorProvider(day = Color(0xFF1D6B54), night = Color(0xFF4FB08F))
   val voteContre = ColorProvider(day = Color(0xFFE0683A), night = Color(0xFFB5461F))
-  val voteAbstention = ColorProvider(day = Color(0xFF8D949A), night = Color(0xFF9AA2AB))
+  val voteAbstention = ColorProvider(day = Color(0xFF848B91), night = Color(0xFF9AA2AB))
 
   /** Sièges absents et non-votants (estompés à 28 % par le masque). */
   val seatOff = ColorProvider(day = Color(0xFFAEB4BB), night = Color(0xFF4A5058))

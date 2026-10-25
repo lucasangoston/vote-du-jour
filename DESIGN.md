@@ -29,7 +29,7 @@ colors:
   vote:        # sièges colorés par le vote (widgets, hémicycle gris d'attente exclu)
     pour-light: "#1D6B54"
     contre-light: "#E0683A"
-    abst-light: "#8D949A"
+    abst-light: "#848B91"
     pour-dark: "#4FB08F"
     contre-dark: "#B5461F"
     abst-dark: "#9AA2AB"

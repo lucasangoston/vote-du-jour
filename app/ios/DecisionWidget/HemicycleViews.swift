@@ -25,7 +25,7 @@ enum Palette {
   /// moins contre la surface.
   static let votePour = dynamic(light: 0x1D6B54, dark: 0x4FB08F)
   static let voteContre = dynamic(light: 0xE0683A, dark: 0xB5461F)
-  static let voteAbstention = dynamic(light: 0x8D949A, dark: 0x9AA2AB)
+  static let voteAbstention = dynamic(light: 0x848B91, dark: 0x9AA2AB)
 
   static func vote(_ tint: VoteArc.Tint) -> Color {
     switch tint {
