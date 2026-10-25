@@ -14,7 +14,6 @@ import 'relative_date.dart';
 import 'theme.dart';
 import 'in_debate_section.dart';
 import 'upcoming_section.dart';
-import 'vote_mode_label.dart';
 
 export 'relative_date.dart' show formatShortFrenchDate;
 
@@ -34,6 +33,7 @@ class _DecisionListPageState extends State<DecisionListPage> {
   DecisionIndex? _index;
   Object? _error;
   bool _loading = false;
+  DecisionFilter _filter = DecisionFilter.tout;
 
   @override
   void initState() {
@@ -144,10 +144,28 @@ class _DecisionListPageState extends State<DecisionListPage> {
       ];
     }
     final now = DateTime.now();
+    final shown = [
+      for (final d in index.decisions)
+        if (_filter.accepts(d.type)) d,
+    ];
     return [
       upcoming,
       inDebate,
-      for (final day in groupByDay(index.decisions)) ...[
+      // Filtres par type (#75), au-dessus des décisions qu'ils trient.
+      SliverToBoxAdapter(
+        child: _FilterChips(
+          selected: _filter,
+          onSelected: (f) => setState(() => _filter = f),
+        ),
+      ),
+      if (shown.isEmpty)
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.only(top: 24),
+            child: _Message(text: 'Aucune décision de ce type récemment.'),
+          ),
+        ),
+      for (final day in groupByDay(shown)) ...[
         SliverToBoxAdapter(
           child: _DayHeading(dayGroupLabel(day.first.date, now: now)),
         ),
@@ -252,8 +270,8 @@ class _RowSeparator extends StatelessWidget {
   );
 }
 
-/// Ligne de la liste : mini-arc du vote, résultat coloré · type (s'il change
-/// la lecture), titre et phrase d'explication sur deux lignes.
+/// Ligne de la liste (#75) : jauge du vote, titre (court s'il existe) et
+/// « Adopté » ou « Rejeté » seul, sans chiffres ni type.
 class DecisionRow extends StatelessWidget {
   const DecisionRow(this.decision, {super.key});
 
@@ -269,11 +287,10 @@ class DecisionRow extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 3),
-            child: VoteArc.mini(
+            child: VoteGauge(
               result: decision.result,
               count: decision.count,
               voteMode: decision.voteMode,
-              arc: decision.arc,
             ),
           ),
           const SizedBox(width: 14),
@@ -281,8 +298,15 @@ class DecisionRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  capitalize(decision.compactTitle),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: HemicycleText.rowTitle.copyWith(color: colors.ink),
+                ),
+                const SizedBox(height: 4),
                 MetaLine(
-                  style: TextStyle(fontSize: 12.5, color: colors.ink2),
+                  style: const TextStyle(fontSize: 13),
                   parts: [
                     Text(
                       resultWord(decision.result),
@@ -291,39 +315,12 @@ class DecisionRow extends StatelessWidget {
                         color: resultColor(context, decision.result),
                       ),
                     ),
-                    // Pas l'étape de la procédure (détail seulement) : le
-                    // type, quand il change la lecture du résultat.
-                    if (listTypeLabel(decision.type) case final type?)
-                      Text(type),
-                    // Adopté sans scrutin public, donc sans décompte (#8).
-                    if (voteModeLabel(decision.voteMode) case final mode?)
-                      Text(mode),
                   ],
                   // Lue pendant la séance, pas encore confirmée (#10).
                   trailing: decision.status == DecisionStatus.provisoire
                       ? const ProvisionalBadge()
                       : null,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  capitalize(decision.compactTitle),
-                  style: HemicycleText.rowTitle.copyWith(color: colors.ink),
-                ),
-                // Phrase d'explication du résumé (#9), si la décision est
-                // résumée.
-                if (decision.explanation case final explanation?) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    explanation,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.45,
-                      color: colors.ink2,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -333,17 +330,86 @@ class DecisionRow extends StatelessWidget {
   }
 }
 
-/// Type de la décision dans la ligne de la liste, pour ceux qui changent la
-/// lecture du résultat (une résolution n'a pas valeur de loi, un rejet
-/// préalable rejette le texte…) ; `null` pour un vote sur un texte.
-String? listTypeLabel(DecisionType type) => switch (type) {
-  DecisionType.resolution => 'Résolution',
-  DecisionType.motionDeCensure => 'Motion de censure',
-  DecisionType.rejetPrealable => 'Rejet préalable',
-  DecisionType.declarationGouvernement => 'Déclaration du Gouvernement',
-  DecisionType.premierePartieBudget => '1re partie du budget',
-  DecisionType.ensembleTexte || DecisionType.autre => null,
-};
+/// Filtres de la liste (#75), comme les maquettes : les textes, les
+/// résolutions, et les motions et votes sur le Gouvernement.
+enum DecisionFilter {
+  tout('Tout'),
+  textes('Textes'),
+  resolutions('Résolutions'),
+  motions('Motions');
+
+  const DecisionFilter(this.label);
+
+  final String label;
+
+  /// La décision de type [type] passe-t-elle le filtre ?
+  bool accepts(DecisionType type) => switch (this) {
+    tout => true,
+    textes => switch (type) {
+      DecisionType.ensembleTexte ||
+      DecisionType.premierePartieBudget ||
+      DecisionType.autre => true,
+      _ => false,
+    },
+    resolutions => type == DecisionType.resolution,
+    motions => switch (type) {
+      DecisionType.motionDeCensure ||
+      DecisionType.rejetPrealable ||
+      DecisionType.declarationGouvernement => true,
+      _ => false,
+    },
+  };
+}
+
+/// Pastilles des filtres : la pastille choisie à l'encre, les autres sur la
+/// surface ; défilent si l'écran est étroit.
+class _FilterChips extends StatelessWidget {
+  const _FilterChips({required this.selected, required this.onSelected});
+
+  final DecisionFilter selected;
+  final ValueChanged<DecisionFilter> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 2),
+      child: Row(
+        children: [
+          for (final (i, f) in DecisionFilter.values.indexed) ...[
+            if (i > 0) const SizedBox(width: 8),
+            Semantics(
+              button: true,
+              selected: f == selected,
+              child: Material(
+                color: f == selected ? colors.ink : colors.surface,
+                shape: const StadiumBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => onSelected(f),
+                  child: Container(
+                    height: 36,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    alignment: Alignment.center,
+                    child: Text(
+                      f.label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: f == selected ? colors.background : colors.ink,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
 
 /// Mention de la source exigée par la Licence Ouverte.
 class _SourceNotice extends StatelessWidget {

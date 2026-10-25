@@ -64,8 +64,8 @@ MockClient _server() => MockClient((request) async {
 });
 
 void main() {
-  testWidgets('la liste affiche la phrase sous le titre, le détail les '
-      'points', (tester) async {
+  testWidgets('la liste affiche le titre seul (#75), le détail la phrase et '
+      'les points', (tester) async {
     final client = _server();
     await tester.pumpWidget(
       VoteDuJourApp(
@@ -85,8 +85,8 @@ void main() {
       find.text("Retour de l'âge légal de départ à 62 ans"),
       findsOneWidget,
     );
-    expect(find.text(_summary.explanation), findsOneWidget);
-    // Les points ne sont que dans le détail.
+    // La phrase et les points ne sont que dans le détail.
+    expect(find.text(_summary.explanation), findsNothing);
     expect(find.text(summaryPointsHeading), findsNothing);
 
     await tester.tap(find.text("Retour de l'âge légal de départ à 62 ans"));

@@ -139,18 +139,132 @@ void main() {
     );
   });
 
-  testWidgets('mini-arc de la liste : 40 × 22', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Center(
-          child: VoteArc.mini(
-            result: VoteResult.rejete,
-            voteMode: VoteMode.mainLevee,
+  group('jauge de la liste (#75)', () {
+    test('part du camp gagnant parmi les votants', () {
+      // Scrutin 8706 : adopté, 503 pour sur 570 votants.
+      expect(
+        gaugeShare(
+          result: VoteResult.adopte,
+          count: const VoteTally(pour: 503, contre: 0, abstentions: 67),
+        ),
+        closeTo(0.88, 0.005),
+      );
+      // Scrutin 8610 : rejeté, 187 contre sur 338 votants.
+      expect(
+        gaugeShare(
+          result: VoteResult.rejete,
+          count: const VoteTally(pour: 151, contre: 187, abstentions: 0),
+        ),
+        closeTo(0.55, 0.005),
+      );
+    });
+
+    test('camp gagnant minoritaire parmi les votants : jauge pleine', () {
+      // Scrutin 7979 : motion de censure rejetée, seuls les pour comptés.
+      expect(
+        gaugeShare(
+          result: VoteResult.rejete,
+          count: const VoteTally(pour: 132, contre: 0, abstentions: 0),
+        ),
+        1,
+      );
+      // Scrutin 7351 : rejet préalable rejeté avec plus de pour que de contre.
+      expect(
+        gaugeShare(
+          result: VoteResult.rejete,
+          count: const VoteTally(pour: 145, contre: 82, abstentions: 0),
+        ),
+        1,
+      );
+      // Majorité spéciale : adopté sans la majorité des votants.
+      expect(
+        gaugeShare(
+          result: VoteResult.adopte,
+          count: const VoteTally(pour: 200, contre: 150, abstentions: 100),
+        ),
+        1,
+      );
+    });
+
+    test('main levée ou sans décompte : jauge pleine', () {
+      expect(
+        gaugeShare(result: VoteResult.adopte, voteMode: VoteMode.mainLevee),
+        1,
+      );
+      expect(gaugeShare(result: VoteResult.rejete), 1);
+      expect(
+        gaugeShare(
+          result: VoteResult.rejete,
+          count: const VoteTally(pour: 0, contre: 0, abstentions: 0),
+        ),
+        1,
+      );
+    });
+
+    for (final brightness in Brightness.values) {
+      testWidgets('40 × 22, libellé et couleurs (${brightness.name})', (
+        tester,
+      ) async {
+        final colors = brightness == Brightness.dark
+            ? HemicycleColors.dark
+            : HemicycleColors.light;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildTheme(brightness),
+            home: const Center(
+              child: VoteGauge(
+                result: VoteResult.rejete,
+                count: VoteTally(pour: 151, contre: 187, abstentions: 0),
+              ),
+            ),
+          ),
+        );
+        expect(tester.getSize(find.byType(VoteGauge)), const Size(40, 22));
+        expect(
+          find.bySemanticsLabel('Rejeté : 151 pour, 187 contre, 0 abstentions'),
+          findsOneWidget,
+        );
+        final painter =
+            tester
+                    .widget<CustomPaint>(
+                      find.descendant(
+                        of: find.byType(VoteGauge),
+                        matching: find.byType(CustomPaint),
+                      ),
+                    )
+                    .painter!
+                as VoteGaugePainter;
+        expect(painter.share, closeTo(187 / 338, 1e-9));
+        expect(painter.color, colors.contre);
+        // Reste de l'arc : l'encre à 30 % sur la surface.
+        expect(painter.track, Color.lerp(colors.surface, colors.ink, 0.3));
+        expect(painter.track, isNot(colors.abstention));
+      });
+    }
+
+    testWidgets('main levée : pleine, sans pointillés', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Center(
+            child: VoteGauge(
+              result: VoteResult.adopte,
+              voteMode: VoteMode.mainLevee,
+            ),
           ),
         ),
-      ),
-    );
-    expect(tester.getSize(find.byType(VoteArc)), const Size(40, 22));
-    expect(find.bySemanticsLabel('Rejeté à main levée'), findsOneWidget);
+      );
+      expect(find.bySemanticsLabel('Adopté à main levée'), findsOneWidget);
+      final painter =
+          tester
+                  .widget<CustomPaint>(
+                    find.descendant(
+                      of: find.byType(VoteGauge),
+                      matching: find.byType(CustomPaint),
+                    ),
+                  )
+                  .painter!
+              as VoteGaugePainter;
+      expect(painter.share, 1);
+    });
   });
 }
