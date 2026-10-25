@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'important_votes_notifications.dart';
 
-/// Réglage « Votes importants » de la page À propos :
-/// interrupteur et explication. Absent si les notifications ne sont pas
-/// disponibles.
+/// Réglage « Notifier les votes solennels » de la page À propos : ligne à
+/// interrupteur, à poser dans un panneau. Absent si les notifications ne
+/// sont pas disponibles.
 class ImportantVotesSetting extends StatefulWidget {
   const ImportantVotesSetting({super.key});
 
@@ -41,72 +41,64 @@ class _ImportantVotesSettingState extends State<ImportantVotesSetting> {
     final notifications = NotificationsScope.maybeOf(context);
     if (notifications == null) return const SizedBox.shrink();
     final colors = context.colors;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final refused = notifications.refused;
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 14, 12, 16),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Toute la ligne bascule le réglage, comme une ligne de réglages.
-            MergeSemantics(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: refused
-                    ? null
-                    : () => notifications.setEnabled(!notifications.enabled),
-                child: Row(
+    // Toute la ligne bascule le réglage, comme une ligne de réglages.
+    return MergeSemantics(
+      child: InkWell(
+        onTap: refused
+            ? null
+            : () => notifications.setEnabled(!notifications.enabled),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Votes importants',
-                        style: HemicycleText.rowTitle.copyWith(
-                          color: colors.ink,
-                        ),
+                    Text(
+                      'Notifier les votes solennels',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: colors.ink,
                       ),
                     ),
-                    Switch.adaptive(
-                      value: notifications.enabled,
-                      activeTrackColor: colors.pour,
-                      onChanged: refused ? null : notifications.setEnabled,
-                    ),
+                    if (refused) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Notifications refusées : activez-les dans les '
+                        'Réglages.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.45,
+                          color: colors.contre,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Text(
-                'Solennels, censures, textes de compromis et lectures '
-                'définitives · 1 à 3 par semaine.',
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.45,
-                  color: colors.ink2,
+              const SizedBox(width: 16),
+              // Piste à l'encre une fois activé, comme dans la maquette ;
+              // pastille blanche, au fond de l'écran en Nuit.
+              Switch.adaptive(
+                value: notifications.enabled,
+                activeTrackColor: colors.ink,
+                inactiveTrackColor: colors.raised,
+                trackOutlineColor: const WidgetStatePropertyAll(
+                  Colors.transparent,
                 ),
-              ),
-            ),
-            if (refused) ...[
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  'Notifications refusées : activez-les dans les Réglages.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.45,
-                    color: colors.contre,
-                  ),
+                thumbColor: WidgetStateProperty.resolveWith(
+                  (s) => s.contains(WidgetState.selected) && dark
+                      ? colors.background
+                      : Colors.white,
                 ),
+                onChanged: refused ? null : notifications.setEnabled,
               ),
             ],
-          ],
+          ),
         ),
       ),
     );

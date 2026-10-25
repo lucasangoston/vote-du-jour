@@ -7,6 +7,10 @@ const geist = 'Geist';
 /// Police des chiffres (décomptes).
 const geistMono = 'GeistMono';
 
+/// Police des titres éditoriaux (#76), à empattements. Fichier variable :
+/// la graisse passe par `fontVariations` (voir [HemicycleText.serif]).
+const newsreader = 'Newsreader';
+
 /// Couleurs de la charte « Hémicycle » (#29) : fond, surface, encres et filet
 /// neutres ; seuls le pour (vert) et le contre (brique) portent une couleur,
 /// jamais de couleur de parti ni de bleu-blanc-rouge.
@@ -23,6 +27,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     required this.contre,
     required this.abstention,
     required this.pressed,
+    required this.raised,
   });
 
   static const light = HemicycleColors(
@@ -36,6 +41,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     contre: Color(0xFFB4472B),
     abstention: Color(0xFFAEB4BB),
     pressed: Color(0xFFE8EAEC),
+    raised: Color(0xFFE8EAEC),
   );
 
   static const dark = HemicycleColors(
@@ -49,6 +55,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     contre: Color(0xFFE07A58),
     abstention: Color(0xFF4A5058),
     pressed: Color(0xFF1F2328),
+    raised: Color(0xFF23272C),
   );
 
   /// Fond des écrans.
@@ -81,6 +88,10 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
   /// Fond d'un élément touché (ligne de liste, bouton icône).
   final Color pressed;
 
+  /// Fond en creux d'un sélecteur segmenté (Auto / Jour / Nuit), sous le
+  /// segment choisi qui prend [surface].
+  final Color raised;
+
   @override
   HemicycleColors copyWith({
     Color? background,
@@ -93,6 +104,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     Color? contre,
     Color? abstention,
     Color? pressed,
+    Color? raised,
   }) => HemicycleColors(
     background: background ?? this.background,
     surface: surface ?? this.surface,
@@ -104,6 +116,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
     contre: contre ?? this.contre,
     abstention: abstention ?? this.abstention,
     pressed: pressed ?? this.pressed,
+    raised: raised ?? this.raised,
   );
 
   @override
@@ -121,6 +134,7 @@ class HemicycleColors extends ThemeExtension<HemicycleColors> {
       contre: mix(contre, other.contre),
       abstention: mix(abstention, other.abstention),
       pressed: mix(pressed, other.pressed),
+      raised: mix(raised, other.raised),
     );
   }
 }
@@ -283,4 +297,43 @@ abstract final class HemicycleText {
     fontFamily: geistMono,
     fontFeatures: [FontFeature.tabularFigures()],
   );
+
+  /// Chiffres alignés en Geist (`tabular-nums` des maquettes), à fusionner
+  /// avec le style du texte qui les porte.
+  static const figures = TextStyle(
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  /// Newsreader de [weight] et de [size] points. La police est variable : la
+  /// graisse est donnée à l'axe `wght` (en plus de [TextStyle.fontWeight],
+  /// que le moteur n'applique pas seul à un fichier variable) et la taille
+  /// optique suit la taille, comme `font-optical-sizing: auto`.
+  static TextStyle serif({
+    required double size,
+    FontWeight weight = FontWeight.w600,
+    double letterSpacing = 0,
+    double? height,
+  }) => TextStyle(
+    fontFamily: newsreader,
+    fontSize: size,
+    fontWeight: weight,
+    fontVariations: [
+      FontVariation.weight(weight.value.toDouble()),
+      FontVariation.opticalSize(size.clamp(6, 72).toDouble()),
+    ],
+    letterSpacing: letterSpacing,
+    height: height,
+  );
+
+  /// Titre en Newsreader (« Adopté » du résultat, titre d'un widget).
+  static final serifTitle = serif(size: 28, letterSpacing: -0.28, height: 1.15);
+
+  /// Grand chiffre en Newsreader (jour d'un vote à venir), chiffres
+  /// alignés sur la ligne de base.
+  static final serifFigure = serif(
+    size: 72,
+    weight: FontWeight.w500,
+    letterSpacing: -1.44,
+    height: 1,
+  ).copyWith(fontFeatures: const [FontFeature.liningFigures()]);
 }

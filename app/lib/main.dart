@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'src/app_identity.dart';
+import 'src/appearance.dart';
 import 'src/config.dart';
 import 'src/decision_detail/decision_detail_repository.dart';
 import 'src/decision_detail/decision_route.dart';
@@ -20,6 +21,9 @@ Future<void> main() async {
   final widgetSync = HomeWidgetSync()..start();
   shareDataBaseUrl(dataBaseUrl);
   final notifications = await _startNotifications();
+  // Lu avant le premier écran, pour ne pas l'afficher dans la mauvaise
+  // apparence.
+  final appearance = await AppearanceSettings.load();
   runApp(
     VoteDuJourApp(
       repository: WidgetSyncingRepository(
@@ -28,6 +32,7 @@ Future<void> main() async {
         sync: widgetSync,
       ),
       notifications: notifications,
+      appearance: appearance,
     ),
   );
 }
@@ -56,12 +61,13 @@ Future<ImportantVotesNotifications?> _startNotifications() async {
   }
 }
 
-class VoteDuJourApp extends StatelessWidget {
+class VoteDuJourApp extends StatefulWidget {
   const VoteDuJourApp({
     super.key,
     required this.repository,
     this.detailRepository,
     this.notifications,
+    this.appearance,
   });
 
   final DecisionsRepository repository;
@@ -72,29 +78,56 @@ class VoteDuJourApp extends StatelessWidget {
   /// Notifications des votes importants, si disponibles.
   final ImportantVotesNotifications? notifications;
 
+  /// Réglage d'apparence ; par défaut, Auto.
+  final AppearanceSettings? appearance;
+
+  @override
+  State<VoteDuJourApp> createState() => _VoteDuJourAppState();
+}
+
+class _VoteDuJourAppState extends State<VoteDuJourApp> {
+  late final _appearance = widget.appearance ?? AppearanceSettings();
+
+  @override
+  void dispose() {
+    // Le réglage créé ici appartient à l'app ; celui reçu, à l'appelant.
+    if (widget.appearance == null) _appearance.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final notifications = this.notifications;
-    return MaterialApp(
-      title: appName,
-      navigatorKey: homeWidgetNavigatorKey,
-      scaffoldMessengerKey: notifications?.messengerKey,
-      navigatorObservers: [
-        if (notifications != null)
-          DecisionViewObserver(notifications.decisionViewed),
-      ],
-      debugShowCheckedModeBanner: false,
-      theme: buildTheme(Brightness.light),
-      darkTheme: buildTheme(Brightness.dark),
-      builder: notifications == null
-          ? null
-          : (context, child) => NotificationsScope(
-              notifier: notifications,
-              child: child ?? const SizedBox.shrink(),
-            ),
-      home: DecisionListPage(repository: repository),
-      onGenerateRoute: (settings) =>
-          generateDecisionRoute(settings, repository: detailRepository),
+    final notifications = widget.notifications;
+    return ListenableBuilder(
+      listenable: _appearance,
+      builder: (context, _) => MaterialApp(
+        title: appName,
+        navigatorKey: homeWidgetNavigatorKey,
+        scaffoldMessengerKey: notifications?.messengerKey,
+        navigatorObservers: [
+          if (notifications != null)
+            DecisionViewObserver(notifications.decisionViewed),
+        ],
+        debugShowCheckedModeBanner: false,
+        theme: buildTheme(Brightness.light),
+        darkTheme: buildTheme(Brightness.dark),
+        themeMode: _appearance.mode,
+        builder: (context, child) {
+          Widget page = AppearanceScope(
+            notifier: _appearance,
+            child: child ?? const SizedBox.shrink(),
+          );
+          if (notifications != null) {
+            page = NotificationsScope(notifier: notifications, child: page);
+          }
+          return page;
+        },
+        home: DecisionListPage(repository: widget.repository),
+        onGenerateRoute: (settings) => generateDecisionRoute(
+          settings,
+          repository: widget.detailRepository,
+        ),
+      ),
     );
   }
 }

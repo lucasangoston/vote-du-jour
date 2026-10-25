@@ -367,19 +367,7 @@ void main() {
       await _pumpApp(tester, messaging);
       await openAbout(tester);
 
-      expect(find.text('Votes importants'), findsOneWidget);
-      expect(
-        find.text(
-          'Solennels, censures, textes de compromis et lectures définitives '
-          '· 1 à 3 par semaine.',
-        ),
-        findsOneWidget,
-      );
-      // Notifications disponibles : la page nomme Firebase.
-      expect(
-        find.textContaining('Firebase Cloud Messaging (Google)'),
-        findsOneWidget,
-      );
+      expect(find.text('Notifier les votes solennels'), findsOneWidget);
       final toggle = find.byType(Switch);
       expect(tester.widget<Switch>(toggle).value, isTrue);
 
@@ -401,7 +389,7 @@ void main() {
 
       // Toute la ligne bascule le réglage.
       await tester.runAsync(() async {
-        await tester.tap(find.text('Votes importants'));
+        await tester.tap(find.text('Notifier les votes solennels'));
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await tester.pumpAndSettle();
@@ -434,8 +422,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       await openAbout(tester);
-      expect(find.text('Votes importants'), findsNothing);
-      expect(find.textContaining('Firebase'), findsNothing);
+      expect(find.text('Notifier les votes solennels'), findsNothing);
+      // La ligne du widget reste, seule dans son panneau.
+      expect(find.text('Ajouter le widget'), findsOneWidget);
     });
   });
 }
