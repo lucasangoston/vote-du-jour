@@ -152,7 +152,7 @@ class GroupTile extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
 
-  static final _radius = BorderRadius.circular(14);
+  static final _radius = BorderRadius.circular(HemicycleRadii.tile);
 
   @override
   Widget build(BuildContext context) {

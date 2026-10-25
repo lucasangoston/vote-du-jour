@@ -249,6 +249,15 @@ ThemeData buildTheme(Brightness brightness) {
   );
 }
 
+/// Rayons d'angle de la charte, en points : à changer ici seulement.
+abstract final class HemicycleRadii {
+  /// Carte du vote du détail.
+  static const card = 24.0;
+
+  /// Vignette d'un groupe (« Qui a voté quoi »).
+  static const tile = 14.0;
+}
+
 /// Styles de texte de la charte, d'après les maquettes (tailles en points
 /// logiques, interlettrage converti des `em` de la maquette).
 abstract final class HemicycleText {
@@ -327,6 +336,9 @@ abstract final class HemicycleText {
 
   /// Titre en Newsreader (« Adopté » du résultat, titre d'un widget).
   static final serifTitle = serif(size: 28, letterSpacing: -0.28, height: 1.15);
+
+  /// Résultat en grand sous l'hémicycle du détail (#74).
+  static final serifVerdict = serif(size: 34, letterSpacing: -0.34, height: 1);
 
   /// Grand chiffre en Newsreader (jour d'un vote à venir), chiffres
   /// alignés sur la ligne de base.

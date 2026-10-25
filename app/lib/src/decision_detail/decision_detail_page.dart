@@ -280,7 +280,7 @@ class _VoteCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(HemicycleRadii.card),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -410,7 +410,7 @@ class _SeatsVoteCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(HemicycleRadii.card),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -428,11 +428,9 @@ class _SeatsVoteCard extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 resultWord(result),
-                style: HemicycleText.serif(
-                  size: 34,
-                  letterSpacing: -0.34,
-                  height: 1,
-                ).copyWith(color: resultColor(context, result)),
+                style: HemicycleText.serifVerdict.copyWith(
+                  color: resultColor(context, result),
+                ),
               ),
               const SizedBox(height: 18),
               Row(
