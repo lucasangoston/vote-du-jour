@@ -97,6 +97,18 @@ final class SnapshotConverterTests: XCTestCase {
     XCTAssertNil(decisions[2]["explanation"])
   }
 
+  func testTitreCourtDuResume() throws {
+    let summary = #","summary":{"title":"Retour de l'âge légal à 62 ans","explanation":"e","promptVersion":2"#
+    let long = String(repeating: "x", count: 36)
+    let decisions = try convert([
+      decision(8724, summary + #","shortTitle":"retraite à 62 ans"}"#),
+      // Titre court trop long : repli sur le titre du résumé.
+      decision(8723, summary + ",\"shortTitle\":\"\(long)\"}"),
+    ])
+    XCTAssertEqual(decisions[0]["title"] as? String, "Retraite à 62 ans")
+    XCTAssertEqual(decisions[1]["title"] as? String, "Retour de l'âge légal à 62 ans")
+  }
+
   func testDecompteEtModeDeVote() throws {
     let decisions = try convert([
       // `nonVotants` est ignoré.

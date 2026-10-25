@@ -185,10 +185,17 @@ PlainSummary parseSummaryResponse(
       'réponse du modèle : ${points.length} points, 3 ou 4 attendus',
     );
   }
+  // Titre court au-delà de la borne : omis plutôt que coupé, l'app se
+  // rabat sur le titre (#72).
+  final shortTitle = switch (_clean(json['shortTitle'])) {
+    final t? => _withoutFinalPeriod(t),
+    null => null,
+  };
   return PlainSummary(
-    title: title.endsWith('.') && !title.endsWith('...')
-        ? title.substring(0, title.length - 1)
-        : title,
+    title: _withoutFinalPeriod(title),
+    shortTitle: shortTitle != null && isValidShortTitle(shortTitle)
+        ? shortTitle
+        : null,
     explanation: explanation,
     points: withPoints ? points.take(4).toList() : const [],
     promptVersion: summaryPromptVersion,
@@ -200,3 +207,9 @@ String? _clean(Object? value) {
   final s = value.replaceAll(RegExp(r'\s+'), ' ').trim();
   return s.isEmpty ? null : s;
 }
+
+/// Retire le point final d'un titre (pas des points de suspension).
+String _withoutFinalPeriod(String title) =>
+    title.endsWith('.') && !title.endsWith('...')
+    ? title.substring(0, title.length - 1)
+    : title;

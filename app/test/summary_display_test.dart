@@ -167,4 +167,72 @@ void main() {
       },
     ]);
   });
+
+  group('titre court du résumé (#72)', () {
+    final court = _decision.withSummary(
+      const PlainSummary(
+        title: "Retour de l'âge légal de départ à 62 ans",
+        shortTitle: 'Retraite à 62 ans',
+        explanation: 'Le texte prévoit une mesure.',
+        promptVersion: 2,
+      ),
+    );
+
+    testWidgets('la liste affiche le titre court, le détail le titre', (
+      tester,
+    ) async {
+      final client = MockClient((request) async {
+        final body = request.url.path == '/v1/latest.json'
+            ? DecisionIndex(
+                generatedAt: DateTime.utc(2026, 10, 25),
+                decisions: [court],
+              ).toJson()
+            : DecisionDetail(decision: court).toJson();
+        return http.Response.bytes(utf8.encode(jsonEncode(body)), 200);
+      });
+      await tester.pumpWidget(
+        VoteDuJourApp(
+          repository: DecisionsRepository(
+            baseUrl: 'https://example.test',
+            client: client,
+          ),
+          detailRepository: DecisionDetailRepository(
+            baseUrl: 'https://example.test',
+            client: client,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Retraite à 62 ans'), findsOneWidget);
+      expect(
+        find.text("Retour de l'âge légal de départ à 62 ans"),
+        findsNothing,
+      );
+
+      await tester.tap(find.text('Retraite à 62 ans'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text("Retour de l'âge légal de départ à 62 ans"),
+        findsOneWidget,
+      );
+    });
+
+    test('l\'instantané des widgets porte le titre court, sinon le titre', () {
+      final snapshot = WidgetSnapshot.fromIndex(
+        DecisionIndex(
+          generatedAt: DateTime.utc(2026, 10, 25),
+          decisions: [court, _decision],
+        ),
+        savedAt: DateTime.utc(2026, 10, 25, 9),
+      );
+      final titles = [
+        for (final d in snapshot.toJson()['decisions'] as List)
+          (d as Map)['title'],
+      ];
+      expect(titles, [
+        'Retraite à 62 ans',
+        "Retour de l'âge légal de départ à 62 ans",
+      ]);
+    });
+  });
 }

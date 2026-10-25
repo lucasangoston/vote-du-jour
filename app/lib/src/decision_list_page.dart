@@ -306,7 +306,7 @@ class DecisionRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  capitalize(decision.displayTitle),
+                  capitalize(decision.compactTitle),
                   style: HemicycleText.rowTitle.copyWith(color: colors.ink),
                 ),
                 // Phrase d'explication du résumé (#9), si la décision est

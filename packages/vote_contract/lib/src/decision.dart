@@ -187,6 +187,10 @@ class DecisionSummary {
   /// [officialTitle].
   String get displayTitle => summary?.title ?? shortTitle ?? officialTitle;
 
+  /// Titre des widgets et de la liste : le titre court du résumé
+  /// ([PlainSummary.shortTitle], ticket #72), sinon [displayTitle].
+  String get compactTitle => summary?.shortTitle ?? displayTitle;
+
   /// Phrase d'explication du résumé, si la décision est résumée.
   String? get explanation => summary?.explanation;
 

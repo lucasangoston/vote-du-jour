@@ -219,13 +219,14 @@ sans relecture humaine :
 ```json
 "summary": {
   "title": "Retour de l'âge légal de départ à 62 ans",
+  "shortTitle": "Retraite à 62 ans",
   "explanation": "Le texte prévoit de ramener l'âge légal de départ à la retraite à 62 ans.",
   "points": ["…", "…", "…"],
-  "promptVersion": 1
+  "promptVersion": 2
 }
 ```
 
-- Dans l'index : `title`, `explanation` et `promptVersion` seulement ; dans
+- Dans l'index : `title`, `shortTitle`, `explanation` et `promptVersion` seulement ; dans
   le fichier de détail (`decision.summary`), `points` en plus (3 ou 4 phrases ;
   liste vide quand le résumé ne s'appuie que sur l'intitulé : motion de
   censure, déclaration du Gouvernement, texte introuvable).
@@ -233,6 +234,12 @@ sans relecture humaine :
   (`DecisionSummary.displayTitle` : résumé, sinon `shortTitle`, sinon
   `officialTitle`) ; `explanation` (`DecisionSummary.explanation`) s'affiche
   sous le titre dans la liste et le widget moyen.
+- `shortTitle` (optionnel, #72) : titre de 35 caractères au plus
+  (`shortTitleMaxLength`), pour la liste et les widgets
+  (`DecisionSummary.compactTitle` : `summary.shortTitle`, sinon
+  `displayTitle`). Absent des résumés antérieurs à la version 2 de la
+  consigne ; vide ou trop long, il est ignoré et l'app se rabat sur le titre.
+  À ne pas confondre avec le `shortTitle` de la décision (titre du dossier).
 - Absent tant que la décision n'est pas résumée (texte pas encore en ligne,
   échec du modèle : la décision est « à régénérer » côté job) et dans les
   index plus anciens. Un résumé malformé (titre ou phrase vide, version

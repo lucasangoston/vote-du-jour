@@ -33,6 +33,7 @@ class FakeLlm implements LlmClient {
 
 Map<String, Object?> validResponse({
   String title = 'Titre lisible',
+  String? shortTitle = 'Titre court',
   String explanation = 'Le texte prévoit une mesure.',
   List<String> points = const ['Point un.', 'Point deux.', 'Point trois.'],
   String stopReason = 'end_turn',
@@ -48,6 +49,7 @@ Map<String, Object?> validResponse({
       'type': 'text',
       'text': jsonEncode({
         'title': title,
+        'shortTitle': ?shortTitle,
         'explanation': explanation,
         'points': points,
       }),
@@ -231,6 +233,17 @@ void main() {
       expect(user, contains('Titre du dossier : Titre du dossier'));
     });
 
+    test('la consigne demande un titre court en plus du titre', () {
+      expect(summaryPromptVersion, 2);
+      expect(summarySystemPrompt, contains('shortTitle'));
+      expect(summarySystemPrompt, contains('35 caractères au plus'));
+      expect(summarySystemPrompt, contains('45 caractères au plus'));
+      final properties =
+          summaryOutputSchema['properties'] as Map<String, Object?>;
+      expect(properties.keys, contains('shortTitle'));
+      expect(summaryOutputSchema['required'], contains('shortTitle'));
+    });
+
     test('sans texte : intitulé seul, aucune balise, points vides', () {
       final user = buildSummaryUserMessage(
         decision: _decision(
@@ -253,6 +266,32 @@ void main() {
       expect(s.title, 'Retraite à 62 ans');
       expect(s.points, hasLength(3));
       expect(s.promptVersion, summaryPromptVersion);
+    });
+
+    test('titre court : nettoyé, omis s\'il est absent ou trop long', () {
+      expect(
+        parseSummaryResponse(
+          validResponse(shortTitle: ' Retraite à 62 ans. '),
+          withPoints: true,
+        ).shortTitle,
+        'Retraite à 62 ans',
+      );
+      expect(
+        parseSummaryResponse(
+          validResponse(shortTitle: 'x' * shortTitleMaxLength),
+          withPoints: true,
+        ).shortTitle,
+        hasLength(shortTitleMaxLength),
+      );
+      for (final bad in [null, '  ', 'x' * (shortTitleMaxLength + 1)]) {
+        final s = parseSummaryResponse(
+          validResponse(shortTitle: bad),
+          withPoints: true,
+        );
+        // Le résumé reste valide : l'app se rabat sur le titre.
+        expect(s.shortTitle, isNull, reason: '$bad');
+        expect(s.title, 'Titre lisible');
+      }
     });
 
     test('au-delà de 4 points, les 4 premiers', () {
@@ -334,10 +373,13 @@ void main() {
         'Censure',
       ]);
       expect(index.decisions.first.summary!.points, isEmpty);
+      // Titre court dans l'index et dans le détail (#72).
+      expect(index.decisions.first.summary!.shortTitle, 'Titre court');
       final raw = (await store.read(indexPath))!;
       expect(raw, isNot(contains('Point un.')));
       final detail = await readDetail('VTANR5L17V217');
       expect(detail.decision.summary!.points, hasLength(3));
+      expect(detail.decision.summary!.shortTitle, 'Titre court');
       expect(
         (await readDetail('VTANR5L17V519')).decision.summary!.points,
         isEmpty,
