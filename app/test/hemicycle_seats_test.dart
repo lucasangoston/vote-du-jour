@@ -209,20 +209,20 @@ void main() {
 
   group('sièges sans vote', () {
     test('absents et non-votants comptés, dits en clair', () {
-      expect(noVoteNote(_fixture(8706).seats!), '4 n’ont pas voté');
-      expect(noVoteNote(_fixture(8610).seats!), '236 n’ont pas voté');
+      expect(noVoteNote(_fixture(8706).seats!), '4 absents');
+      expect(noVoteNote(_fixture(8610).seats!), '236 absents');
     });
 
     test('rien quand tout le monde a voté, singulier pour un seul', () {
       const p = HemicycleSeat(place: 1, group: 'PO1', vote: SeatVote.pour);
       const x = HemicycleSeat(place: 2, group: 'PO1', vote: SeatVote.absent);
       expect(noVoteNote([p]), isNull);
-      expect(noVoteNote([p, x]), '1 n’a pas voté');
+      expect(noVoteNote([p, x]), '1 absent');
     });
 
-    testWidgets('le détail dit combien n’ont pas voté', (tester) async {
+    testWidgets('le détail dit combien sont absents', (tester) async {
       await _pumpDetail(tester, _fixture(8610), brightness: Brightness.dark);
-      expect(find.text('236 n’ont pas voté'), findsOneWidget);
+      expect(find.text('236 absents'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
