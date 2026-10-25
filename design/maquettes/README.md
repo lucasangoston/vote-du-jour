@@ -12,3 +12,5 @@ Maquettes HTML statiques, générées à partir de données réelles de l'Assemb
 - `data/seats.json` : place, groupe et vote de chaque député pour 8706 et 8610 (archive AMO `placeHemicycle`, Scrutins.json `numPlace`), produit par `prep_seats.py`.
 
 Régénérer : `node build.mjs`, puis `node shots.mjs` (Chrome requis).
+
+Widgets natifs (#78) : la géométrie de l'hémicycle des widgets iOS et Android est générée depuis `data/an-seats.json` par `app/tool/widget_hemicycle.mjs` (depuis `app/` : `node tool/widget_hemicycle.mjs`).

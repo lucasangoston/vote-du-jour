@@ -1,228 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Aperçu du grand widget dans le sélecteur (Android 12+), avec des exemples
-     (charte Hémicycle, #29). -->
+<!-- Aperçu du grand widget dans le sélecteur (Android 12+), avec un exemple (#78) : la dernière
+     décision en grand, puis la bande du prochain vote. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/decision_widget_preview_background"
-    android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="12dp">
+    android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="6dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingHorizontal="18dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="12dp">
 
-        <!-- Logo Perchoir : arcs couleur encre, demi-disque couleur pour. -->
-        <FrameLayout
-            android:layout_width="22dp"
-            android:layout_height="12dp"
-            android:importantForAccessibility="no">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/decision_widget_preview_hemicycle" />
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_perchoir_arcs"
-                android:tint="@color/decision_widget_primary" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_perchoir_seat"
-                android:tint="@color/decision_widget_pour" />
-        </FrameLayout>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="serif"
+                android:text="Adopté"
+                android:textColor="@color/decision_widget_pour"
+                android:textSize="24sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:importantForAccessibility="no"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/widget_glyph_pour"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="@color/decision_widget_vote_pour"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="503"
+                    android:textColor="@color/decision_widget_pour"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:drawableStart="@drawable/widget_glyph_contre"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="@color/decision_widget_vote_contre"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="0"
+                    android:textColor="@color/decision_widget_contre"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:drawableStart="@drawable/widget_glyph_abstention"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="@color/decision_widget_vote_abstention"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="67"
+                    android:textColor="@color/decision_widget_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:fontFamily="sans-serif-medium"
-            android:text="Dernières décisions"
-            android:textColor="@color/decision_widget_secondary"
-            android:textSize="12sp" />
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:fontFamily="serif"
+            android:maxLines="2"
+            android:text="Juges des violences sexuelles"
+            android:textColor="@color/decision_widget_primary"
+            android:textSize="22sp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:background="@color/decision_widget_raised"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="27dp"
-            android:importantForAccessibility="no"
-            android:scaleType="fitXY"
-            android:src="@drawable/decision_widget_preview_arc_adopte" />
+        android:orientation="horizontal"
+        android:paddingHorizontal="18dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="14dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="40dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:fontFamily="sans-serif-medium"
-                android:maxLines="2"
-                android:text="Juges spécialisés pour les violences sexuelles et intrafamiliales"
-                android:textColor="@color/decision_widget_primary"
-                android:textSize="14sp" />
-
-            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:orientation="horizontal">
+                android:fontFamily="serif"
+                android:text="3"
+                android:textColor="@color/decision_widget_primary"
+                android:textSize="30sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Adopté"
-                    android:textColor="@color/decision_widget_pour"
-                    android:textSize="11.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:text=" · il y a 5 jours"
-                    android:textColor="@color/decision_widget_secondary"
-                    android:textSize="11.5sp" />
-            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="nov."
+                android:textColor="@color/decision_widget_secondary"
+                android:textSize="12sp" />
         </LinearLayout>
-    </LinearLayout>
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/decision_widget_rule"
-        android:importantForAccessibility="no" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="27dp"
-            android:importantForAccessibility="no"
-            android:scaleType="fitXY"
-            android:src="@drawable/decision_widget_preview_arc_rejete" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="14dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:fontFamily="sans-serif-medium"
-                android:maxLines="2"
-                android:text="Réforme de l'espace Schengen et contrôles aux frontières"
-                android:textColor="@color/decision_widget_primary"
-                android:textSize="14sp" />
-
-            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Rejeté"
-                    android:textColor="@color/decision_widget_contre"
-                    android:textSize="11.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:text=" · il y a 10 jours"
-                    android:textColor="@color/decision_widget_secondary"
-                    android:textSize="11.5sp" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/decision_widget_rule"
-        android:importantForAccessibility="no" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="27dp"
-            android:importantForAccessibility="no"
-            android:scaleType="fitXY"
-            android:src="@drawable/decision_widget_preview_arc_main_levee" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
+                android:fontFamily="sans-serif"
+                android:maxLines="1"
+                android:text="Budget de l\'État 2027"
+                android:textColor="@color/decision_widget_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:fontFamily="sans-serif-medium"
-                android:maxLines="2"
-                android:text="Approbation d'un accord d'échange d'informations fiscales"
-                android:textColor="@color/decision_widget_primary"
-                android:textSize="14sp" />
-
-            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Adopté"
-                    android:textColor="@color/decision_widget_pour"
-                    android:textSize="11.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:text=" · à main levée · il y a 11 jours"
-                    android:textColor="@color/decision_widget_secondary"
-                    android:textSize="11.5sp" />
-            </LinearLayout>
+                android:text="Vote · mar. 15 h"
+                android:textColor="@color/decision_widget_secondary"
+                android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

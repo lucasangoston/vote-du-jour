@@ -94,11 +94,8 @@ class UpcomingVoteTest {
   fun libelle_du_jour_a_paris() {
     val plfss = UpcomingVote("a", Instant.parse("2026-10-27T14:00:00Z"), "t")
     assertEquals("mar. 27 oct.", plfss.dayLabel)
-    assertEquals("Prochain vote solennel · mar. 27 oct.", WidgetText.largeUpcomingMeta(plfss))
-    assertEquals(
-        "Prochain vote solennel. Mar. 27 oct. t",
-        WidgetText.upcomingDescription(plfss),
-    )
+    assertEquals("Vote · mar. 15 h", plfss.whenLabel)
+    assertEquals("Prochain vote solennel, mar. 27 oct. à 15 h. t", plfss.accessibilityLabel)
     // 23 h 30 UTC le 30 novembre : déjà le 1er décembre à Paris.
     val late = UpcomingVote("b", Instant.parse("2026-11-30T23:30:00Z"), "t")
     assertEquals("mar. 1er déc.", late.dayLabel)

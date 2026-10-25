@@ -1,27 +1,41 @@
 import SwiftUI
 import UIKit
 
-/// Charte Hémicycle (#29) : couleurs claires et sombres, polices Geist et Geist
-/// Mono embarquées (`Fonts/`, déclarées dans `Info.plist`), arc du vote et logo.
+/// Charte Hémicycle (#29) : couleurs claires et sombres, polices Geist, Geist
+/// Mono et Newsreader embarquées (`Fonts/`, déclarées dans `Info.plist`),
+/// hémicycle, arc du vote et logo.
 enum Palette {
   static let surface = dynamic(light: 0xFFFFFF, dark: 0x191C20)
+  /// Bande du prochain vote du grand widget.
+  static let raised = dynamic(light: 0xE8EAEC, dark: 0x23272C)
   static let ink = dynamic(light: 0x15181C, dark: 0xECEEF0)
   static let ink2 = dynamic(light: 0x4F5761, dark: 0x9AA2AB)
   static let rule = dynamic(light: 0xE2E5E8, dark: 0x2A2F35)
+  /// Texte du résultat et des chiffres du décompte.
   static let pour = dynamic(light: 0x1D6B54, dark: 0x4FB08F)
   static let contre = dynamic(light: 0xB4472B, dark: 0xE07A58)
-  static let abstention = dynamic(light: 0xAEB4BB, dark: 0x4A5058)
+  /// Sièges absents et non-votants, à 28 % d'opacité.
+  static let seatOff = dynamic(light: 0xAEB4BB, dark: 0x4A5058).opacity(0.28)
 
-  static func color(_ tint: VoteArc.Tint) -> Color {
+  /// Couleurs du vote (revue UI/UX, #78) : sièges, arc et symboles du
+  /// décompte. Pour foncé et contre clair de jour, l'inverse de nuit,
+  /// abstention en gris moyen : distincts en deutéranopie simulée, à 3:1 au
+  /// moins contre la surface.
+  static let votePour = dynamic(light: 0x1D6B54, dark: 0x4FB08F)
+  static let voteContre = dynamic(light: 0xE0683A, dark: 0xB5461F)
+  static let voteAbstention = dynamic(light: 0x8D949A, dark: 0x9AA2AB)
+
+  static func vote(_ tint: VoteArc.Tint) -> Color {
     switch tint {
-    case .pour: pour
-    case .contre: contre
-    case .abstention: abstention
+    case .pour: votePour
+    case .contre: voteContre
+    case .abstention: voteAbstention
     }
   }
 
+  /// « Adopté » couleur pour, « Rejeté » couleur contre.
   static func color(_ result: WidgetDecision.Result) -> Color {
-    color(VoteArc.Tint(result: result))
+    result == .adopte ? pour : contre
   }
 
   private static func dynamic(light: UInt32, dark: UInt32) -> Color {
@@ -38,6 +52,12 @@ enum Palette {
   }
 }
 
+/// Instances de Newsreader embarquées.
+enum NewsreaderWeight: String {
+  case medium = "NewsreaderRoman-Medium"
+  case semibold = "NewsreaderRoman-SemiBold"
+}
+
 extension Font {
   /// Geist (titres en semibold, texte en regular), à la taille de la maquette
   /// et suivant la taille de texte du système.
@@ -47,9 +67,60 @@ extension Font {
     .custom(semibold ? "Geist-SemiBold" : "Geist-Regular", size: size, relativeTo: style)
   }
 
-  /// Geist Mono, pour les chiffres du décompte.
-  static func geistMono(_ size: CGFloat, relativeTo style: TextStyle = .caption2) -> Font {
-    .custom("GeistMono-Regular", size: size, relativeTo: style)
+  /// Geist en graisse moyenne (titre du petit widget, chiffres du décompte).
+  static func geistMedium(_ size: CGFloat, relativeTo style: TextStyle = .body) -> Font {
+    .custom("Geist-Medium", size: size, relativeTo: style)
+  }
+
+  /// Newsreader (police variable, instance nommée par son nom PostScript),
+  /// pour le résultat, les titres des widgets moyen et grand et le jour du
+  /// prochain vote (#78).
+  static func newsreader(
+    _ size: CGFloat, weight: NewsreaderWeight = .semibold, relativeTo style: TextStyle = .title3
+  ) -> Font {
+    .custom(weight.rawValue, size: size, relativeTo: style)
+  }
+}
+
+/// Typographie des widgets, en un seul endroit (#78) : polices, graisses et
+/// tailles des titres. Une autre charte ne change que ces valeurs.
+enum WidgetTheme {
+  /// Mot du résultat (« Adopté ») : petit et moyen, grand.
+  static let resultSize: CGFloat = 20
+  static let largeResultSize: CGFloat = 24
+  /// Titres courts : petit widget (Geist), moyen et grand (Newsreader).
+  static let smallTitleSize: CGFloat = 14
+  static let mediumTitleSize: CGFloat = 19
+  static let largeTitleSize: CGFloat = 22
+  /// Jour du prochain vote : petit et moyen, bande du grand.
+  static let daySize: CGFloat = 40
+  static let bandDaySize: CGFloat = 30
+  /// Lignes secondaires (« Vote · mar. 15 h », date, mois).
+  static let metaSize: CGFloat = 13
+  static let monthSize: CGFloat = 12
+  /// Rétrécissement toléré des titres aux grandes tailles de texte.
+  static let minimumScale: CGFloat = 0.8
+
+  /// Mot du résultat et titres des widgets moyen et grand.
+  static func display(_ size: CGFloat, relativeTo style: Font.TextStyle = .title3) -> Font {
+    .newsreader(size, relativeTo: style)
+  }
+
+  /// Jour du prochain vote.
+  static func day(_ size: CGFloat) -> Font {
+    .newsreader(size, weight: .medium, relativeTo: .largeTitle)
+  }
+
+  /// Titre court du petit widget et de la bande du prochain vote.
+  static func title(_ size: CGFloat, semibold: Bool = false) -> Font {
+    semibold
+      ? .geist(size, semibold: true, relativeTo: .subheadline)
+      : .geistMedium(size, relativeTo: .subheadline)
+  }
+
+  /// Lignes secondaires.
+  static func meta(_ size: CGFloat = metaSize) -> Font {
+    .geist(size, relativeTo: .footnote)
   }
 }
 
@@ -139,18 +210,18 @@ struct VoteArcView: View {
     ZStack {
       switch VoteArc(decision: decision) {
       case .solid(let tint):
-        ArcBand(lineWidth: lineWidth).fill(Palette.color(tint))
+        ArcBand(lineWidth: lineWidth).fill(Palette.vote(tint))
       case .dotted(let tint):
         // Pointillés ronds : environ trois quarts de l'épaisseur pleine, neuf
         // points sur le demi-cercle (maquette : 12 pour 16, tous les 19,6).
         ArcDots(radius: 50, diameter: lineWidth * 0.75, spacing: 19.6)
-          .fill(Palette.color(tint))
+          .fill(Palette.vote(tint))
       case .segments(let segments):
         // Du dernier au premier, chacun depuis le début de l'arc : pas de
         // jour entre deux tronçons.
         ForEach(Array(segments.enumerated().reversed()), id: \.offset) { _, segment in
           ArcBand(lineWidth: lineWidth, from: 0, to: segment.to)
-            .fill(Palette.color(segment.tint))
+            .fill(Palette.vote(segment.tint))
         }
       }
     }
@@ -163,6 +234,143 @@ struct VoteArcView: View {
     if decision.isMainLevee { return "Vote à main levée" }
     guard let count = decision.count else { return decision.result.label }
     return "\(count.pour) pour, \(count.contre) contre, \(count.abstentions) abstentions"
+  }
+}
+
+/// Hémicycle d'une décision (#78) : chaque place du plan de l'Assemblée,
+/// colorée par le vote de son député. Sans sièges, l'arc du vote.
+struct DecisionHemicycleView: View {
+  let decision: WidgetDecision
+  /// Épaisseur de l'arc de repli, dans le repère 120 × 66.
+  var arcLineWidth: CGFloat = 16
+
+  var body: some View {
+    if let seats = decision.seats {
+      HemicycleSeatsView(layout: HemicycleLayout(votes: seats))
+    } else {
+      VoteArcView(decision: decision, lineWidth: arcLineWidth)
+    }
+  }
+}
+
+/// Les sièges, un calque par apparence : estompés dessous, puis pour, contre
+/// et abstention (en plus petit).
+struct HemicycleSeatsView: View {
+  let layout: HemicycleLayout
+
+  var body: some View {
+    ZStack {
+      SeatDots(points: layout.dots[.off] ?? []).fill(Palette.seatOff)
+      SeatDots(points: layout.dots[.pour] ?? []).fill(Palette.votePour)
+      SeatDots(points: layout.dots[.contre] ?? []).fill(Palette.voteContre)
+      SeatDots(points: layout.dots[.abstention] ?? [], radiusScale: 0.5)
+        .fill(Palette.voteAbstention)
+    }
+    .aspectRatio(
+      HemicycleGeometry.viewBox.width / HemicycleGeometry.viewBox.height, contentMode: .fit
+    )
+    // Décrit par le widget (résultat, titre, totaux).
+    .accessibilityHidden(true)
+  }
+}
+
+/// Sièges ronds aux centres `points` (repère `HemicycleGeometry`), à l'échelle
+/// du cadre et centrés.
+private struct SeatDots: Shape {
+  let points: [HemicycleLayout.Point]
+  var radiusScale: Double = 1
+
+  func path(in rect: CGRect) -> Path {
+    let box = HemicycleGeometry.viewBox
+    let s = min(rect.width / box.width, rect.height / box.height)
+    let dx = rect.midX - (box.x + box.width / 2) * s
+    let dy = rect.midY - (box.y + box.height / 2) * s
+    let r = HemicycleGeometry.seatRadius * radiusScale * s
+    var path = Path()
+    for p in points {
+      path.addEllipse(in: CGRect(x: p.x * s + dx - r, y: p.y * s + dy - r, width: 2 * r, height: 2 * r))
+    }
+    return path
+  }
+}
+
+/// Arc vide du prochain vote : deux bandes couleur filet (maquette : viewBox
+/// 300 × 162, rayons 128 et 98, épaisseur 18).
+struct EmptyArcView: View {
+  var body: some View {
+    EmptyArc()
+      .fill(Palette.rule)
+      .aspectRatio(300 / 162, contentMode: .fit)
+      .accessibilityHidden(true)
+  }
+
+  private struct EmptyArc: Shape {
+    func path(in rect: CGRect) -> Path {
+      let s = min(rect.width / 300, rect.height / 162)
+      let origin = CGPoint(x: rect.midX - 150 * s, y: rect.midY - 81 * s)
+      var bands = Path()
+      for radius: CGFloat in [128, 98] {
+        var arc = Path()
+        arc.addArc(
+          center: CGPoint(x: origin.x + 150 * s, y: origin.y + 150 * s), radius: radius * s,
+          startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
+        bands.addPath(arc.strokedPath(StrokeStyle(lineWidth: 18 * s, lineCap: .butt)))
+      }
+      return bands
+    }
+  }
+}
+
+/// Décompte sans mots : la forme dit le vote (rond plein pour, anneau contre,
+/// petit point abstention), dans la couleur du vote ; le chiffre suit, dans
+/// la couleur de texte habituelle.
+struct TallyView: View {
+  let count: VoteCount
+  var size: CGFloat = 13
+
+  var body: some View {
+    HStack(spacing: 10) {
+      item(.pour, count.pour, Palette.pour)
+      item(.contre, count.contre, Palette.contre)
+      item(.abstention, count.abstentions, Palette.ink2)
+    }
+    .font(.geistMedium(size, relativeTo: .footnote))
+    .monospacedDigit()
+    .lineLimit(1)
+    .minimumScaleFactor(0.8)
+    .accessibilityElement()
+    .accessibilityLabel(
+      "\(count.pour) pour, \(count.contre) contre, \(count.abstentions) abstentions")
+  }
+
+  private func item(_ tint: VoteArc.Tint, _ n: Int, _ color: Color) -> some View {
+    HStack(spacing: 4) {
+      Glyph(tint: tint).frame(width: size * 0.9, height: size * 0.9)
+      Text("\(n)").foregroundStyle(color)
+    }
+  }
+
+  /// Glyphes de la maquette (cadre de 12) : rond de rayon 5, anneau de rayon 4
+  /// et d'épaisseur 2, point de rayon 2,2.
+  private struct Glyph: View {
+    let tint: VoteArc.Tint
+
+    var body: some View {
+      GeometryReader { proxy in
+        let unit = min(proxy.size.width, proxy.size.height) / 12
+        ZStack {
+          switch tint {
+          case .pour: Circle().fill(Palette.votePour).frame(width: 10 * unit, height: 10 * unit)
+          case .contre:
+            Circle().stroke(Palette.voteContre, lineWidth: 2 * unit)
+              .frame(width: 8 * unit, height: 8 * unit)
+          case .abstention:
+            Circle().fill(Palette.voteAbstention).frame(width: 4.4 * unit, height: 4.4 * unit)
+          }
+        }
+        .frame(width: proxy.size.width, height: proxy.size.height)
+      }
+    }
   }
 }
 

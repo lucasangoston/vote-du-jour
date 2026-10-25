@@ -18,9 +18,21 @@ enum DecisionFetcher {
   static let freshness: TimeInterval = 15 * 60
 
   static func indexURL(baseURL: String) -> URL? {
+    URL(string: "\(trimmed(baseURL))/v1/latest.json")
+  }
+
+  /// Fichier de détail d'une décision (`v1/decisions/<id>.json`), pour ses sièges.
+  static func detailURL(baseURL: String, id: String) -> URL? {
+    guard let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+      return nil
+    }
+    return URL(string: "\(trimmed(baseURL))/v1/decisions/\(encoded).json")
+  }
+
+  private static func trimmed(_ baseURL: String) -> String {
     var base = baseURL
     while base.hasSuffix("/") { base.removeLast() }
-    return URL(string: "\(base)/v1/latest.json")
+    return base
   }
 
   static func refreshIfNeeded(now: Date = .now) async {
@@ -32,17 +44,41 @@ enum DecisionFetcher {
     }
     let baseURL = defaults.string(forKey: baseURLKey).flatMap { $0.isEmpty ? nil : $0 }
     guard let url = indexURL(baseURL: baseURL ?? defaultBaseURL) else { return }
-    let request = URLRequest(
-      url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 15)
     do {
-      let (data, response) = try await URLSession.shared.data(for: request)
-      guard (response as? HTTPURLResponse)?.statusCode == 200,
-        let snapshot = SnapshotConverter.snapshot(fromIndex: data, savedAt: now)
+      guard let data = try await download(url) else { return }
+      // Sièges de la dernière décision (#78), seule dessinée en hémicycle :
+      // ceux de l'instantané précédent pour la même décision, sinon ceux de
+      // son fichier de détail (un téléchargement par nouvelle décision).
+      var seats: [String: SeatVotes] = [:]
+      if let id = SnapshotConverter.latestDecisionId(fromIndex: data) {
+        var found = DecisionSnapshot.load()?.decisions.first { $0.id == id }?.seats
+        if found == nil { found = await detailSeats(id: id, baseURL: baseURL ?? defaultBaseURL) }
+        seats[id] = found
+      }
+      guard
+        let snapshot = SnapshotConverter.snapshot(fromIndex: data, savedAt: now, seats: seats)
       else { return }
       defaults.set(snapshot, forKey: DecisionSnapshot.storageKey)
     } catch {
       // Hors ligne : on garde l'instantané précédent.
     }
+  }
+
+  /// Corps d'une réponse 200, sinon `nil`.
+  private static func download(_ url: URL) async throws -> Data? {
+    let request = URLRequest(
+      url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 15)
+    let (data, response) = try await URLSession.shared.data(for: request)
+    return (response as? HTTPURLResponse)?.statusCode == 200 ? data : nil
+  }
+
+  /// Sièges du fichier de détail ; `nil` en cas d'échec : le widget dessine
+  /// l'arc.
+  private static func detailSeats(id: String, baseURL: String) async -> SeatVotes? {
+    guard let url = detailURL(baseURL: baseURL, id: id),
+      let data = try? await download(url)
+    else { return nil }
+    return SeatVotes.fromDetail(data, id: id)
   }
 
   private static func savedAt(of snapshot: String?) -> Date? {
@@ -76,13 +112,19 @@ enum SnapshotConverter {
   private static let provisionalLabel = "provisoire"
 
   /// Instantané JSON, ou `nil` si l'index est illisible ou d'une autre version.
-  static func snapshot(fromIndex data: Data, savedAt: Date) -> String? {
-    guard
-      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-      root["schemaVersion"] as? Int == 1,
-      let items = root["decisions"] as? [Any]
-    else { return nil }
+  /// `seats` donne les sièges de l'hémicycle (#78) des décisions qui en ont,
+  /// par identifiant.
+  static func snapshot(
+    fromIndex data: Data, savedAt: Date, seats: [String: SeatVotes] = [:]
+  ) -> String? {
+    guard let (root, items) = index(data) else { return nil }
     let decisions = items.lazy.compactMap { ($0 as? [String: Any]).flatMap(convert) }.prefix(3)
+      .map { decision -> [String: Any] in
+        guard let id = decision["id"] as? String, let votes = seats[id] else { return decision }
+        var out = decision
+        out["seats"] = votes.encoded
+        return out
+      }
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     var snapshot: [String: Any] = [
@@ -103,6 +145,23 @@ enum SnapshotConverter {
     }
     guard let json = try? JSONSerialization.data(withJSONObject: snapshot) else { return nil }
     return String(data: json, encoding: .utf8)
+  }
+
+  /// Identifiant de la décision la plus récente que les widgets afficheront,
+  /// `nil` si l'index est illisible ou n'en a pas.
+  static func latestDecisionId(fromIndex data: Data) -> String? {
+    guard let (_, items) = index(data) else { return nil }
+    return items.lazy.compactMap { ($0 as? [String: Any]).flatMap(convert) }.first?["id"]
+      as? String
+  }
+
+  private static func index(_ data: Data) -> ([String: Any], [Any])? {
+    guard
+      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+      root["schemaVersion"] as? Int == 1,
+      let items = root["decisions"] as? [Any]
+    else { return nil }
+    return (root, items)
   }
 
   /// Vote solennel du bloc `upcoming`, mêmes règles que

@@ -39,6 +39,21 @@ data class UpcomingVote(
   val monthLabel: String
     get() = MONTHS[day.monthValue - 1]
 
+  /** Heure de la séance à Paris : « 15 h », « 21 h 30 ». */
+  val timeLabel: String
+    get() {
+      val time = startsAt.atZone(PARIS)
+      return if (time.minute == 0) "${time.hour} h" else "${time.hour} h %02d".format(time.minute)
+    }
+
+  /** « Vote · mar. 15 h », sous le jour des widgets (#78). */
+  val whenLabel: String
+    get() = "Vote · $weekdayLabel $timeLabel"
+
+  /** Lecture d'écran : « Prochain vote solennel, mar. 3 nov. à 15 h. Budget de l'État 2027 ». */
+  val accessibilityLabel: String
+    get() = "Prochain vote solennel, $dayLabel à $timeLabel. $title"
+
   fun toJson(): JSONObject =
       JSONObject().put("id", id).put("startsAt", startsAt.toString()).put("title", title)
 
@@ -48,7 +63,8 @@ data class UpcomingVote(
 
     private val PARIS: ZoneId = ZoneId.of("Europe/Paris")
     private val WEEKDAYS = listOf("lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim.")
-    private val MONTHS =
+    /** Mois abrégés, de janvier à décembre. */
+    val MONTHS =
         listOf(
             "janv.",
             "févr.",

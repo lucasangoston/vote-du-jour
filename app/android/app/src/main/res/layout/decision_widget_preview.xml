@@ -1,81 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Aperçu du widget moyen dans le sélecteur (Android 12+), avec un exemple
-     (charte Hémicycle, #29). -->
+<!-- Aperçu du widget moyen dans le sélecteur (Android 12+), avec un exemple (#78) : hémicycle et
+     décompte à gauche, résultat, titre court et date à droite. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/decision_widget_preview_background"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="14dp">
-
-    <LinearLayout
-        android:layout_width="92dp"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <ImageView
-            android:layout_width="92dp"
-            android:layout_height="51dp"
-            android:importantForAccessibility="no"
-            android:scaleType="fitXY"
-            android:src="@drawable/decision_widget_preview_arc_adopte" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Adopté"
-            android:textColor="@color/decision_widget_pour"
-            android:textSize="13sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="monospace"
-            android:text="503 · 0 · 67"
-            android:textColor="@color/decision_widget_secondary"
-            android:textSize="10.5sp" />
-    </LinearLayout>
+    android:padding="14dp">
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="46"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/decision_widget_preview_hemicycle" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:importantForAccessibility="no"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/widget_glyph_pour"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/decision_widget_vote_pour"
+                android:fontFamily="sans-serif-medium"
+                android:text="503"
+                android:textColor="@color/decision_widget_pour"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:drawableStart="@drawable/widget_glyph_contre"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/decision_widget_vote_contre"
+                android:fontFamily="sans-serif-medium"
+                android:text="0"
+                android:textColor="@color/decision_widget_contre"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:drawableStart="@drawable/widget_glyph_abstention"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/decision_widget_vote_abstention"
+                android:fontFamily="sans-serif-medium"
+                android:text="67"
+                android:textColor="@color/decision_widget_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_marginStart="14dp"
-        android:layout_weight="1"
+        android:layout_weight="54"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:text="1re lecture à l'AN · il y a 5 jours"
-            android:textColor="@color/decision_widget_secondary"
-            android:textSize="11.5sp" />
+            android:fontFamily="serif"
+            android:text="Adopté"
+            android:textColor="@color/decision_widget_pour"
+            android:textSize="20sp" />
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1"
             android:ellipsize="end"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="2"
-            android:text="Juges spécialisés pour les violences sexuelles et intrafamiliales"
+            android:fontFamily="serif"
+            android:maxLines="3"
+            android:text="Juges des violences sexuelles"
             android:textColor="@color/decision_widget_primary"
-            android:textSize="14.5sp" />
+            android:textSize="19sp" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:text="Le texte prévoit une formation obligatoire pour les magistrats chargés des violences sexuelles et intrafamiliales."
+            android:text="13 oct."
             android:textColor="@color/decision_widget_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
     </LinearLayout>
 </LinearLayout>

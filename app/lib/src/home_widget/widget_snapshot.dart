@@ -30,7 +30,8 @@ import '../vote_mode_label.dart';
 ///         {"position": "abstention", "n": 1},
 ///         {"position": "pour", "n": 121}
 ///       ],
-///       "voteMode": "scrutin_public"
+///       "voteMode": "scrutin_public",
+///       "seats": "ppp-ppa…"
 ///     }
 ///   ],
 ///   "upcomingVotes": [
@@ -52,11 +53,15 @@ class WidgetSnapshot {
   /// Construit l'instantané à partir de l'index publié : les [maxDecisions]
   /// plus récentes (le grand widget en affichera trois) et les
   /// [maxUpcomingVotes] prochains votes solennels de l'ordre du jour (#56).
+  ///
+  /// [seats] donne, par identifiant, les sièges de l'hémicycle (#78) des
+  /// décisions qui en ont, déjà au format de l'instantané ([encodeSeatVotes]).
   factory WidgetSnapshot.fromIndex(
     DecisionIndex index, {
     required DateTime savedAt,
     int maxDecisions = 3,
     int maxUpcomingVotes = 3,
+    Map<String, String> seats = const {},
   }) {
     final votes = [
       for (final u in index.upcoming ?? const <UpcomingItem>[])
@@ -66,7 +71,7 @@ class WidgetSnapshot {
       savedAt: savedAt,
       decisions: [
         for (final d in index.decisions.take(maxDecisions))
-          WidgetDecision.fromSummary(d),
+          WidgetDecision.fromSummary(d, seats: seats[d.id]),
       ],
       upcomingVotes: [
         for (final u in votes.take(maxUpcomingVotes))
@@ -118,6 +123,10 @@ class WidgetSnapshot {
       ],
     );
   }
+
+  /// Sièges de la décision [id] dans cet instantané, s'il les porte.
+  String? seatsOf(String id) =>
+      decisions.where((d) => d.id == id).firstOrNull?.seats;
 
   Map<String, Object?> toJson() => {
     'version': version,
@@ -185,26 +194,29 @@ class WidgetDecision {
     this.count,
     this.voteMode,
     this.arc,
+    this.seats,
   });
 
   /// Les mentions « à main levée » et « provisoire » sont ajoutées à l'étape,
   /// que les widgets antérieurs à #29 affichent déjà ; [voteMode], [count] et
   /// [arc] servent à dessiner l'arc du vote.
-  factory WidgetDecision.fromSummary(DecisionSummary d) => WidgetDecision(
-    id: d.id,
-    result: d.result,
-    date: d.date,
-    title: _capitalize(d.compactTitle.trim()),
-    stage: _stageWith(d.stage, [
-      ?voteModeLabel(d.voteMode),
-      ?statusLabel(d.status),
-    ]),
-    // Phrase du résumé (#9), affichée par le widget moyen.
-    explanation: d.explanation?.trim(),
-    count: d.count,
-    voteMode: d.voteMode,
-    arc: d.arc,
-  );
+  factory WidgetDecision.fromSummary(DecisionSummary d, {String? seats}) =>
+      WidgetDecision(
+        id: d.id,
+        result: d.result,
+        date: d.date,
+        title: _capitalize(d.compactTitle.trim()),
+        stage: _stageWith(d.stage, [
+          ?voteModeLabel(d.voteMode),
+          ?statusLabel(d.status),
+        ]),
+        // Phrase du résumé (#9), affichée par le widget moyen.
+        explanation: d.explanation?.trim(),
+        count: d.count,
+        voteMode: d.voteMode,
+        arc: d.arc,
+        seats: seats,
+      );
 
   /// Identifiant de la décision (deep link vers le détail) : celui du
   /// scrutin, ou de l'acte de décision pour un vote à main levée.
@@ -244,6 +256,11 @@ class WidgetDecision {
   /// sens à partir de [count].
   final List<HemicycleSegment>? arc;
 
+  /// Vote de chaque place de l'hémicycle (#78), au format de
+  /// [encodeSeatVotes]. Absent (décision provisoire, à main levée, détail pas
+  /// encore lu) : les widgets dessinent l'arc.
+  final String? seats;
+
   static WidgetDecision? tryFromJson(Map<String, Object?> json) {
     final id = json['id'];
     final result = VoteResult.tryParse(json['result']);
@@ -264,6 +281,7 @@ class WidgetDecision {
       count: VoteTally.tryFromJson(json['count']),
       voteMode: VoteMode.tryParse(json['voteMode']),
       arc: HemicycleSegment.tryParseList(json['arc']),
+      seats: isSeatVotes(json['seats']) ? json['seats'] as String : null,
     );
   }
 
@@ -277,8 +295,30 @@ class WidgetDecision {
     'count': ?count?.toJson(),
     'arc': ?arc?.map((s) => s.toJson()).toList(),
     'voteMode': ?voteMode?.json,
+    'seats': ?seats,
   };
 }
+
+/// Sièges de l'hémicycle au format de l'instantané (#78) : le caractère de
+/// rang `i` est le vote de la place `i + 1` (lettre de [SeatVote.json]), `-`
+/// pour une place sans député. Les widgets colorent chaque siège par son vote.
+String encodeSeatVotes(List<HemicycleSeat> seats) {
+  final byPlace = {for (final s in seats) s.place: s.vote.json};
+  final last = byPlace.keys.fold(0, (a, b) => a > b ? a : b);
+  return [for (var p = 1; p <= last; p++) byPlace[p] ?? '-'].join();
+}
+
+/// Plus que les 650 numéros de place du plan de l'hémicycle.
+const _maxSeatPlaces = 1000;
+
+final _seatVotes = RegExp('^[pcanx-]+\$');
+
+/// Vrai pour des sièges lisibles par les widgets (au moins un siège).
+bool isSeatVotes(Object? value) =>
+    value is String &&
+    value.length <= _maxSeatPlaces &&
+    _seatVotes.hasMatch(value) &&
+    value.contains(RegExp('[^-]'));
 
 /// « 1re lecture à l'AN · provisoire » ; sans étape, « Provisoire ».
 String? _stageWith(String? stage, List<String> mentions) {

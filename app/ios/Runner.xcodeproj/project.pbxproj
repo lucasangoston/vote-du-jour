@@ -38,6 +38,14 @@
 		A12E0C0F1A2B3C4D5E6F701F /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */; };
 		A12E0C0F1A2B3C4D5E6F7021 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7020 /* PrivacyInfo.xcprivacy */; };
 		A12E0C0F1A2B3C4D5E6F7023 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7022 /* PrivacyInfo.xcprivacy */; };
+		A12E0C0F1A2B3C4D5E6F7031 /* HemicycleSeats.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7030 /* HemicycleSeats.swift */; };
+		A12E0C0F1A2B3C4D5E6F7032 /* HemicycleSeats.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7030 /* HemicycleSeats.swift */; };
+		A12E0C0F1A2B3C4D5E6F7034 /* HemicycleGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7033 /* HemicycleGeometry.swift */; };
+		A12E0C0F1A2B3C4D5E6F7035 /* HemicycleGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7033 /* HemicycleGeometry.swift */; };
+		A12E0C0F1A2B3C4D5E6F7037 /* HemicycleSeatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7036 /* HemicycleSeatsTests.swift */; };
+		A12E0C0F1A2B3C4D5E6F7039 /* Geist-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F7038 /* Geist-Medium.ttf */; };
+		A12E0C0F1A2B3C4D5E6F703B /* Newsreader.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F703A /* Newsreader.ttf */; };
+		A12E0C0F1A2B3C4D5E6F703D /* Newsreader-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A12E0C0F1A2B3C4D5E6F703C /* Newsreader-OFL.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,6 +128,12 @@
 		A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		A12E0C0F1A2B3C4D5E6F7020 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A12E0C0F1A2B3C4D5E6F7022 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7030 /* HemicycleSeats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HemicycleSeats.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7033 /* HemicycleGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HemicycleGeometry.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7036 /* HemicycleSeatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HemicycleSeatsTests.swift; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F7038 /* Geist-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Geist-Medium.ttf"; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F703A /* Newsreader.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Newsreader.ttf; sourceTree = "<group>"; };
+		A12E0C0F1A2B3C4D5E6F703C /* Newsreader-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Newsreader-OFL.txt"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +162,7 @@
 				A12E0C0F1A2B3C4D5E6F7006 /* RelativeDateTests.swift */,
 				A12E0C0F1A2B3C4D5E6F700C /* SnapshotConverterTests.swift */,
 				A12E0C0F1A2B3C4D5E6F7015 /* VoteArcTests.swift */,
+				A12E0C0F1A2B3C4D5E6F7036 /* HemicycleSeatsTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -162,6 +177,8 @@
 				A12E0C0F1A2B3C4D5E6F7008 /* DecisionTimeline.swift */,
 				A12E0C0F1A2B3C4D5E6F7010 /* VoteArc.swift */,
 				A12E0C0F1A2B3C4D5E6F7013 /* HemicycleViews.swift */,
+				A12E0C0F1A2B3C4D5E6F7030 /* HemicycleSeats.swift */,
+				A12E0C0F1A2B3C4D5E6F7033 /* HemicycleGeometry.swift */,
 				A12E0C0F1A2B3C4D5E6F7017 /* Fonts */,
 				2D84410258265CFF9C57F2CA /* Info.plist */,
 				DD45EEFB39A6CDC5893A2728 /* DecisionWidget.entitlements */,
@@ -230,6 +247,9 @@
 				A12E0C0F1A2B3C4D5E6F701A /* Geist-SemiBold.ttf */,
 				A12E0C0F1A2B3C4D5E6F701C /* GeistMono-Regular.ttf */,
 				A12E0C0F1A2B3C4D5E6F701E /* OFL.txt */,
+				A12E0C0F1A2B3C4D5E6F7038 /* Geist-Medium.ttf */,
+				A12E0C0F1A2B3C4D5E6F703A /* Newsreader.ttf */,
+				A12E0C0F1A2B3C4D5E6F703C /* Newsreader-OFL.txt */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -368,6 +388,9 @@
 				A12E0C0F1A2B3C4D5E6F701B /* Geist-SemiBold.ttf in Resources */,
 				A12E0C0F1A2B3C4D5E6F701D /* GeistMono-Regular.ttf in Resources */,
 				A12E0C0F1A2B3C4D5E6F701F /* OFL.txt in Resources */,
+				A12E0C0F1A2B3C4D5E6F7039 /* Geist-Medium.ttf in Resources */,
+				A12E0C0F1A2B3C4D5E6F703B /* Newsreader.ttf in Resources */,
+				A12E0C0F1A2B3C4D5E6F703D /* Newsreader-OFL.txt in Resources */,
 				A12E0C0F1A2B3C4D5E6F7023 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -421,6 +444,9 @@
 				A12E0C0F1A2B3C4D5E6F700D /* SnapshotConverterTests.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F7012 /* VoteArc.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F7016 /* VoteArcTests.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7032 /* HemicycleSeats.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7035 /* HemicycleGeometry.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7037 /* HemicycleSeatsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -445,6 +471,8 @@
 				A12E0C0F1A2B3C4D5E6F7009 /* DecisionTimeline.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F7011 /* VoteArc.swift in Sources */,
 				A12E0C0F1A2B3C4D5E6F7014 /* HemicycleViews.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7031 /* HemicycleSeats.swift in Sources */,
+				A12E0C0F1A2B3C4D5E6F7034 /* HemicycleGeometry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
