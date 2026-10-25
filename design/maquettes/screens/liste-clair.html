@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Le Perchoir, toutes les décisions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+<script>try{const t=localStorage.getItem('perchoir-apparence');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(t==='auto')document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){}</script>
+<style>
+/* Le Perchoir — charte « Hémicycle » (gardée telle quelle), règles tasteskill v2.
+   Une seule échelle : 13 · 15 · 16 · 24/28 (titres) · 30 (date du jour) · 72 (chiffre du creux). */
+:root, :root[data-theme="light"] {
+  --ground: #F3F4F5; --surface: #FFFFFF; --raised: #E8EAEC;
+  --ink: #15181C; --ink2: #4F5761; --body: #2E343B; --rule: #E2E5E8;
+  --pour: #1D6B54; --contre: #B4472B; --abst: #AEB4BB;
+  --pour-ink: #1D6B54; --contre-ink: #B4472B;
+  --logo-bg: #F3F4F5;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ground: #0F1113; --surface: #191C20; --raised: #23272C;
+  --ink: #ECEEF0; --ink2: #9AA2AB; --body: #C9CED3; --rule: #2A2F35;
+  --pour: #4FB08F; --contre: #E07A58; --abst: #4A5058;
+  --pour-ink: #4FB08F; --contre-ink: #E07A58;
+  --logo-bg: #FFFFFF;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #0F1113; --surface: #191C20; --raised: #23272C;
+  --ink: #ECEEF0; --ink2: #9AA2AB; --body: #C9CED3; --rule: #2A2F35;
+  --pour: #4FB08F; --contre: #E07A58; --abst: #4A5058; --logo-bg: #FFFFFF;
+} }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 400 16px/1.5 "Geist", system-ui, sans-serif; font-kerning: normal; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, p, ul, dl, dd { margin: 0; padding: 0; }
+ul { list-style: none; }
+.serif { font-family: "Newsreader", Georgia, serif; font-optical-sizing: auto; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 6px; }
+
+/* couleurs des marques (classes partagées par les SVG) */
+.k-ink { stroke: var(--ink); } .k-ink2 { stroke: var(--ink2); } .k-rule { stroke: var(--rule); }
+.k-pour { stroke: var(--pour); } .k-contre { stroke: var(--contre); } .k-abst { stroke: var(--abst); }
+.f-pour { fill: var(--pour); } .f-contre { fill: var(--contre); } .f-abst { fill: var(--abst); }
+.ring { fill: none; stroke: var(--contre); stroke-width: 2.4; }
+.seat.s-pour { fill: var(--pour); } .seat.s-contre { fill: var(--contre); } .seat.s-abst { fill: var(--abst); }
+.r-adopte, .r-pour, .t-pour { color: var(--pour-ink); } .r-rejete, .r-contre, .t-contre { color: var(--contre-ink); }
+.r-abst, .t-abst { color: var(--ink2); }
+
+/* écran : colonne de téléphone ; sur tablette et bureau, une colonne de lecture centrée */
+.screen { width: 100%; max-width: 640px; margin: 0 auto; padding: 52px 20px 32px; }
+.bar { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin: 0 -10px 0 0; gap: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; min-height: 44px; }
+.acts { display: flex; }
+.ib { width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, transform .1s; }
+.ib:hover { background: var(--raised); } .ib:active { transform: scale(.94); }
+.ib.back { margin-left: -12px; }
+.ib-space { width: 44px; }
+.bar-title { font-size: 15px; font-weight: 500; color: var(--ink2); }
+.source { margin-top: 28px; font-size: 13px; line-height: 1.5; color: var(--ink2); }
+
+/* ---------- Accueil ---------- */
+.home { padding-bottom: 24px; max-width: none; }
+.home .bar, .home .day, .home .pager, .home .primary { max-width: 1400px; margin-left: auto; margin-right: auto; }
+.home .bar { margin-right: auto; padding-right: 0; }
+.day { margin-top: 10px; font-size: 30px; font-weight: 600; line-height: 1.08; letter-spacing: -0.015em; text-wrap: balance; max-width: 15ch; }
+.deck { display: flex; gap: 12px; margin: 22px -20px 0; padding: 0 20px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 20px; scrollbar-width: none; }
+.deck::-webkit-scrollbar { display: none; }
+.card { flex: 0 0 100%; scroll-snap-align: start; display: flex; flex-direction: column; }
+/* l'onglet du dossier : la carte est une chemise du feuilleton, sa languette dit ce qu'elle contient */
+.tab { align-self: flex-start; height: 30px; padding: 7px 18px 0; font-size: 13px; font-weight: 600; background: var(--surface); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%); border-radius: 0; margin-bottom: -1px; }
+.tab-c .tab { align-self: center; } .tab-r .tab { align-self: flex-end; margin-right: 22px; } .tab-l .tab { margin-left: 22px; }
+.k-adopte .tab { color: var(--pour-ink); } .k-rejete .tab { color: var(--contre-ink); }
+.sheet { flex: 1; display: flex; flex-direction: column; background: var(--surface); border-radius: 22px; overflow: hidden; transition: transform .2s ease; }
+.sheet:active { transform: scale(.985); }
+.figure { position: relative; padding-top: 14px !important; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 16px 10px; }
+.fig-arc { width: 100%; max-width: 300px; display: block; }
+.figure .hemi { width: 100%; max-width: 300px; display: block; }
+.hollow { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.big { font-family: "Newsreader", Georgia, serif; font-size: 72px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
+.of { margin-top: 6px; font-size: 15px; color: var(--ink2); }
+.res .word { font-family: "Newsreader", Georgia, serif; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+.res.adopte .word { color: var(--pour-ink); } .res.rejete .word { color: var(--contre-ink); }
+.tally { display: flex; gap: 14px; margin-top: 10px; font-size: 13px; font-weight: 500; }
+.tally .t-abst { color: var(--ink2); }
+.text { padding: 18px 22px 22px; display: flex; flex-direction: column; flex: 1; }
+.text h2 { font-size: 26px; font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; }
+.text .meta { margin-top: 10px; font-size: 15px; line-height: 1.45; color: var(--body); }
+.text .date { margin-top: auto; padding-top: 12px; font-size: 13px; color: var(--ink2); }
+.key { display: flex; gap: 16px; margin-top: auto; padding-top: 14px; font-size: 13px; color: var(--ink2); }
+.key li { display: flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.sw.f-pour { background: var(--pour); } .sw.f-contre { background: var(--contre); } .sw.f-abst { background: var(--abst); }
+.sw.ring { border: 2px solid var(--contre); }
+.sw.dots { width: 22px; height: 0; border-radius: 0; background: none; border-top: 5px dotted var(--ink2); }
+.pager { display: flex; justify-content: center; gap: 8px; margin-top: 18px; }
+.pager i { width: 7px; height: 7px; border-radius: 50%; background: var(--abst); transition: background .2s, transform .2s; }
+.pager i.on { background: var(--ink); transform: scale(1.15); }
+.primary { display: flex; align-items: center; justify-content: center; height: 48px; margin-top: 16px; border-radius: 24px; background: var(--ink); color: var(--ground); font-size: 15px; font-weight: 600; transition: transform .1s, opacity .15s; }
+.primary:hover { opacity: .9; } .primary:active { transform: scale(.98); }
+@media (min-width: 760px) {
+  .home { padding-left: 32px; padding-right: 32px; }
+  .deck { margin-left: -32px; margin-right: -32px; padding: 0 32px; }
+  .card { flex-basis: calc((100% - 12px) / 2); }
+  .home .primary { max-width: 340px; margin-left: auto; margin-right: auto; }
+}
+@media (min-width: 1200px) {
+  .deck { justify-content: center; overflow: visible; }
+  .pager { display: none; }
+}
+/* entrée de l'accueil : l'en-tête, puis chaque chemise du feuilleton, montent l'une après l'autre */
+@media (prefers-reduced-motion: no-preference) {
+  .is-home .card, .is-home .pager, .is-home .primary { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+  .is-home .card:nth-child(1) { animation-delay: .14s; } .is-home .card:nth-child(2) { animation-delay: .22s; }
+  .is-home .card:nth-child(3) { animation-delay: .30s; } .is-home .card:nth-child(4) { animation-delay: .38s; }
+  .is-home .pager { animation-delay: .42s; } .is-home .primary { animation-delay: .48s; }
+  .is-home .seat { animation: seat .4s ease both; }
+  .is-home .figure circle { transform-box: fill-box; transform-origin: center; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(22px); } }
+@keyframes seat { from { opacity: 0; } }
+
+/* ---------- Écrans d'app : liste, détail, à propos ---------- */
+.app h1:not(.serif) { margin-top: 6px; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+.chips { display: flex; gap: 8px; margin: 16px -20px 0; padding: 0 20px 2px; overflow-x: auto; scrollbar-width: none; }
+.chips button { flex: 1 1 auto; height: 36px; padding: 0 12px; border: 0; border-radius: 18px; background: var(--surface); font-size: 15px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.chips button .num { color: var(--ink2); margin-left: 4px; }
+.chips button[aria-selected="true"] { background: var(--ink); color: var(--ground); }
+.chips button[aria-selected="true"] .num { color: var(--ground); opacity: .75; }
+.list .dgroup h2 { margin: 24px 0 8px; font-size: 13px; font-weight: 600; color: var(--ink2); }
+.rows { background: var(--surface); border-radius: 16px; overflow: hidden; }
+.rows li + li a { border-top: 1px solid var(--rule); } /* taste-skill-ignore: row rules of app lists (app-screens §13) */
+.rows li + li { position: relative; }
+.rows a { display: flex; gap: 14px; padding: 14px 16px; transition: background .15s; }
+.rows a:hover, .rows a:active { background: var(--raised); }
+.mini { flex: none; margin-top: 3px; }
+.rt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rt .t { font-size: 16px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.rt .m { font-size: 13px; color: var(--ink2); }
+.rt .m b { font-weight: 600; }
+
+/* détail */
+.vote { margin-top: 8px; background: var(--surface); border-radius: 22px; padding: 22px 18px 18px; display: flex; flex-direction: column; align-items: center; }
+.hemi-wrap { position: relative; width: 100%; max-width: 320px; }
+.hemi-wrap .hemi { width: 100%; display: block; }
+.hemi-wrap .hollow { bottom: 2px; }
+.hemi-wrap .res .word { font-size: 28px; }
+.hemi .seat { transition: opacity .2s; }
+.hemi.focus .seat:not(.lit) { opacity: .16; }
+.lr { width: 100%; max-width: 320px; display: flex; justify-content: space-between; margin-top: 6px; font-size: 13px; color: var(--ink2); }
+.figures { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin-top: 16px; text-align: center; }
+.figures div { display: flex; flex-direction: column-reverse; }
+.figures dd { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+.figures dd.t-abst { color: var(--ink); }
+.figures dt { font-size: 13px; color: var(--ink2); }
+.voters { margin-top: 10px; font-size: 13px; color: var(--ink2); }
+.kind { margin-top: 24px; font-size: 13px; color: var(--ink2); }
+.detail h1.serif { margin-top: 8px; font-size: 28px; font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; }
+.lede { margin-top: 12px; font-size: 17px; line-height: 1.5; color: var(--body); text-wrap: pretty; }
+.points { margin-top: 16px; background: var(--surface); border-radius: 16px; }
+.points summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 16px; font-size: 15px; font-weight: 500; }
+.points summary::-webkit-details-marker { display: none; }
+.points summary::after { content: "+"; font-size: 20px; color: var(--ink2); }
+.points[open] summary::after { content: "–"; }
+.points ul { padding: 0 16px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.5; color: var(--body); }
+.who, .why { margin-top: 36px; }
+.who h2, .why h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.hint { margin-top: 4px; font-size: 13px; color: var(--ink2); }
+.groups { margin-top: 12px; background: var(--surface); border-radius: 16px; overflow: hidden; }
+.groups li + li button { border-top: 1px solid var(--rule); } /* taste-skill-ignore: row rules of app lists (app-screens §13) */
+.groups button { width: 100%; display: grid; grid-template-columns: 44px 1fr auto; grid-template-rows: auto auto; column-gap: 12px; row-gap: 6px; align-items: center; padding: 11px 16px 12px; border: 0; background: none; text-align: left; cursor: pointer; transition: background .15s; }
+.groups button:hover { background: var(--raised); }
+.groups button[aria-pressed="true"] { background: var(--raised); }
+.gl { grid-row: 1 / span 2; width: 44px; height: 32px; border-radius: 8px; background: var(--logo-bg); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.gl img { width: 36px; height: 24px; object-fit: contain; }
+.gl.mark { font-size: 13px; font-weight: 600; color: #4F5761; }
+.gl.sm { width: 36px; height: 26px; flex: none; } .gl.sm img { width: 30px; height: 20px; }
+.gn { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.gn b { font-size: 15px; font-weight: 600; }
+.gn .num { font-size: 13px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv { font-size: 13px; font-weight: 600; text-align: right; }
+.pv.dash { color: var(--ink2); }
+.gbar { grid-column: 2 / span 2; display: block; height: 6px; }
+.gfill { display: flex; height: 100%; gap: 2px; border-radius: 3px; overflow: hidden; }
+.gbar i { display: block; height: 100%; }
+.b-pour { background: var(--pour); } .b-contre { background: var(--contre); } .b-abst { background: var(--abst); }
+.args { margin-top: 14px; background: var(--surface); border-radius: 16px; padding: 14px 16px 4px; }
+.args h3 { font-size: 15px; font-weight: 600; }
+.a-pour h3 { color: var(--pour-ink); } .a-contre h3 { color: var(--contre-ink); } .a-abst h3 { color: var(--ink2); }
+.args li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; }
+.args li + li { border-top: 1px solid var(--rule); } /* taste-skill-ignore: row rules of app lists (app-screens §13) */
+.args p { font-size: 15px; line-height: 1.5; color: var(--body); }
+.args p b { color: var(--ink); font-weight: 600; margin-right: 2px; }
+.note { margin-top: 10px; font-size: 13px; color: var(--ink2); }
+.links { margin-top: 28px; background: var(--surface); border-radius: 16px; overflow: hidden; }
+.links a, .link-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 16px; font-size: 15px; font-weight: 500; transition: background .15s; }
+.links a + a, .link-row + .link-row, .switch-row + .link-row { border-top: 1px solid var(--rule); } /* taste-skill-ignore: row rules of app lists (app-screens §13) */
+.links a:hover, .link-row:hover { background: var(--raised); }
+
+/* à propos */
+.about .id { margin-top: 18px; background: var(--surface); border-radius: 22px; padding: 24px 20px 22px; }
+.about .name { margin-top: 14px; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.about .promise { margin-top: 4px; font-size: 16px; color: var(--body); }
+.group { margin-top: 28px; }
+.group h2 { margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--ink2); }
+.panel { background: var(--surface); border-radius: 16px; overflow: hidden; }
+.switch-row { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; padding: 14px 16px; cursor: pointer; position: relative; }
+.switch-row > span { display: flex; flex-direction: column; gap: 4px; }
+.switch-row b { font-size: 15px; font-weight: 500; }
+.switch-row .d { font-size: 13px; line-height: 1.45; color: var(--ink2); }
+.switch-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sw-ui { flex: none; width: 51px; height: 31px; border-radius: 16px; background: var(--raised); position: relative; transition: background .2s; }
+.sw-ui::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #FFFFFF; transition: transform .2s; }
+.switch-row input:checked + .sw-ui { background: var(--ink); }
+:root[data-theme="dark"] .switch-row input:checked + .sw-ui::after { background: var(--ground); }
+.switch-row input:checked + .sw-ui::after { transform: translateX(20px); }
+.switch-row input:focus-visible + .sw-ui { outline: 2px solid var(--ink); outline-offset: 2px; }
+.arc-key { padding: 18px 16px 16px; display: grid; grid-template-columns: 96px 1fr; gap: 6px 16px; align-items: center; }
+.arc-key p { font-size: 15px; line-height: 1.45; color: var(--body); }
+.arc-key .key { grid-column: 1 / -1; flex-wrap: wrap; gap: 8px 16px; padding-top: 10px; }
+.prose { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.prose p { font-size: 15px; line-height: 1.5; color: var(--body); }
+/* l'accueil tient dans l'écran du téléphone : la pile prend la hauteur libre, la figure grandit */
+.fig { position: relative; width: 100%; max-width: 318px; }
+.fig .hollow { bottom: 0; }
+.fig .hollow.res { bottom: -2px; }
+.home > .bar, .home > .day, .home > .pager, .home > .primary { width: 100%; }
+.home > .day { max-width: 1400px; }
+@media (max-width: 759px) {
+  .home { display: flex; flex-direction: column; min-height: 100svh; }
+  .home .deck { flex: 1; }
+  .home .figure { flex: 1; justify-content: center; padding-bottom: 6px; }
+}
+@media (max-width: 759px) { .home .text { flex: none; } .home .text .date, .home .key { margin-top: 0; } }
+.sub { margin-top: 4px; font-size: 15px; color: var(--ink2); }
+.chips { overflow: visible; flex-wrap: nowrap; }
+@media (min-width: 640px) { .chips button { flex: none; padding: 0 16px; } }
+@media (min-width: 1200px) { .card { flex-basis: calc((100% - 36px) / 4); max-width: 360px; } }
+/* ---------- groupes : anneau, logos, mode Groupes ---------- */
+.ltile { fill: #FFFFFF; stroke-width: 1.5; }
+.ltext { font: 600 15px "Geist", sans-serif; fill: var(--ink2); }
+.lead { stroke: var(--ink2); stroke-width: 1; fill: none; }
+.hemi.focus .gband:not(.lit), .hemi.focus .glogo:not(.lit) { opacity: .25; }
+.seg { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--raised); gap: 2px; align-self: flex-end; }
+.seg button { height: 32px; padding: 0 14px; border: 0; border-radius: 9px; background: none; font-size: 15px; font-weight: 500; color: var(--ink2); cursor: pointer; }
+.seg button[aria-checked="true"] { background: var(--surface); color: var(--ink); }
+.seg.wide { display: flex; width: 100%; } .seg.wide button { flex: 1; }
+.vote .seg { margin-bottom: 4px; }
+.panel.pad { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.panel.pad .d, .arc-key .d { font-size: 13px; line-height: 1.45; color: var(--ink2); padding: 0 4px; }
+.arc-key .full { grid-column: 1 / -1; padding: 0; }
+.sw-g { width: 4px; height: 16px; border-radius: 2px; align-self: center; flex: none; }
+.gn { align-items: center; }
+.args .gl { width: 44px; height: 32px; flex: none; } .args .gl img { width: 38px; height: 26px; }
+.strips { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.strip { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 8px; }
+.strip .lbl { font-size: 13px; font-weight: 600; }
+.strip .tiles { display: flex; flex-wrap: wrap; gap: 4px; }
+.gl.xs { width: 42px; height: 30px; border-radius: 7px; } .gl.xs img { width: 36px; height: 24px; }
+.gl.mark.xs { font-size: 11px; }
+.vote .strips { width: 100%; margin-top: 18px; }
+/* sièges : couleur du groupe, forme du vote */
+.hemi .seat.s-contre { fill: none !important; }
+.hemi.votes .seat.s-pour { fill: var(--pour); stroke: var(--pour); }
+.hemi.votes .seat.s-contre { stroke: var(--contre); }
+.hemi.votes .seat.s-abst { fill: var(--ink2); stroke: var(--ink2); }
+.hemi:not(.votes) .seat.s-pour, .hemi:not(.votes) .seat.s-abst { stroke-width: 0; }
+.gly { display: inline-block; vertical-align: -1px; margin-right: 5px; }
+.figures dt { display: flex; align-items: center; justify-content: center; }
+.figures dt .gly { color: var(--ink2); }
+.tally .gly { color: currentColor; }
+/* hémicycle réel : places du plan de l'Assemblée */
+.hemi.real .seat.s-off { opacity: .2; }
+.hemi.real .ltext { font: 600 11px "Geist", sans-serif; fill: var(--ink2); }
+.hemi.votes .seat.s-off { fill: var(--abst); stroke: var(--abst); }
+.keyline { margin-top: 6px; font-size: 13px; color: var(--ink2); display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: center; align-items: center; }
+.keyline .gly { margin-right: 4px; }
+.off-sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ink2); opacity: .25; margin-right: 4px; }
+.keyline span { white-space: nowrap; display: inline-flex; align-items: center; }
+.home .strips { margin-top: 10px; gap: 6px; }
+/* le mot du résultat dans le creux du plan réel, au-dessus du premier rang */
+.hemi-wrap .hollow.res { bottom: auto; top: calc(82% - 17px); }
+.fig .hollow.res { bottom: auto; top: calc(84% - 17px); }
+.hemi-wrap .res .word, .fig .res .word { font-size: 22px; }
+@media (min-width: 760px) { .home .figure { min-height: 230px; } }
+
+/* résultat sous l'hémicycle, plus jamais dans le creux (il touchait le 1er rang) */
+.resrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; max-width: 318px; margin: 12px auto 0; }
+.resrow .word { font-family: "Newsreader", Georgia, serif; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; line-height: 1; }
+.resrow .tally { margin-top: 0; }
+.home .sheet { justify-content: center; }
+.home .text { flex: 0 0 auto; }
+.home .figure .hemi, .home .fig-arc { max-width: none; }
+.home .fig { max-width: 340px; }
+@media (max-width: 759px) { .home .figure { flex: none; } .home .sheet { justify-content: center; } .home .text { padding-top: 22px; } }
+
+/* reste de la jauge : l'encre à 30 % sur la surface, lisible de jour comme de nuit */
+.k-track { stroke: color-mix(in srgb, var(--ink) 30%, var(--surface)); }
+.of-n { font-size: 32px; color: var(--ink2); letter-spacing: 0; }
+.hemi .seat.s-wait { fill: color-mix(in srgb, var(--ink) 22%, var(--surface)); stroke: none; }
+.wait { margin-top: 14px; font-size: 15px; color: var(--ink2); text-align: center; }
+
+.hemi:not(.votes) .seat[data-g="LFI-NFP"] { fill: #C00D0D; stroke: #C00D0D; } .sw-g[data-g="LFI-NFP"] { background: #C00D0D; }
+.hemi:not(.votes) .seat[data-g="GDR"] { fill: #830E21; stroke: #830E21; } .sw-g[data-g="GDR"] { background: #830E21; }
+.hemi:not(.votes) .seat[data-g="EcoS"] { fill: #77AA79; stroke: #77AA79; } .sw-g[data-g="EcoS"] { background: #77AA79; }
+.hemi:not(.votes) .seat[data-g="SOC"] { fill: #F5B4CE; stroke: #F5B4CE; } .sw-g[data-g="SOC"] { background: #F5B4CE; }
+.hemi:not(.votes) .seat[data-g="LIOT"] { fill: #FFD96F; stroke: #FFD96F; } .sw-g[data-g="LIOT"] { background: #FFD96F; }
+.hemi:not(.votes) .seat[data-g="Dem"] { fill: #F07E26; stroke: #F07E26; } .sw-g[data-g="Dem"] { background: #F07E26; }
+.hemi:not(.votes) .seat[data-g="EPR"] { fill: #7B4591; stroke: #7B4591; } .sw-g[data-g="EPR"] { background: #7B4591; }
+.hemi:not(.votes) .seat[data-g="HOR"] { fill: #B5E2F9; stroke: #B5E2F9; } .sw-g[data-g="HOR"] { background: #B5E2F9; }
+.hemi:not(.votes) .seat[data-g="DR"] { fill: #8CB0DC; stroke: #8CB0DC; } .sw-g[data-g="DR"] { background: #8CB0DC; }
+.hemi:not(.votes) .seat[data-g="NI"] { fill: #8D949A; stroke: #8D949A; } .sw-g[data-g="NI"] { background: #8D949A; }
+.hemi:not(.votes) .seat[data-g="UDR"] { fill: #3367A7; stroke: #3367A7; } .sw-g[data-g="UDR"] { background: #3367A7; }
+.hemi:not(.votes) .seat[data-g="RN"] { fill: #313567; stroke: #313567; } .sw-g[data-g="RN"] { background: #313567; }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="LFI-NFP"] { fill: color-mix(in srgb, #C00D0D 70%, #ffffff); stroke: color-mix(in srgb, #C00D0D 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="GDR"] { fill: color-mix(in srgb, #830E21 70%, #ffffff); stroke: color-mix(in srgb, #830E21 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="EcoS"] { fill: color-mix(in srgb, #77AA79 70%, #ffffff); stroke: color-mix(in srgb, #77AA79 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="SOC"] { fill: color-mix(in srgb, #F5B4CE 70%, #ffffff); stroke: color-mix(in srgb, #F5B4CE 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="LIOT"] { fill: color-mix(in srgb, #FFD96F 70%, #ffffff); stroke: color-mix(in srgb, #FFD96F 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="Dem"] { fill: color-mix(in srgb, #F07E26 70%, #ffffff); stroke: color-mix(in srgb, #F07E26 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="EPR"] { fill: color-mix(in srgb, #7B4591 70%, #ffffff); stroke: color-mix(in srgb, #7B4591 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="HOR"] { fill: color-mix(in srgb, #B5E2F9 70%, #ffffff); stroke: color-mix(in srgb, #B5E2F9 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="DR"] { fill: color-mix(in srgb, #8CB0DC 70%, #ffffff); stroke: color-mix(in srgb, #8CB0DC 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="NI"] { fill: color-mix(in srgb, #8D949A 70%, #ffffff); stroke: color-mix(in srgb, #8D949A 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="UDR"] { fill: color-mix(in srgb, #3367A7 70%, #ffffff); stroke: color-mix(in srgb, #3367A7 70%, #ffffff); }
+:root[data-theme="dark"] .hemi:not(.votes) .seat[data-g="RN"] { fill: color-mix(in srgb, #313567 70%, #ffffff); stroke: color-mix(in srgb, #313567 70%, #ffffff); }
+
+</style>
+</head>
+<body class="">
+
+<main class="screen app list">
+  <header class="bar">
+    <a class="ib back" href="accueil-clair.html" aria-label="Retour à la séance du jour"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" class="k-ink" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <span class="acts"><a class="ib" href="apropos-clair.html" aria-label="À propos"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" class="k-ink" stroke-width="1.6"/><path d="M12 11v5.5M12 7.8v.4" fill="none" class="k-ink" stroke-width="1.8" stroke-linecap="round"/></svg></a></span>
+  </header>
+  <h1>Décisions</h1>
+  <div class="chips" role="tablist" aria-label="Filtrer par type">
+    <button role="tab" aria-selected="true" data-f="all" data-n="50">Tout</button>
+    <button role="tab" aria-selected="false" data-f="texte" data-n="43">Textes</button>
+    <button role="tab" aria-selected="false" data-f="resolution" data-n="4">Résolutions</button>
+    <button role="tab" aria-selected="false" data-f="motion" data-n="3">Motions</button>
+  </div>
+  <section class="dgroup" data-day>
+    <h2>Mardi 13 octobre</h2>
+    <ul class="rows"><li data-k="texte"><a href="detail-8706-clair.html"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 503 pour, 0 contre, 67 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 106.63 41.95" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Juges des violences sexuelles</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 503 pour, 0 contre, 67 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 106.63 41.95" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Réponse intégrale aux violences sexuelles et sexistes</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Lundi 12 octobre</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 28 pour, 5 contre, 2 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 100.45 30.61" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Approbation d’une convention d’extradition entre la France et la Colombie</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 44 pour, 0 contre, 6 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 106.49 41.59" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Gouvernance unifiée du centre sportif de Vichy à titre expérimental</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 53 pour, 0 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Assouplir les autorisations expérimentales des établissements médico-sociaux</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 87 pour, 0 contre, 15 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 104.76 37.71" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Titre-restaurant : passage au format dématérialisé et transparence des commissions</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Jeudi 8 octobre</h2>
+    <ul class="rows"><li data-k="resolution"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 133 pour, 158 contre, 3 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 65.86 10.35" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Soutenir l’entrée au Panthéon de trois personnalités</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li><li data-k="resolution"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 144 pour, 199 contre, 5 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 71.19 11.27" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Réforme de l’espace Schengen et contrôles aux frontières</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li><li data-k="resolution"><a href="detail-8610-clair.html"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 151 pour, 187 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 68.33 10.70" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Achats publics : priorité nationale</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li><li data-k="resolution"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 156 pour, 160 contre, 6 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 59.51 10.00" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Accès continu à l’eau potable dans les territoires ultramarins</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mercredi 7 octobre</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Approbation d’un accord d’échange d’informations fiscales</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Lundi 5 octobre</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Accord de sécurité sociale entre la France et la Moldavie</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Accord franco-moldave de coopération en matière de défense</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mardi 21 juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 276 pour, 86 contre, 2 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 96.26 25.57" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Création d’une foncière pour gérer le patrimoine immobilier de l’État</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 351 pour, 179 contre, 7 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 83.21 15.71" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Réponses immédiates aux troubles à l’ordre public</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 279 pour, 81 contre, 66 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 83.39 15.81" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Protéger les mineurs des risques des réseaux sociaux</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 378 pour, 7 contre, 173 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 86.45 17.57" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Protection des enfants confiés à l’aide sociale à l’enfance</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Lundi 20 juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 296 pour, 224 contre, 41 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 64.33 10.19" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Projet de loi pour la protection et la souveraineté agricoles</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 376 pour, 92 contre, 4 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 100.14 30.18" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Mesures pour les territoires de montagne</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 462 pour, 0 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Stratégie nationale de lutte contre les maladies cardio-neuro-vasculaires</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 359 pour, 1 contre, 81 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 101.71 32.43" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Gouvernance et financement du sport professionnel</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Jeudi 16 juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Frontière entre Saint-Martin et Sint Maarten</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mercredi 15 juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 291 pour, 241 contre, 29 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 62.94 10.09" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Droit à l’aide à mourir : proposition de loi sur la fin de vie</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 366 pour, 182 contre, 8 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 83.85 16.05" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Réponses immédiates aux troubles à l’ordre public</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mercredi 8 juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 283 pour, 156 contre, 1 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 81.74 14.97" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Participation d’avocats honoraires et de citoyens aux cours criminelles</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 283 pour, 156 contre, 1 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 81.74 14.97" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Justice criminelle et respect des victimes : procédure de crimes reconnus</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mardi 7 juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 313 pour, 199 contre, 5 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 76.26 12.72" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Présomption de légitime défense pour les forces de l’ordre</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 363 pour, 177 contre, 2 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 85.42 16.94" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Participation d’avocats honoraires et de citoyens aux cours criminelles</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 357 pour, 177 contre, 1 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 85.08 16.75" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Justice criminelle et respect des victimes : procédure de crimes reconnus</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Lundi 6 juillet</h2>
+    <ul class="rows"><li data-k="motion"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 132 pour, 0 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 10.00 60.00" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Motion de censure déposée par des députés</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mercredi 1er juillet</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 375 pour, 113 contre, 2 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 97.01 26.38" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Actualisation de la programmation militaire 2024-2030</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 292 pour, 0 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Droit à un avocat pour les enfants en assistance éducative</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mardi 30 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 295 pour, 232 contre, 35 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 63.91 10.15" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Droit à l’aide à mourir : proposition de loi sur la fin de vie</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Lundi 29 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 75 pour, 2 contre, 1 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 109.64 53.97" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Gouvernance et financement du sport professionnel</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mercredi 24 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 338 pour, 0 contre, 151 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 88.26 18.75" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Réduire l’impact environnemental de l’industrie textile</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Approbation d’un accord de partenariat avec le Kirghizistan</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Entraide judiciaire pénale entre la France et le Suriname</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mardi 23 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 271 pour, 202 contre, 64 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 60.73 10.01" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Autonomie de la Corse dans la Constitution</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mercredi 17 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 290 pour, 59 contre, 116 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 78.94 13.73" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Relance des investissements dans l’hydroélectricité</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 292 pour, 160 contre, 14 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 79.37 13.90" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Faciliter le logement des travailleurs des services publics</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mardi 16 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 345 pour, 177 contre, 11 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 82.32 15.26" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Renforcer la sécurité et la prévention des risques d’attentat</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Lundi 15 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 35 pour, 0 contre, 5 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 106.19 40.87" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Habilitation de l’Assemblée de Martinique en énergie, eau et assainissement</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 59 pour, 0 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Sortie de restes humains kali’nas et arawaks des collections publiques</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Jeudi 11 juin</h2>
+    <ul class="rows"><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 75 pour, 1 contre, 15 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 102.56 33.76" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Indexer et annualiser les bourses étudiantes</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 106 pour, 49 contre, 47 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 63.88 10.15" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Nationalisation d’ArcelorMittal France</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté : 165 pour, 0 contre, 3 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 109.92 57.20" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Retraités pauvres : la résidence principale exclue du remboursement</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Accès aux soins des ressortissants ultramarins en Hexagone</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+  <section class="dgroup" data-day>
+    <h2>Mardi 9 juin</h2>
+    <ul class="rows"><li data-k="motion"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 145 pour, 82 contre, 0 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 38.89 14.68" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Approbation des comptes de la sécurité sociale de 2025</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li><li data-k="motion"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Rejeté : 145 pour, 96 contre, 1 abstentions"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-track" stroke-width="16" fill="none"/><path d="M10.00 60.00 A50 50 0 0 1 44.06 12.61" class="k-contre" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Motion de rejet du projet sur les comptes 2025</span><span class="m"><b class="r-rejete">Rejeté</b></span></span></a></li><li data-k="texte"><a href="#"><svg class="mini" width="40" height="22" viewBox="0 0 120 66" role="img" aria-label="Adopté à main levée"><path d="M10.00 60.00 A50 50 0 0 1 110.00 60.00" class="k-pour" stroke-width="16" fill="none"/></svg><span class="rt"><span class="t">Conventions fiscales avec la Finlande et la Suède</span><span class="m"><b class="r-adopte">Adopté</b></span></span></a></li></ul>
+  </section>
+</main>
+<script>
+
+const tabs = [...document.querySelectorAll('.chips button')];
+tabs.forEach((b) => b.addEventListener('click', () => {
+  tabs.forEach((t) => t.setAttribute('aria-selected', String(t === b)));
+  const f = b.dataset.f;
+  document.querySelectorAll('.rows li').forEach((li) => { li.hidden = f !== 'all' && li.dataset.k !== f; });
+  document.querySelectorAll('[data-day]').forEach((s) => { s.hidden = ![...s.querySelectorAll('li')].some((li) => !li.hidden); });
+}));
+</script>
+</body>
+</html>
