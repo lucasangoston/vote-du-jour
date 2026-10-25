@@ -420,6 +420,13 @@ class _CardSnapPhysics extends ScrollPhysics {
     );
   }
 
+  // Ressort raide, sans rebond : la carte se cale en 0,2 s environ. Le
+  // ressort par défaut traînait près d'une seconde, et un défilement en
+  // cours ignore les touchers : il fallait appuyer deux fois sur une carte.
+  @override
+  SpringDescription get spring =>
+      SpringDescription.withDampingRatio(mass: 0.5, stiffness: 600, ratio: 1);
+
   @override
   bool get allowImplicitScrolling => false;
 }
