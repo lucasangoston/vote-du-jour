@@ -182,15 +182,22 @@ enum SnapshotConverter {
   }
 
   /// Mêmes règles que `PlainSummary.tryFromJson` : un résumé malformé est
-  /// ignoré (la décision reste lisible).
+  /// ignoré (la décision reste lisible). Le titre est le titre court du
+  /// résumé (#72) s'il est valide, sinon son titre (`compactTitle`).
   private static func plainSummary(_ value: Any?) -> (title: String, explanation: String)? {
     guard let s = value as? [String: Any],
       let title = optionalString(s["title"]),
       let explanation = optionalString(s["explanation"]),
       s["promptVersion"] is Int
     else { return nil }
+    if let short = optionalString(s["shortTitle"]), short.count <= shortTitleMaxLength {
+      return (short, explanation)
+    }
     return (title, explanation)
   }
+
+  /// Même borne que `shortTitleMaxLength` du contrat.
+  private static let shortTitleMaxLength = 35
 
   private static func optionalString(_ value: Any?) -> String? {
     guard let s = value as? String,

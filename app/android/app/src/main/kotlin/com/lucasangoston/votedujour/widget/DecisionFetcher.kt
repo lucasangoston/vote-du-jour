@@ -213,7 +213,8 @@ object SnapshotConverter {
 
   /**
    * Titre et phrase du résumé, mêmes règles que `PlainSummary.tryFromJson` : un résumé malformé
-   * est ignoré (la décision reste lisible).
+   * est ignoré (la décision reste lisible). Le titre est le titre court du résumé (#72) s'il est
+   * valide, sinon son titre (`compactTitle`).
    */
   private fun plainSummary(s: JSONObject?): Pair<String, String>? {
     if (s == null) return null
@@ -221,8 +222,12 @@ object SnapshotConverter {
     val explanation = optionalString(s, "explanation") ?: return null
     val version = s.opt("promptVersion")
     if (version !is Int && version !is Long) return null
-    return title to explanation
+    val short = optionalString(s, "shortTitle")?.takeIf { it.length <= SHORT_TITLE_MAX_LENGTH }
+    return (short ?: title) to explanation
   }
+
+  /** Même borne que `shortTitleMaxLength` du contrat. */
+  private const val SHORT_TITLE_MAX_LENGTH = 35
 
   private fun optionalString(d: JSONObject, key: String): String? =
       (d.opt(key) as? String)?.takeIf { it.isNotBlank() }

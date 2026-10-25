@@ -90,6 +90,23 @@ class SnapshotConverterTest {
   }
 
   @Test
+  fun prefere_le_titre_court_du_resume() {
+    val summary =
+        ""","summary":{"title":"Retour de l'âge légal à 62 ans","explanation":"e","promptVersion":2"""
+    val long = "x".repeat(36)
+    val index =
+        """{"schemaVersion":1,"decisions":[
+        ${decision(8724, summary + ""","shortTitle":"retraite à 62 ans"}""")},
+        ${decision(8723, summary + ""","shortTitle":"$long"}""")}]}"""
+
+    val decisions = JSONObject(SnapshotConverter.fromIndex(index, savedAt)!!).getJSONArray("decisions")
+
+    assertEquals("Retraite à 62 ans", decisions.getJSONObject(0).getString("title"))
+    // Titre court trop long : repli sur le titre du résumé.
+    assertEquals("Retour de l'âge légal à 62 ans", decisions.getJSONObject(1).getString("title"))
+  }
+
+  @Test
   fun lit_le_titre_et_la_phrase_du_resume() {
     val summary =
         ""","summary":{"title":"retraite à 62 ans","explanation":" Le texte prévoit… ","promptVersion":1}"""

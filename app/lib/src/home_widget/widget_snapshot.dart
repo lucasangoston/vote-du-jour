@@ -194,7 +194,7 @@ class WidgetDecision {
     id: d.id,
     result: d.result,
     date: d.date,
-    title: _capitalize(d.displayTitle.trim()),
+    title: _capitalize(d.compactTitle.trim()),
     stage: _stageWith(d.stage, [
       ?voteModeLabel(d.voteMode),
       ?statusLabel(d.status),

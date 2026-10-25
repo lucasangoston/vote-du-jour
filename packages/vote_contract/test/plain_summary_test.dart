@@ -100,4 +100,63 @@ void main() {
     expect(s.points, ['a', 'b']);
     expect(s.promptVersion, 2);
   });
+
+  group('titre court (widgets, liste)', () {
+    const court = PlainSummary(
+      title: "Retour de l'âge légal de départ à 62 ans",
+      shortTitle: 'Retraite à 62 ans',
+      explanation: 'Le texte prévoit une mesure.',
+      promptVersion: 2,
+    );
+
+    test('publié dans l\'index et dans le détail', () {
+      final d = DecisionSummary.tryFromJson(_decision)!.withSummary(court);
+      final index =
+          _roundTrip(
+                DecisionIndex(
+                  generatedAt: DateTime.utc(2026, 10, 25),
+                  decisions: [d],
+                ).toJson(),
+              )
+              as Map<String, Object?>;
+      final published = (index['decisions'] as List).single as Map;
+      expect((published['summary'] as Map)['shortTitle'], 'Retraite à 62 ans');
+      final again = DecisionIndex.fromJson(index).decisions.single;
+      expect(again.summary!.shortTitle, 'Retraite à 62 ans');
+      expect(again.compactTitle, 'Retraite à 62 ans');
+
+      final detail =
+          _roundTrip(DecisionDetail(decision: d).toJson())
+              as Map<String, Object?>;
+      expect(DecisionDetail.fromJson(detail).decision.summary, court);
+    });
+
+    test('absent : champ omis, repli sur le titre habituel', () {
+      expect(_summary.shortTitle, isNull);
+      expect(_summary.toJson().containsKey('shortTitle'), isFalse);
+      final d = DecisionSummary.tryFromJson(_decision)!;
+      expect(d.compactTitle, 'Restaurer un système de retraite plus juste');
+      expect(d.withSummary(_summary).compactTitle, _summary.title);
+    });
+
+    test('trop long, vide ou illisible : ignoré, le résumé reste lisible', () {
+      for (final bad in <Object?>['x' * (shortTitleMaxLength + 1), '  ', 3]) {
+        final s = PlainSummary.tryFromJson({
+          'title': 'Titre',
+          'explanation': 'e',
+          'promptVersion': 2,
+          'shortTitle': bad,
+        });
+        expect(s, isNotNull, reason: '$bad');
+        expect(s!.shortTitle, isNull, reason: '$bad');
+      }
+      final juste = PlainSummary.tryFromJson({
+        'title': 'Titre',
+        'explanation': 'e',
+        'promptVersion': 2,
+        'shortTitle': 'x' * shortTitleMaxLength,
+      });
+      expect(juste!.shortTitle, hasLength(shortTitleMaxLength));
+    });
+  });
 }
