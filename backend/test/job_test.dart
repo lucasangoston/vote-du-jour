@@ -292,6 +292,28 @@ void main() {
       expect(d.stage, "1re lecture à l'AN");
       expect(await store.read(dossiersStateKey), isNull);
     });
+
+    test(
+      'finit la publication si l\'état des dossiers ne s\'écrit pas',
+      () async {
+        final failing = _FailingKeyStore(store, dossiersStateKey);
+        final outcome = await runJob(
+          source: FakeDumpSource(scrutinsDate),
+          dossiers: fakeDossiers(dossiersDate),
+          store: failing,
+          clock: () => clock,
+        );
+        expect(outcome, isA<JobPublished>());
+        expect(
+          (outcome as JobPublished).warnings,
+          contains(contains('état des dossiers non écrit')),
+        );
+        expect(await store.read(dossiersStateKey), isNull);
+        // Les écritures qui suivent l'état des dossiers ont bien eu lieu.
+        expect(await store.read(articleVotesKey), isNotNull);
+        expect(await store.read(confirmedSnapshotKey), isNotNull);
+      },
+    );
   });
 
   test('l\'index contient au plus 50 décisions, les plus récentes', () {
@@ -324,4 +346,31 @@ void main() {
       for (var i = 80; i > 30; i--) i,
     ]);
   });
+}
+
+/// Magasin dont l'écriture d'une clé échoue comme un PUT R2 en erreur 500.
+class _FailingKeyStore implements ObjectStore {
+  _FailingKeyStore(this._inner, this._key);
+
+  final ObjectStore _inner;
+  final String _key;
+
+  @override
+  Future<String?> read(String key) => _inner.read(key);
+
+  @override
+  Future<void> write(
+    String key,
+    String body, {
+    String contentType = 'application/json; charset=utf-8',
+    String? cacheControl,
+  }) {
+    if (key == _key) throw HttpException('R2 PUT $key : HTTP 500');
+    return _inner.write(
+      key,
+      body,
+      contentType: contentType,
+      cacheControl: cacheControl,
+    );
+  }
 }

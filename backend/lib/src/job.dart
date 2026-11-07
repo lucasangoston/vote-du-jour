@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:vote_contract/vote_contract.dart';
 
@@ -239,15 +240,24 @@ Future<JobOutcome> runJob({
         cacheControl: 'no-store',
       );
       if (dossierUpdate != null) {
-        await store.write(
-          dossiersStateKey,
-          jsonEncode({
-            'lastModified': dossierUpdate.lastModified,
-            'processedAt': now.toIso8601String(),
-            'index': dossierUpdate.index.toJson(),
-          }),
-          cacheControl: 'no-store',
-        );
+        // Un état des dossiers non écrit est reconstruit au passage suivant
+        // depuis le jeu de données : on ne bloque pas le reste de la
+        // publication (groupes, instantané, votes sur les articles) pour lui.
+        try {
+          await store.write(
+            dossiersStateKey,
+            jsonEncode({
+              'lastModified': dossierUpdate.lastModified,
+              'processedAt': now.toIso8601String(),
+              'index': dossierUpdate.index.toJson(),
+            }),
+            cacheControl: 'no-store',
+          );
+        } on HttpException catch (e) {
+          warnings.add(
+            'état des dossiers non écrit, retenté au prochain passage ($e)',
+          );
+        }
       }
       await groups.save(store);
       await ConfirmedSnapshot.fromDump(
