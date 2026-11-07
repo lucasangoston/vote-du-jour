@@ -56,6 +56,7 @@ class R2Store implements ObjectStore {
     required this.secretAccessKey,
     http.Client? client,
     DateTime Function()? clock,
+    this.retryDelays = const [Duration(seconds: 2), Duration(seconds: 10)],
   }) : host = '$accountId.r2.cloudflarestorage.com',
        _client = client ?? http.Client(),
        _clock = clock ?? DateTime.now;
@@ -67,14 +68,38 @@ class R2Store implements ObjectStore {
   final http.Client _client;
   final DateTime Function() _clock;
 
+  /// Attentes avant chaque nouvel essai d'une requête refusée par une erreur
+  /// serveur (5xx) ou réseau : R2 renvoie parfois `InternalError` en demandant
+  /// de réessayer.
+  final List<Duration> retryDelays;
+
   Uri _uri(String key) => Uri.https(host, '/$bucket/$key');
+
+  /// Envoie la requête construite par [send] (signée à nouveau à chaque essai)
+  /// et la réessaie après chaque délai de [retryDelays] tant qu'elle échoue
+  /// sur une erreur serveur ou réseau.
+  Future<http.Response> _withRetry(
+    Future<http.Response> Function() send,
+  ) async {
+    for (var attempt = 0; ; attempt++) {
+      final last = attempt >= retryDelays.length;
+      try {
+        final response = await send();
+        if (response.statusCode < 500 || last) return response;
+      } on http.ClientException {
+        if (last) rethrow;
+      } on SocketException {
+        if (last) rethrow;
+      }
+      await Future<void>.delayed(retryDelays[attempt]);
+    }
+  }
 
   @override
   Future<String?> read(String key) async {
     final uri = _uri(key);
-    final response = await _client.get(
-      uri,
-      headers: _sign('GET', uri, const []),
+    final response = await _withRetry(
+      () => _client.get(uri, headers: _sign('GET', uri, const [])),
     );
     if (response.statusCode == 404) return null;
     _check(response, 'GET $key');
@@ -90,13 +115,18 @@ class R2Store implements ObjectStore {
   }) async {
     final uri = _uri(key);
     final bytes = utf8.encode(body);
-    final headers = _sign(
-      'PUT',
-      uri,
-      bytes,
-      extra: {'content-type': contentType, 'cache-control': ?cacheControl},
+    final response = await _withRetry(
+      () => _client.put(
+        uri,
+        headers: _sign(
+          'PUT',
+          uri,
+          bytes,
+          extra: {'content-type': contentType, 'cache-control': ?cacheControl},
+        ),
+        body: bytes,
+      ),
     );
-    final response = await _client.put(uri, headers: headers, body: bytes);
     _check(response, 'PUT $key');
   }
 
