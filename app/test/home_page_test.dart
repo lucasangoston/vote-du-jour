@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -14,6 +15,7 @@ import 'package:votedujour/src/decisions_repository.dart';
 import 'package:votedujour/src/hemicycle/hemicycle_seats.dart';
 import 'package:votedujour/src/hemicycle/vote_arc.dart';
 import 'package:votedujour/src/home_page.dart';
+import 'package:votedujour/src/skeleton.dart';
 import 'package:votedujour/src/theme.dart';
 
 /// Vendredi 23 octobre 2026, jour des maquettes.
@@ -293,6 +295,75 @@ void main() {
       });
     });
   }
+
+  testWidgets('chargement : squelettes, puis les cartes complètes, sans arc '
+      'remplacé par l\'hémicycle', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final index = Completer<void>();
+    final details = Completer<void>();
+    final client = MockClient((request) async {
+      final body = switch (request.url.path) {
+        '/v1/latest.json' => _index.toJson(),
+        '/v1/decisions/VTANR5L17V8706.json' => _d8706.toJson(),
+        '/v1/decisions/VTANR5L17V8610.json' => _d8610.toJson(),
+        _ => null,
+      };
+      await (request.url.path == '/v1/latest.json'
+          ? index.future
+          : details.future);
+      return body == null
+          ? http.Response('', 404)
+          : http.Response.bytes(utf8.encode(jsonEncode(body)), 200);
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(Brightness.light),
+        home: HomePage(
+          repository: DecisionsRepository(
+            baseUrl: 'https://example.test',
+            client: client,
+          ),
+          detailRepository: DecisionDetailRepository(
+            baseUrl: 'https://example.test',
+            client: client,
+          ),
+          now: _now,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    // Index en route : des squelettes de cartes, pas de rond qui tourne.
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(SkeletonBlock), findsWidgets);
+    expect(find.bySemanticsLabel('Chargement des décisions'), findsOneWidget);
+
+    // Index arrivé, détails en route : le vote solennel est complet, les
+    // décisions restent en squelette, sans arc.
+    index.complete();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text("Budget de l'État 2027"), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Chargement de la décision'),
+      findsNWidgets(2),
+    );
+    expect(find.byType(VoteArc), findsNothing);
+    expect(find.byType(HemicycleSeats), findsNothing);
+    expect(find.text('Adopté'), findsNothing);
+
+    // Détails arrivés : les hémicycles d'un coup.
+    details.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(SkeletonBlock), findsNothing);
+    expect(find.byType(HemicycleSeats), findsNWidgets(2));
+    expect(find.byType(VoteArc), findsNothing);
+    expect(find.text('Adopté'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('sans fichier de détail : l\'arc de l\'index', (tester) async {
     await _pumpHome(tester, withDetails: false);

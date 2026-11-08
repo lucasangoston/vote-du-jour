@@ -15,6 +15,7 @@ import 'hemicycle/result_style.dart';
 import 'hemicycle/vote_arc.dart';
 import 'hemicycle/vote_glyph.dart';
 import 'relative_date.dart';
+import 'skeleton.dart';
 import 'theme.dart';
 import 'upcoming.dart';
 
@@ -92,9 +93,12 @@ class _HomePageState extends State<HomePage> {
   Object? _error;
   bool _loading = false;
 
-  /// Détails déjà lus, par décision : leurs sièges remplacent l'arc.
+  /// Détails déjà lus, par décision, pour leurs sièges.
   final _details = <String, DecisionDetail>{};
   final _pendingDetails = <String>{};
+
+  /// Détails introuvables : la carte garde l'arc de l'index.
+  final _missingDetails = <String>{};
 
   DateTime get _now => widget.now ?? DateTime.now();
 
@@ -146,15 +150,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Lit le fichier de détail des décisions affichées, pour leurs sièges.
-  /// En attendant, ou s'il manque, la carte garde l'arc de l'index.
+  /// En attendant, la carte est un squelette ([_waitsForSeats]) ; s'il
+  /// manque, elle garde l'arc de l'index.
   void _loadSeats(DecisionIndex index) {
     final repository =
         widget.detailRepository ?? defaultDecisionDetailRepository;
     for (final card in homeCards(index, now: _now)) {
-      if (card case DecisionCard(:final decision)
-          when decision.voteMode == VoteMode.scrutinPublic &&
-              !_details.containsKey(decision.id) &&
-              _pendingDetails.add(decision.id)) {
+      if (card case DecisionCard(
+        :final decision,
+      ) when _waitsForSeats(decision) && _pendingDetails.add(decision.id)) {
         repository
             .fetch(decision.id)
             .then((detail) {
@@ -162,11 +166,20 @@ class _HomePageState extends State<HomePage> {
             })
             .catchError((Object e) {
               debugPrint('Accueil : sièges de ${decision.id} absents : $e');
+              if (mounted) setState(() => _missingDetails.add(decision.id));
             })
             .whenComplete(() => _pendingDetails.remove(decision.id));
       }
     }
   }
+
+  /// La carte de [decision] attend-elle son fichier de détail ? Rien ne
+  /// s'affiche à moitié (l'arc puis l'hémicycle) : squelette, puis la carte
+  /// complète.
+  bool _waitsForSeats(DecisionSummary decision) =>
+      decision.voteMode == VoteMode.scrutinPublic &&
+      !_details.containsKey(decision.id) &&
+      !_missingDetails.contains(decision.id);
 
   void _openList() => Navigator.of(context).push(
     MaterialPageRoute<void>(
@@ -252,7 +265,17 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       }
-      return const CircularProgressIndicator();
+      // Les cartes à leur place, en attendant l'index.
+      return Semantics(
+        label: 'Chargement des décisions',
+        container: true,
+        excludeSemantics: true,
+        child: CardDeck(
+          count: homeDecisionCount,
+          itemBuilder: (context, i, width) =>
+              _SkeletonCard(width: width, tab: _tabSides[i % _tabSides.length]),
+        ),
+      );
     }
     final cards = homeCards(index, now: _now);
     if (cards.isEmpty) {
@@ -267,6 +290,16 @@ class _HomePageState extends State<HomePage> {
           tab: _tabSides[i % _tabSides.length],
           now: _now,
         ),
+        DecisionCard(:final decision) when _waitsForSeats(decision) =>
+          Semantics(
+            label: 'Chargement de la décision',
+            container: true,
+            excludeSemantics: true,
+            child: _SkeletonCard(
+              width: width,
+              tab: _tabSides[i % _tabSides.length],
+            ),
+          ),
         DecisionCard(:final decision) => _DecisionCard(
           decision,
           detail: _details[decision.id],
@@ -700,7 +733,7 @@ class _HollowArcPainter extends CustomPainter {
 }
 
 /// Carte d'une décision : l'hémicycle aux places réelles (l'arc de l'index
-/// en attendant le détail, ou sans sièges), « Adopté » ou « Rejeté » et les
+/// sans fichier de détail ou sans sièges), « Adopté » ou « Rejeté » et les
 /// trois chiffres avec leur symbole, le titre court. Ouvre le détail.
 class _DecisionCard extends StatelessWidget {
   const _DecisionCard(
@@ -765,8 +798,8 @@ class _DecisionCard extends StatelessWidget {
                     count: detail.count!.tally,
                     width: figure,
                   )
-                // Même hauteur que l'hémicycle : la carte ne saute pas quand
-                // les sièges arrivent.
+                // Même hauteur que l'hémicycle : toutes les cartes de la pile
+                // gardent la même figure.
                 : SizedBox(
                     width: figure,
                     height: height,
@@ -812,6 +845,78 @@ class _DecisionCard extends StatelessWidget {
             ),
           ),
         _CardTitle(title),
+      ],
+    );
+  }
+}
+
+/// Squelette d'une carte de décision, aux mêmes places : languette,
+/// hémicycle, résultat et chiffres, deux lignes de titre.
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard({required this.width, required this.tab});
+
+  final double width;
+  final Alignment tab;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final figure = _figureWidth(width);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: _tabInset),
+          child: Align(
+            alignment: tab,
+            child: ClipPath(
+              clipper: const _TabClipper(),
+              child: Container(
+                height: 30,
+                color: colors.surface,
+                padding: const EdgeInsets.fromLTRB(18, 9, 18, 4),
+                child: const SkeletonBlock(width: 48, height: 14),
+              ),
+            ),
+          ),
+        ),
+        ColoredBox(
+          color: colors.surface,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: SkeletonBlock(
+                    width: figure,
+                    height: figure * HemicycleSeats.aspect,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SkeletonBlock(width: 96, height: 28),
+                    SkeletonBlock(width: 120, height: 18),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonBlock(width: width * 0.7, height: 22),
+                      const SizedBox(height: 8),
+                      SkeletonBlock(width: width * 0.45, height: 22),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
