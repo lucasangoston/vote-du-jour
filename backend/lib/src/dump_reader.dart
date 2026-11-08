@@ -177,6 +177,8 @@ class _Reader {
                 acteurRef: acteurRef,
                 place: int.tryParse('${votant['numPlace']}'),
                 vote: vote,
+                // Un membre du Gouvernement vote depuis le banc du Gouvernement.
+                usualPlace: votant['causePositionVote'] != 'MG',
               ),
     ];
   }

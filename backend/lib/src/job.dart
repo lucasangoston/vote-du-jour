@@ -67,8 +67,14 @@ class JobPublished extends JobOutcome {
     required this.unrecognized,
     this.warnings = const [],
     this.detailsWritten = 0,
+    this.withoutSeats = const [],
     this.summaries,
   });
+
+  /// Délai après lequel une décision publiée sans sièges n'est plus un simple
+  /// décalage entre le jeu de données des scrutins et l'archive des députés,
+  /// mis à jour séparément, mais un défaut à corriger.
+  static const seatsGracePeriod = Duration(days: 2);
 
   /// Bilan du résumeur ; `null` sans clé d'API.
   final SummaryReport? summaries;
@@ -85,6 +91,16 @@ class JobPublished extends JobOutcome {
 
   /// Fichiers de détail réécrits (les autres n'avaient pas changé).
   final int detailsWritten;
+
+  /// Décisions publiées sans sièges, faute de sièges cohérents (#71).
+  final List<DecisionSummary> withoutSeats;
+
+  /// Décisions de [withoutSeats] votées depuis plus de [seatsGracePeriod] à
+  /// [now] : le job les signale en échec.
+  List<DecisionSummary> stuckWithoutSeats(DateTime now) => [
+    for (final d in withoutSeats)
+      if (now.difference(d.date) > seatsGracePeriod) d,
+  ];
 
   @override
   String toString() => [
@@ -217,6 +233,7 @@ Future<JobOutcome> runJob({
       // encore provisoires ont le décompte du site, sans vote par groupe.
       // Les décisions déjà argumentées (#35) gardent leurs arguments.
       final arguments = await ArgumentsState.read(store, warnings);
+      final withoutSeats = <DecisionSummary>[];
       final detailsWritten = await publishDecisionDetails(
         store,
         buildDecisionDetails(
@@ -224,6 +241,7 @@ Future<JobOutcome> runJob({
           index,
           groups: groups.directory,
           warnings: warnings,
+          withoutSeats: withoutSeats,
         ).map(arguments.apply),
       );
       await store.write(
@@ -275,6 +293,7 @@ Future<JobOutcome> runJob({
         unrecognized: unrecognizedScrutins(scrutins),
         warnings: warnings,
         detailsWritten: detailsWritten,
+        withoutSeats: withoutSeats,
         summaries: await summarize(),
       );
   }

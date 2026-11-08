@@ -71,6 +71,13 @@ téléchargée le 23/10/2026 (hors de `fixtureNumeros`) :
 | 8610 | la proposition de résolution | rejetée : la gauche et le centre contre, DR, UDR et RN pour |
 | 8611 | la proposition de résolution | rejetée : DR partagé (9 pour, 5 abstentions, 1 contre) |
 
+Ajouté pour les sièges d'un jour passé, archive téléchargée le 07/11/2026
+(hors de `fixtureNumeros`) :
+
+| Scrutin | Catégorie | Particularité |
+| --- | --- | --- |
+| 8696 | 12/10/2026 | DR compte 47 membres, dont PA841151, absente, passée chez LIOT le 31/10 : avec son groupe actuel, les sièges de DR ne tombaient pas juste |
+
 `../titres_non_classes.csv` : les 47 intitulés réels que la règle initiale du
 PRD ne classait pas (numéro, date, code du type de vote, sort, titre), produits
 par le spike #15 (outil jetable, supprimé depuis ; voir PR #16)
