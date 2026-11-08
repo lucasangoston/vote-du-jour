@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:vote_contract/vote_contract.dart';
 import 'package:vote_job/vote_job.dart';
 
 const _r2Env = [
@@ -141,6 +142,21 @@ Future<void> main(List<String> arguments) async {
     force: args.flag('force'),
   );
   stdout.writeln(outcome);
+  final github = Platform.environment['GITHUB_ACTIONS'] == 'true';
+  final jobWarnings = switch (outcome) {
+    JobPublished(:final warnings) || JobSkipped(:final warnings) => warnings,
+  };
+  if (github) {
+    for (final w in jobWarnings) {
+      stdout.writeln('::warning title=Publication::$w');
+    }
+  }
+  // Une décision sans sièges depuis plus de deux jours fait échouer
+  // l'exécution, une fois tout publié : sinon l'avertissement passe inaperçu
+  // dans une exécution réussie.
+  final stuck = outcome is JobPublished
+      ? outcome.stuckWithoutSeats(DateTime.now().toUtc())
+      : const <DecisionSummary>[];
   final agendaFile = args.option('agenda-file');
   final agendaUpToDate = await _agenda(
     store,
@@ -151,8 +167,15 @@ Future<void> main(List<String> arguments) async {
   );
   await _argue(store);
   await _notify(store, agendaUpToDate: agendaUpToDate);
+  if (stuck.isNotEmpty) {
+    final message =
+        '${stuck.length} décisions publiées sans sièges depuis plus de '
+        '${JobPublished.seatsGracePeriod.inDays} jours : '
+        '${stuck.map((d) => d.id).join(', ')} (voir « sièges incohérents »)';
+    stdout.writeln(github ? '::error title=Sièges::$message' : message);
+  }
   // Le client HTTP par défaut garde des connexions ouvertes.
-  exit(0);
+  exit(stuck.isEmpty ? 0 : 1);
 }
 
 /// Ordre du jour des prochains jours (#52), après la publication : bloc

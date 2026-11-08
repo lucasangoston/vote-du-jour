@@ -19,15 +19,21 @@ const detailCacheControl = 'public, max-age=300';
 /// [groups] donne le nom et la couleur des groupes ; sans lui, ou pour un
 /// groupe inconnu, le nom est [unknownGroupName]. Il donne aussi la place
 /// des députés, pour les sièges du scrutin (#71) : les décisions dont les
-/// sièges ne passent pas les vérifications sont publiées sans sièges, et un
-/// avertissement les résume dans [warnings].
+/// sièges ne passent pas les vérifications sont publiées sans sièges, un
+/// avertissement les résume dans [warnings] et elles sont ajoutées à
+/// [withoutSeats].
 List<DecisionDetail> buildDecisionDetails(
   Iterable<Scrutin> scrutins,
   DecisionIndex index, {
   GroupDirectory? groups,
   List<String>? warnings,
+  List<DecisionSummary>? withoutSeats,
 }) {
   final byUid = {for (final s in scrutins) s.uid: s};
+  // Places de chaque député au fil des votes, pour les sièges d'un jour passé.
+  final history = groups == null || groups.seats.isEmpty
+      ? null
+      : PlaceHistory.fromScrutins(byUid.values);
   final mismatches = <String>[];
   final details = [
     for (final d in index.decisions)
@@ -35,7 +41,11 @@ List<DecisionDetail> buildDecisionDetails(
         d,
         scrutin: byUid[d.id],
         groups: groups,
-        onSeatsMismatch: (e) => mismatches.add('${d.numero} : ${e.message}'),
+        history: history,
+        onSeatsMismatch: (e) {
+          mismatches.add('${d.numero} : ${e.message}');
+          withoutSeats?.add(d);
+        },
       ),
   ];
   if (mismatches.isNotEmpty) {
@@ -75,6 +85,7 @@ DecisionDetail buildDecisionDetail(
   DecisionSummary decision, {
   Scrutin? scrutin,
   GroupDirectory? groups,
+  PlaceHistory? history,
   void Function(SeatsMismatch)? onSeatsMismatch,
 }) {
   if (scrutin == null) return DecisionDetail(decision: decision);
@@ -83,7 +94,7 @@ DecisionDetail buildDecisionDetail(
       groups.seats.isNotEmpty &&
       decision.status == DecisionStatus.confirmee) {
     try {
-      seats = hemicycleSeats(scrutin, groups);
+      seats = hemicycleSeats(scrutin, groups, history: history);
     } on SeatsMismatch catch (e) {
       onSeatsMismatch?.call(e);
     }

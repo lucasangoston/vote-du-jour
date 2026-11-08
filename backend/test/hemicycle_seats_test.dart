@@ -60,9 +60,13 @@ void main() {
 
   group('annuaire : places des députés et couleurs des groupes', () {
     test('place de chaque député en exercice', () {
-      expect(groups.seats, hasLength(574));
+      expect(
+        groups.seats.values.where((s) => s.sitsOn('2026-11-07')),
+        hasLength(574),
+      );
       // PA1008 : SOC, siège 410.
-      expect(groups.seats['PA1008'], (place: 410, group: 'PO845419'));
+      expect(groups.seats['PA1008']!.place, 410);
+      expect(groups.seats['PA1008']!.group, 'PO845419');
     });
 
     test('couleur officielle des groupes (couleurAssociee)', () {
@@ -155,6 +159,151 @@ void main() {
           reason: '$numero',
         );
       }
+    });
+  });
+
+  group('députés et groupes du jour du scrutin', () {
+    /// Les scrutins des fixtures, pour l'historique des places.
+    final all = [
+      for (final f in Directory('test/fixtures/scrutins').listSync())
+        if (f is File && f.path.endsWith('.json'))
+          parseScrutinJson(f.readAsStringSync()),
+    ];
+    final history = PlaceHistory.fromScrutins(all);
+
+    /// [base] (fichier de fixture) daté du [day].
+    Scrutin dated(int base, String day) => parseScrutinJson(
+      fixtureFile(base).readAsStringSync().replaceFirst(
+        RegExp(r'"dateScrutin": "[^"]*"'),
+        '"dateScrutin": "$day"',
+      ),
+    );
+
+    test('changement de groupe : absent compté dans son groupe du jour', () {
+      // PA841151 a quitté DR (PO845425) pour LIOT (PO845485) le 31/10/2026.
+      // Absente au scrutin 8696 du 12/10, elle comptait chez DR, qui avait
+      // 47 membres : avec son groupe actuel, il manquait un siège à DR
+      // (« effectif de PO845425 : 47 membres, 46 sièges »).
+      final fruchon = groups.seats['PA841151']!;
+      expect(fruchon.groupOn('2026-10-12'), 'PO845425');
+      expect(fruchon.groupOn('2026-11-01'), 'PO845485');
+      final seats = hemicycleSeats(fixture(8696), groups);
+      final seat = seats.firstWhere((s) => s.place == 206);
+      expect(seat.group, 'PO845425');
+      expect(seat.vote, SeatVote.absent);
+      expect(seats.where((s) => s.group == 'PO845425'), hasLength(47));
+    });
+
+    test('effectif publié en retard sur un changement de groupe', () {
+      // Le 03/11, l'archive la place déjà chez LIOT ; un scrutin qui la
+      // compte encore chez DR (effectifs du 12/10) reste cohérent.
+      final seats = hemicycleSeats(dated(8696, '2026-11-03'), groups);
+      expect(seats.firstWhere((s) => s.place == 206).group, 'PO845425');
+      // Bien au-delà de la fenêtre, l'écart n'est plus attribué au retard.
+      expect(
+        () => hemicycleSeats(dated(8696, '2026-12-15'), groups),
+        throwsA(isA<SeatsMismatch>()),
+      );
+    });
+
+    test('député parti : siège de son successeur, jusqu\'à son départ', () {
+      // PA794178 a démissionné le 08/07/2026 ; son suppléant PA794182 siège
+      // au 197 depuis le 09/07.
+      final parti = groups.seats['PA794178']!;
+      final suppleant = groups.seats['PA794182']!;
+      expect(parti.place, 197);
+      expect(parti.sitsOn('2026-07-08'), isTrue);
+      expect(parti.sitsOn('2026-07-09'), isFalse);
+      expect(suppleant.sitsOn('2026-07-08'), isFalse);
+      expect(suppleant.sitsOn('2026-07-09'), isTrue);
+    });
+
+    test('député parti sans successeur : siège relevé dans ses votes', () {
+      // PA718884, élue au Sénat le 30/09/2026 : plus de siège dans
+      // l'archive, pas encore de successeur.
+      expect(groups.seats['PA718884']!.place, isNull);
+      expect(history.placesOn('PA718884', '2026-06-04'), isNotEmpty);
+      expect(
+        () => hemicycleSeats(fixture(7349), groups),
+        throwsA(isA<SeatsMismatch>()),
+      );
+      final seats = hemicycleSeats(fixture(7349), groups, history: history);
+      expect(
+        seats.map((s) => s.place),
+        contains(history.placesOn('PA718884', '2026-06-04').first.place),
+      );
+    });
+
+    test('scrutins des fixtures depuis 2024 : sièges cohérents', () {
+      // 6902 (26/05/2026) : un non-inscrit de trop, cas non résolu.
+      for (final s in all.where((s) => s.numero != 6902)) {
+        expect(
+          () => hemicycleSeats(s, groups, history: history),
+          returnsNormally,
+          reason: '${s.numero}',
+        );
+      }
+    });
+
+    test('place habituelle : la plus relevée autour du jour', () {
+      // Trois votes au 63, un au 64 (siège voisin), puis au 80 après un
+      // changement de siège.
+      Scrutin at(String day, String place) => parseScrutinJson(
+        fixtureFile(8706)
+            .readAsStringSync()
+            .replaceFirst(
+              RegExp(r'"dateScrutin": "[^"]*"'),
+              '"dateScrutin": "$day"',
+            )
+            .replaceFirst(
+              '"acteurRef": "PA793432", "mandatRef": "PM840276", '
+                  '"parDelegation": "true", "numPlace": "063"',
+              '"acteurRef": "PA793432", "mandatRef": "PM840276", '
+                  '"parDelegation": "false", "numPlace": "$place"',
+            ),
+      );
+      final h = PlaceHistory.fromScrutins([
+        at('2026-03-02', '063'),
+        at('2026-03-03', '064'),
+        at('2026-03-04', '063'),
+        at('2026-03-05', '063'),
+        at('2026-09-01', '080'),
+      ]);
+      expect(h.placesOn('PA793432', '2026-03-10').first.place, 63);
+      expect(h.placesOn('PA793432', '2026-09-10').first.place, 80);
+      expect(h.placesOn('PA793432', '2026-03-10').map((c) => c.place), [
+        63,
+        64,
+        80,
+      ]);
+      expect(h.placesOn('PA000000', '2026-03-10'), isEmpty);
+    });
+
+    test('membre du Gouvernement : place relevée au banc, ignorée', () {
+      final vote = [
+        for (final g in fixture(5731).groupVotes) ...g.votants,
+      ].firstWhere((v) => v.acteurRef == 'PA720066');
+      expect(vote.place, 304);
+      expect(vote.usualPlace, isFalse);
+      expect(
+        PlaceHistory.fromScrutins([
+          fixture(5731),
+        ]).placesOn('PA720066', '2026-02-25'),
+        isEmpty,
+      );
+    });
+
+    test('annuaire de version 3 (sans historique) : reconstruit', () {
+      expect(
+        () => GroupDirectory.fromJson({
+          'version': 3,
+          'groups': <String, Object?>{},
+          'seats': {
+            'PA1008': [410, 'PO845419'],
+          },
+        }),
+        throwsFormatException,
+      );
     });
   });
 
@@ -329,5 +478,34 @@ void main() {
       expect(countOf(detail.seats!, SeatVote.pour), pour, reason: '$numero');
       expect(countOf(detail.seats!, SeatVote.contre), contre);
     }
+    expect((outcome as JobPublished).withoutSeats, isEmpty);
+  });
+
+  test('décisions sans sièges : en échec après deux jours', () async {
+    final dir = Directory.systemTemp.createTempSync('vote_job_seats');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final outcome = await runJob(
+      source: FakeDumpSource(
+        'Sun, 25 Oct 2026 10:30:00 GMT',
+        archive: () => fixtureArchive(numeros: [8706]),
+      ),
+      // Un député par groupe : les sièges ne tombent pas juste.
+      organes: FakeDumpSource(
+        'Sun, 25 Oct 2026 00:00:34 GMT',
+        archive: organesArchive,
+      ),
+      store: LocalDirectoryStore(dir.path),
+      clock: () => clock,
+    );
+    final published = outcome as JobPublished;
+    expect(published.withoutSeats.map((d) => d.numero), [8706]);
+    // Votée le 13/10 : un simple décalage des données jusqu'au 15/10.
+    expect(published.stuckWithoutSeats(DateTime.utc(2026, 10, 14)), isEmpty);
+    expect(
+      published
+          .stuckWithoutSeats(DateTime.utc(2026, 10, 16))
+          .map((d) => d.numero),
+      [8706],
+    );
   });
 }

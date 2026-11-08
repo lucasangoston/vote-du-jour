@@ -93,13 +93,24 @@ class GroupVote {
 
 /// Vote nominatif d'un député lors d'un scrutin (#71).
 class NominalVote {
-  const NominalVote({required this.acteurRef, required this.vote, this.place});
+  const NominalVote({
+    required this.acteurRef,
+    required this.vote,
+    this.place,
+    this.usualPlace = true,
+  });
 
   /// Référence du député (acteur), par exemple `PA793432`.
   final String acteurRef;
 
   /// Place occupée dans l'hémicycle (`numPlace`), si l'open data la donne.
   final int? place;
+
+  /// [place] est le siège du député : faux pour un membre du Gouvernement
+  /// (`causePositionVote` `MG`), relevé au banc du Gouvernement (sa place
+  /// habituelle dans 1 % des cas, contre 99,5 % pour un vote ordinaire et
+  /// 89 % pour un vote par délégation, sur les scrutins de la législature).
+  final bool usualPlace;
 
   /// [SeatVote.pour], [SeatVote.contre], [SeatVote.abstention] ou
   /// [SeatVote.nonVotant].

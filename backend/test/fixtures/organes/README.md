@@ -40,9 +40,20 @@ moyenne de son groupe, plus `PA840721` (UDR, ancien membre de `PO845520` et de
 | PA795966 | RN | 76 |
 
 Ajouté pour le ticket #71 (sièges du scrutin) : `hemicycle_acteurs.json`, les
-574 députés en exercice de la même archive téléchargée le 25/10/2026
-(`Last-Modified: Sun, 25 Oct 2026 00:00:34 GMT`), réduits aux champs que lit
-le job : `uid` (`#text`) et, parmi les mandats de la 17e législature, ceux de
-type `ASSEMBLEE` (`dateFin`, `mandature.placeHemicycle`) et `GP` (`dateFin`,
+654 députés de la 17e législature (574 en exercice, 80 partis), de la même
+archive téléchargée le 07/11/2026 (`Last-Modified: Sat, 07 Nov 2026 01:00:35
+GMT`), réduits aux champs que lit le job : `uid` (`#text`) et, parmi les
+mandats de la 17e législature, ceux de type `ASSEMBLEE` (`dateDebut`,
+`dateFin`, `mandature.datePriseFonction`, `mandature.placeHemicycle`,
+`election.refCirconscription`) et `GP` (`dateDebut`, `dateFin`,
 `organes.organeRef`). Avec les scrutins 8706 et 8610, ils redonnent les sièges
 de `design/maquettes/data/seats.json`.
+
+Cas utiles aux tests des sièges d'un jour passé :
+
+| Acteur | Cas |
+| --- | --- |
+| PA841151 | quitte DR (`PO845425`) pour LIOT (`PO845485`) le 31/10/2026 ; absente au scrutin 8696 du 12/10 |
+| PA794178 | démissionne le 08/07/2026, plus de siège dans l'archive |
+| PA794182 | son suppléant, au siège 197 depuis le 09/07/2026 (même circonscription) |
+| PA718884 | élue au Sénat le 30/09/2026, sans successeur dans l'archive |
