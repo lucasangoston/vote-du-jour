@@ -154,10 +154,14 @@ void main() {
       final provisional = r.index.decisions.firstWhere((d) => d.numero == 1194);
       expect(provisional.status, DecisionStatus.provisoire);
       expect(provisional.dossierUrl, isNotNull);
+      // Le site ne dit pas si un scrutin est solennel : la décision
+      // provisoire ne l'est jamais, la confirmée l'apprend du jeu de données.
+      expect(confirmed.solennel, isTrue);
+      expect(provisional.solennel, isFalse);
       expect({
         ...provisional.toJson(),
         'status': 'confirmee',
-      }, confirmed.toJson());
+      }, {...confirmed.toJson()}..remove('solennel'));
     });
 
     test('amendement : jamais publié', () {
