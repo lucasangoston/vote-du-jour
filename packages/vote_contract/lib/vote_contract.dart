@@ -16,4 +16,5 @@ export 'src/importance.dart';
 export 'src/in_debate.dart';
 export 'src/paths.dart';
 export 'src/plain_summary.dart';
+export 'src/social_post.dart';
 export 'src/upcoming_item.dart';
