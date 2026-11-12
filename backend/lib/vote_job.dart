@@ -10,6 +10,7 @@ export 'src/arguments/arguments_pass.dart';
 export 'src/arguments/arguments_prompt.dart';
 export 'src/arguments/arguments_state.dart';
 export 'src/arguments/compte_rendu.dart';
+export 'src/content/content_selection.dart';
 export 'src/decision_details.dart';
 export 'src/decision_labels.dart';
 export 'src/decision_selector.dart';
