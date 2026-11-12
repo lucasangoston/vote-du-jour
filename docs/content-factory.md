@@ -67,8 +67,10 @@ Déterministe, en trois filtres. Rien n'est publié un jour sans décision
 2. Classement :
    1. `isImportantDecision` (solennel, motion de censure, lecture définitive,
       CMP) ;
-   2. `type: ensemble` ;
-   3. `type: resolution`.
+   2. les votes qui décident du sort d'un texte entier : `ensemble`,
+      `rejet_prealable`, `premiere_partie_budget`,
+      `declaration_gouvernement` ;
+   3. `resolution` et `autre`.
 
    À priorité égale : écart serré (au plus 3 % des exprimés), puis
    configuration inhabituelle (unanimité, groupe partagé), puis présence
