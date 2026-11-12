@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:archive/archive.dart';
+import 'package:vote_contract/vote_contract.dart'
+    show cmpStage, definitiveLectureStage;
 
 import 'decision_selector.dart' show normalizeTitle;
 import 'dump_reader.dart' show DumpFormatException;
@@ -21,8 +23,8 @@ enum Lecture {
   deuxieme("2e lecture à l'AN"),
   troisieme("3e lecture à l'AN"),
   nouvelle("Nouvelle lecture à l'AN"),
-  definitive("Lecture définitive à l'AN"),
-  commissionMixteParitaire('Texte de compromis (CMP)'),
+  definitive(definitiveLectureStage),
+  commissionMixteParitaire(cmpStage),
   unique("Lecture unique à l'AN");
 
   const Lecture(this.label);

@@ -127,6 +127,7 @@ DecisionSummary _summary(
     dossierUrl: labels.dossierUrl,
     count: voteCountOf(s.decompte).tally,
     arc: arc,
+    solennel: s.codeTypeVote == 'SPS',
   );
 }
 
