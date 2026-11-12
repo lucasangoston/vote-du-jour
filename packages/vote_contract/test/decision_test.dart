@@ -408,4 +408,43 @@ void main() {
       );
     });
   });
+
+  group('solennel (#107)', () {
+    test('absent (index antérieur) : non solennel', () {
+      expect(DecisionSummary.tryFromJson(_legacyScrutin)!.solennel, isFalse);
+    });
+
+    test('aller-retour d\'un scrutin solennel', () {
+      final json = {..._legacyScrutin, 'solennel': true};
+      final d = DecisionSummary.tryFromJson(json)!;
+      expect(d.solennel, isTrue);
+      expect((_roundTrip(d.toJson()) as Map)['solennel'], isTrue);
+    });
+
+    test('écrit seulement quand il vaut true', () {
+      final d = DecisionSummary.tryFromJson(_legacyScrutin)!;
+      expect(d.toJson().containsKey('solennel'), isFalse);
+    });
+
+    test(
+      'une valeur d\'un autre type vaut false, la décision reste lisible',
+      () {
+        final d = DecisionSummary.tryFromJson({
+          ..._legacyScrutin,
+          'solennel': 'oui',
+        })!;
+        expect(d.solennel, isFalse);
+      },
+    );
+
+    test('conservé par withSummary, withCount et withArc', () {
+      final d = DecisionSummary.tryFromJson({
+        ..._legacyScrutin,
+        'solennel': true,
+      })!;
+      expect(d.withSummary(null).solennel, isTrue);
+      expect(d.withCount(null).solennel, isTrue);
+      expect(d.withArc(null).solennel, isTrue);
+    });
+  });
 }
