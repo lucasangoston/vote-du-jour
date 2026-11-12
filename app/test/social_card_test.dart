@@ -66,7 +66,11 @@ void main() {
       expect(_content(9241).turnout, '267 votants');
       expect(_content(8610).turnout, isNull);
       expect(
-        socialTurnout(const VoteTally(pour: 1, contre: 0, abstentions: 0), 574),
+        socialTurnout(
+          const VoteTally(pour: 1, contre: 0, abstentions: 0),
+          574,
+          censure: false,
+        ),
         '1 votant',
       );
     });
