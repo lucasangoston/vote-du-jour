@@ -84,6 +84,18 @@ Newsreader, chargées par `FontLoader`). Fond noir, angles droits, sans ombre
 ni dégradé. Référence visuelle : `app/prototype/social_card/rendus/` sur
 `prototype/social-card`.
 
+Code : `app/lib/src/social_card/` (contenu, widget, polices). Rendu en ligne
+de commande, depuis `app/` :
+
+```bash
+SOCIAL_CARD_DETAIL=<détail.json> SOCIAL_CARD_OUT=<carte.png> \
+  [SOCIAL_CARD_TITLE=<titre écrit à la main>] \
+  flutter test tool/social_card/render_social_card_test.dart
+```
+
+L'outil écrit aussi `<carte.png>.json` : `{"status": "ok", "title", "titleSize"}`,
+`{"status": "titre_a_ecrire"}` (pas de PNG) ou `{"status": "pas_de_carte"}`.
+
 De haut en bas :
 
 1. Languette : étape raccourcie et date insécable, en capitales Geist
