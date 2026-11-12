@@ -19,6 +19,7 @@ DecisionSummary decision(
   String? stage = 'Texte de compromis (CMP)',
   String shortTitle = 'Juges spécialisés',
   PlainSummary? summary,
+  bool solennel = false,
 }) => DecisionSummary(
   id: id,
   numero: voteMode == VoteMode.scrutinPublic ? numero : null,
@@ -32,19 +33,7 @@ DecisionSummary decision(
   shortTitle: shortTitle,
   stage: stage,
   summary: summary,
-);
-
-Scrutin scrutin(String uid, String code, {int numero = 100}) => Scrutin(
-  uid: uid,
-  numero: numero,
-  date: DateTime.utc(2026, 10, 15),
-  titre: "l'ensemble du projet de loi",
-  codeTypeVote: code,
-  libelleTypeVote: '',
-  result: VoteResult.adopte,
-  decompte: const Decompte(pour: 1, contre: 0, abstentions: 0, nonVotants: 0),
-  dossierRef: null,
-  groupVotes: const [],
+  solennel: solennel,
 );
 
 /// Vote solennel à venir de test : projet de loi de finances, séance S1.
@@ -112,91 +101,6 @@ class FakeSender implements PushSender {
 }
 
 void main() {
-  group('isImportantDecision', () {
-    test('scrutin solennel, quelle que soit l’étape', () {
-      final d = decision('A', stage: "1re lecture à l'AN");
-      expect(isImportantDecision(d, codeTypeVote: 'SPS'), isTrue);
-      expect(isImportantDecision(d, codeTypeVote: 'SPO'), isFalse);
-      expect(isImportantDecision(d), isFalse);
-    });
-
-    test('motion de censure, adoptée ou rejetée', () {
-      final d = decision(
-        'A',
-        type: DecisionType.motionDeCensure,
-        result: VoteResult.rejete,
-        stage: 'Motion de censure',
-      );
-      expect(isImportantDecision(d), isTrue);
-      expect(isImportantDecision(d, codeTypeVote: 'MOC'), isTrue);
-    });
-
-    test('lecture définitive ou CMP, adopté ou rejeté', () {
-      expect(isImportantDecision(decision('A')), isTrue);
-      expect(
-        isImportantDecision(
-          decision(
-            'B',
-            stage: "Lecture définitive à l'AN",
-            result: VoteResult.rejete,
-          ),
-        ),
-        isTrue,
-      );
-      expect(
-        isImportantDecision(
-          decision(
-            'C',
-            type: DecisionType.rejetPrealable,
-            result: VoteResult.rejete,
-            stage: 'Motion de rejet préalable, Texte de compromis (CMP)',
-          ),
-        ),
-        isTrue,
-      );
-    });
-
-    test('autres lectures en scrutin ordinaire : non', () {
-      for (final stage in [
-        "1re lecture à l'AN",
-        "Nouvelle lecture à l'AN",
-        "Vote sur l'ensemble du texte",
-        null,
-      ]) {
-        expect(
-          isImportantDecision(decision('A', stage: stage), codeTypeVote: 'SPO'),
-          isFalse,
-          reason: '$stage',
-        );
-      }
-    });
-
-    test('jamais : main levée, résolution, décision provisoire', () {
-      expect(
-        isImportantDecision(decision('A', voteMode: VoteMode.mainLevee)),
-        isFalse,
-      );
-      expect(
-        isImportantDecision(
-          decision(
-            'B',
-            type: DecisionType.resolution,
-            stage: 'Résolution (sans valeur de loi)',
-          ),
-          codeTypeVote: 'SPS',
-        ),
-        isFalse,
-      );
-      expect(
-        isImportantDecision(
-          decision('C', status: DecisionStatus.provisoire),
-          codeTypeVote: 'SPS',
-        ),
-        isFalse,
-      );
-    });
-  });
-
   group('notificationFor', () {
     test('titre, explication, lien profond, son par défaut', () {
       final d = decision(
@@ -280,20 +184,13 @@ void main() {
     });
     tearDown(() => dir.deleteSync(recursive: true));
 
-    Future<void> publish(
-      List<DecisionSummary> decisions, {
-      List<Scrutin> scrutins = const [],
-    }) async {
+    Future<void> publish(List<DecisionSummary> decisions) async {
       await store.write(
         indexPath,
         jsonEncode(
           DecisionIndex(generatedAt: now, decisions: decisions).toJson(),
         ),
       );
-      await ConfirmedSnapshot(
-        lastNumero: 9999,
-        scrutins: scrutins,
-      ).write(store);
     }
 
     Future<NotificationReport> pass() =>
@@ -331,19 +228,13 @@ void main() {
       expect(((await readState())['sent'] as Map)['A'], now.toIso8601String());
     });
 
-    test('solennel repéré grâce à l’instantané des scrutins', () async {
+    test('solennel repéré grâce au champ publié (#107)', () async {
       await publish([]);
       await pass();
-      await publish(
-        [
-          decision('S', numero: 1, stage: "1re lecture à l'AN"),
-          decision('O', numero: 2, stage: "1re lecture à l'AN"),
-        ],
-        scrutins: [
-          scrutin('S', 'SPS', numero: 1),
-          scrutin('O', 'SPO', numero: 2),
-        ],
-      );
+      await publish([
+        decision('S', numero: 1, stage: "1re lecture à l'AN", solennel: true),
+        decision('O', numero: 2, stage: "1re lecture à l'AN"),
+      ]);
       expect((await pass()).sent, ['S']);
     });
 

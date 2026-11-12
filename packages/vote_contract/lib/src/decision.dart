@@ -102,6 +102,7 @@ class DecisionSummary {
     this.summary,
     this.count,
     this.arc,
+    this.solennel = false,
   }) : assert(
          numero != null || voteMode != VoteMode.scrutinPublic,
          'un scrutin public a un numéro',
@@ -183,6 +184,12 @@ class DecisionSummary {
   /// alors par sens, depuis [count].
   final List<HemicycleSegment>? arc;
 
+  /// Scrutin public solennel (code `SPS` du jeu de données) : un vote
+  /// important, quelle que soit l'étape. Champ optionnel du JSON, écrit
+  /// seulement quand il vaut `true` ; absent, il vaut `false` (index publiés
+  /// avant son ajout, décisions provisoires : le site ne le dit pas).
+  final bool solennel;
+
   /// Titre à afficher : celui du résumé, sinon [shortTitle], sinon
   /// [officialTitle].
   String get displayTitle => summary?.title ?? shortTitle ?? officialTitle;
@@ -211,6 +218,7 @@ class DecisionSummary {
     summary: summary,
     count: count,
     arc: arc,
+    solennel: solennel,
   );
 
   /// La même décision avec le décompte [count] (ou sans décompte).
@@ -230,6 +238,7 @@ class DecisionSummary {
     summary: summary,
     count: count,
     arc: arc,
+    solennel: solennel,
   );
 
   /// La même décision avec l'arc [arc] (ou sans arc dans l'ordre de
@@ -250,6 +259,7 @@ class DecisionSummary {
     summary: summary,
     count: count,
     arc: arc,
+    solennel: solennel,
   );
 
   /// Lit une décision ; renvoie `null` si elle utilise une valeur d'énumération
@@ -300,6 +310,7 @@ class DecisionSummary {
       summary: PlainSummary.tryFromJson(json['summary']),
       count: VoteTally.tryFromJson(json['count']),
       arc: HemicycleSegment.tryParseList(json['arc']),
+      solennel: json['solennel'] == true,
     );
   }
 
@@ -321,6 +332,7 @@ class DecisionSummary {
     'summary': ?summary?.toJson(withPoints: summaryPoints),
     'count': ?count?.toJson(),
     'arc': ?arc?.map((s) => s.toJson()).toList(),
+    if (solennel) 'solennel': true,
   };
 }
 

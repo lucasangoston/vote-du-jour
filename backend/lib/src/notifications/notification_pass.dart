@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:vote_contract/vote_contract.dart';
 
-import '../dossier_index.dart' show Lecture;
-import '../live/live_state.dart';
 import '../object_store.dart';
 import 'debate_notification.dart';
 import 'eve_notification.dart';
@@ -23,38 +21,6 @@ const maxNotificationsPerPass = 3;
 /// Une décision plus ancienne n'est plus notifiée (job longtemps arrêté,
 /// étape corrigée après coup par un nouveau jeu de données…).
 const notificationMaxAge = Duration(days: 7);
-
-/// Étapes qui rendent un vote sur un texte important.
-final _importantLectures = [
-  Lecture.definitive,
-  Lecture.commissionMixteParitaire,
-];
-
-/// La décision [d] est-elle un vote important, à notifier (#34) ?
-///
-/// - scrutin public solennel ([codeTypeVote] `SPS`) ;
-/// - motion de censure (type, ou code `MOC`) ;
-/// - texte en lecture définitive ou texte de compromis (CMP), adopté ou
-///   rejeté.
-///
-/// Jamais : vote à main levée, proposition de résolution, décision
-/// provisoire (elle est notifiée à sa confirmation, pour ne jamais annoncer
-/// un résultat faux).
-///
-/// [codeTypeVote] vient du jeu de données (`state/scrutins-confirmes.json`) :
-/// l'index publié ne dit pas si un scrutin est solennel.
-bool isImportantDecision(DecisionSummary d, {String? codeTypeVote}) {
-  if (d.status != DecisionStatus.confirmee) return false;
-  if (d.voteMode != VoteMode.scrutinPublic) return false;
-  if (d.type == DecisionType.resolution) return false;
-  if (codeTypeVote == 'SPS' || codeTypeVote == 'MOC') return true;
-  if (d.type == DecisionType.motionDeCensure) return true;
-  final stage = d.stage;
-  return stage != null &&
-      (d.type == DecisionType.ensembleTexte ||
-          d.type == DecisionType.rejetPrealable) &&
-      _importantLectures.any((l) => stage.endsWith(l.label));
-}
 
 /// Lien profond vers le détail de la décision [id], déjà géré par l'app
 /// (`decisionIdFromDeepLink`).
@@ -351,24 +317,13 @@ Future<NotificationReport> runNotificationPass({
     }
   }
 
-  // Type de vote (solennel…) des scrutins du jeu de données.
-  final snapshot = await ConfirmedSnapshot.read(store, report.warnings);
-  if (snapshot == null) {
-    report.warnings.add(
-      'instantané des scrutins absent : scrutins solennels non repérés',
-    );
-  }
-  final codes = {
-    for (final s in snapshot?.scrutins ?? const []) s.uid: s.codeTypeVote,
-  };
-
   final oldest = now.subtract(notificationMaxAge);
   final candidates =
       [
         for (final d in index.decisions)
           if (!state.sent.containsKey(d.id) &&
               !d.date.isBefore(oldest) &&
-              isImportantDecision(d, codeTypeVote: codes[d.id]))
+              isImportantDecision(d))
             d,
       ]..sort((a, b) {
         final byDate = a.date.compareTo(b.date);
