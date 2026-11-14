@@ -1,0 +1,90 @@
+name: Issue du jour (content factory)
+
+# Brouillons des posts du jour (#111) : après chaque passage réussi de la
+# publication, ouvre au plus une issue par jour, après 13 h (Paris), avec 0 à
+# 3 décisions. Une panne ici ne touche jamais la publication des données.
+on:
+  workflow_run:
+    workflows: ['Publication des décisions']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: content
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
+      WORK: ${{ github.workspace }}/content-work
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Issues récentes de la factory
+        run: |
+          gh label create content --color 5319E7 \
+            --description "Issue du jour de la content factory" 2>/dev/null || true
+          gh label create publier --color 0E8A16 \
+            --description "Publier les brouillons cochés" 2>/dev/null || true
+          since=$(date -u -d '7 days ago' +%Y-%m-%d)
+          gh issue list --label content --state all --limit 50 \
+            --search "created:>=$since" --json title,body > "$RUNNER_TEMP/issues.json"
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+
+      - name: Sélection des décisions du jour
+        id: select
+        working-directory: backend
+        run: |
+          dart pub get
+          dart run bin/content.dart select --base-url "$BASE_URL" \
+            --issues "$RUNNER_TEMP/issues.json" --dir "$WORK"
+          echo "count=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$WORK/selection.json")" >> "$GITHUB_OUTPUT"
+
+      - if: steps.select.outputs.count != '0'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+
+      - name: Rendu des cartes
+        if: steps.select.outputs.count != '0'
+        working-directory: app
+        run: |
+          flutter pub get
+          for id in $(python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))))' "$WORK/selection.json"); do
+            SOCIAL_CARD_DETAIL="$WORK/$id.json" SOCIAL_CARD_OUT="$WORK/$id.png" \
+              flutter test tool/social_card/render_social_card_test.dart
+            cat "$WORK/$id.png.json"; echo
+          done
+
+      - name: Envoi des cartes et corps de l'issue
+        if: steps.select.outputs.count != '0'
+        working-directory: backend
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: dart run bin/content.dart issue --base-url "$BASE_URL" --dir "$WORK" --store r2
+
+      - name: Ouverture de l'issue du jour
+        if: steps.select.outputs.count != '0'
+        run: |
+          if [ -s "$WORK/issue.md" ]; then
+            gh issue create --title "$(cat "$WORK/issue-title.txt")" \
+              --label content --body-file "$WORK/issue.md"
+          else
+            echo "aucun brouillon"
+          fi
