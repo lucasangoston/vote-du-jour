@@ -19,6 +19,26 @@ String dailyIssueTitle(DateTime parisDay) =>
 String draftImageKey(DateTime parisDay, String decisionId) =>
     'content/${_isoDay(parisDay)}/$decisionId.png';
 
+/// Clé de l'aperçu Bluesky d'un brouillon (#122) ; [version] distingue les
+/// aperçus refaits après une modification (cache des images de GitHub).
+String draftPreviewKey(
+  DateTime parisDay,
+  String decisionId, {
+  String? version,
+}) =>
+    'content/${_isoDay(parisDay)}/$decisionId-apercu'
+    '${version == null ? '' : '-$version'}.png';
+
+/// Jour de l'issue du jour [body], d'après son en-tête, ou `null`.
+DateTime? dailyIssueDay(String body) {
+  final m = RegExp(
+    '$dailyIssueFormat day:(\\d{4})-(\\d{2})-(\\d{2})',
+  ).firstMatch(body);
+  return m == null
+      ? null
+      : DateTime.utc(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
+}
+
 String _isoDay(DateTime d) =>
     '${d.year}-${'${d.month}'.padLeft(2, '0')}-${'${d.day}'.padLeft(2, '0')}';
 
@@ -31,6 +51,7 @@ class Draft {
     this.text,
     this.alt,
     this.imageUrl,
+    this.previewUrl,
     this.checked = false,
     this.postUrl,
     this.problems = const [],
@@ -48,6 +69,9 @@ class Draft {
   final String? text;
   final String? alt;
   final String? imageUrl;
+
+  /// Aperçu Bluesky du post (#122).
+  final String? previewUrl;
 
   /// Case « Publier ce post » cochée.
   final bool checked;
@@ -96,7 +120,17 @@ String renderDailyIssue(DateTime parisDay, List<Draft> drafts) {
         ..writeln(_fence(''));
     } else {
       out
+        ..writeln(
+          d.previewUrl == null
+              ? ''
+              : '**Aperçu Bluesky**\n\n'
+                    '<img src="${d.previewUrl}" width="390" alt="Aperçu">\n',
+        )
+        ..writeln('<details><summary>Carte seule (1080 × 1350)</summary>')
+        ..writeln()
         ..writeln('![Carte](${d.imageUrl})')
+        ..writeln()
+        ..writeln('</details>')
         ..writeln()
         ..writeln('**Texte du post** (${postLength(d.text!)} / $postMaxLength)')
         ..writeln()

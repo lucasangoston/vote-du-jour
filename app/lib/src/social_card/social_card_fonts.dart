@@ -14,4 +14,9 @@ Future<void> loadSocialCardFonts() async {
         ..addFont(font('Geist-Bold.ttf')))
       .load();
   await (FontLoader(newsreader)..addFont(font('Newsreader.ttf'))).load();
+  // Icônes de l'aperçu Bluesky (#122), livrées par Flutter avec
+  // `uses-material-design`.
+  await (FontLoader(
+    'MaterialIcons',
+  )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
 }

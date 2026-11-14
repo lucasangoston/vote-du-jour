@@ -100,6 +100,17 @@ Future<String> buildDailyIssue({
         );
         final text = postText(detail, title: title);
         final alt = altText(detail, title: title);
+        final preview = File('${dir.path}/$id-apercu.png');
+        String? previewUrl;
+        if (await preview.exists()) {
+          final previewKey = draftPreviewKey(parisDay, id);
+          await store.writeBytes(
+            previewKey,
+            await preview.readAsBytes(),
+            contentType: 'image/png',
+          );
+          previewUrl = '$publicBaseUrl/$previewKey';
+        }
         drafts.add(
           Draft(
             decisionId: id,
@@ -108,6 +119,7 @@ Future<String> buildDailyIssue({
             text: text,
             alt: alt,
             imageUrl: '$publicBaseUrl/$key',
+            previewUrl: previewUrl,
             problems: proofread(detail, text: text, alt: alt),
           ),
         );

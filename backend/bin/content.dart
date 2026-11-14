@@ -10,10 +10,28 @@
 //
 //   (rendu des cartes : app/tool/social_card/render_social_card_test.dart)
 //
+//   dart run bin/content.dart texts --base-url <URL> --dir <dossier>
+//       Écrit <id>.post.txt pour chaque carte rendue (aperçus, #122).
+//
+//   (aperçus : app/tool/social_card/render_bluesky_preview_test.dart)
+//
 //   dart run bin/content.dart issue --base-url <URL publique> \
 //     --dir <dossier> --store r2|local [--out <dossier local>]
 //       Envoie les cartes rendues et écrit <dossier>/issue.md et
 //       <dossier>/issue-title.txt (vides s'il n'y a aucun brouillon).
+//
+// Relecture d'une issue du jour modifiée (#122), lancée par
+// content-review.yml :
+//
+//   dart run bin/content.dart review-plan --base-url <URL> --dir <dossier> \
+//     --body <corps de l'issue>
+//       Prépare détails, textes et cartes ; écrit <dossier>/review.json.
+//
+//   (cartes des titres écrits à la main, puis aperçus)
+//
+//   dart run bin/content.dart review-comment --base-url <URL> \
+//     --dir <dossier> --body <corps> --version <n> --store r2|local
+//       Envoie les aperçus, écrit <dossier>/review.md.
 import 'dart:convert';
 import 'dart:io';
 
@@ -27,9 +45,20 @@ Future<void> main(List<String> arguments) async {
     ..addOption('dir', mandatory: true, help: 'Dossier de travail.')
     ..addOption('issues', help: 'Issues `content` récentes (JSON de gh).')
     ..addOption('store', allowed: ['local', 'r2'], defaultsTo: 'local')
-    ..addOption('out', defaultsTo: 'build/publish', help: 'Store local.');
-  if (arguments.isEmpty || !['select', 'issue'].contains(arguments.first)) {
-    stderr.writeln('Usage : content.dart select|issue …\n${parser.usage}');
+    ..addOption('out', defaultsTo: 'build/publish', help: 'Store local.')
+    ..addOption('body', help: 'Corps de l\'issue du jour (fichier).')
+    ..addOption('version', help: 'Version des aperçus (cache des images).');
+  const commands = [
+    'select',
+    'texts',
+    'issue',
+    'review-plan',
+    'review-comment',
+  ];
+  if (arguments.isEmpty || !commands.contains(arguments.first)) {
+    stderr.writeln(
+      'Usage : content.dart ${commands.join('|')} …\n${parser.usage}',
+    );
     exit(64);
   }
   final args = parser.parse(arguments.skip(1).toList());
@@ -92,5 +121,33 @@ Future<void> main(List<String> arguments) async {
         '${dir.path}/issue-title.txt',
       ).writeAsStringSync(body.isEmpty ? '' : dailyIssueTitle(day));
       stdout.writeln(body.isEmpty ? 'aucun brouillon' : dailyIssueTitle(day));
+    case 'texts':
+      await writeDraftTexts(dir);
+    case 'review-plan':
+      final client = http.Client();
+      try {
+        await planReview(
+          client: client,
+          baseUrl: baseUrl,
+          body: File(args['body'] as String).readAsStringSync(),
+          dir: dir,
+        );
+      } finally {
+        client.close();
+      }
+      stdout.writeln(File('${dir.path}/review.json').readAsStringSync());
+    case 'review-comment':
+      final store = args['store'] == 'r2'
+          ? r2StoreFromEnvironment()
+          : LocalDirectoryStore(args['out'] as String);
+      final comment = await buildReviewComment(
+        store: store,
+        publicBaseUrl: baseUrl,
+        body: File(args['body'] as String).readAsStringSync(),
+        dir: dir,
+        version:
+            (args['version'] as String?) ?? '${now.millisecondsSinceEpoch}',
+      );
+      File('${dir.path}/review.md').writeAsStringSync(comment);
   }
 }
