@@ -1,0 +1,96 @@
+name: Relecture de l'issue du jour (content factory)
+
+# À chaque modification de l'issue du jour (#122) : relit les textes édités
+# (relecteur #120), refait les aperçus Bluesky, produit carte et textes d'un
+# titre écrit à la main, et met à jour un seul commentaire. Ne publie rien.
+on:
+  issues:
+    types: [edited]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  # La dernière modification l'emporte.
+  group: content-review-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'content') &&
+      github.event.issue.state == 'open' &&
+      github.event.changes.body != null &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
+      WORK: ${{ github.workspace }}/review-work
+      BODY_FILE: ${{ github.workspace }}/issue-body.md
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Corps de l'issue
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$BODY" > "$BODY_FILE"
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+
+      - name: Préparation (détails, textes, cartes)
+        working-directory: backend
+        run: |
+          dart pub get
+          dart run bin/content.dart review-plan --base-url "$BASE_URL" \
+            --dir "$WORK" --body "$BODY_FILE"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+
+      - name: Cartes des titres écrits et aperçus
+        working-directory: app
+        run: |
+          flutter pub get
+          for row in $(jq -r '.[] | "\(.id):\(if .render then 1 else 0 end)"' "$WORK/review.json"); do
+            id=${row%%:*}; render=${row##*:}
+            if [ "$render" = 1 ]; then
+              SOCIAL_CARD_DETAIL="$WORK/$id.json" SOCIAL_CARD_OUT="$WORK/$id.png" \
+              SOCIAL_CARD_TITLE="$(cat "$WORK/$id.title.txt")" \
+                flutter test tool/social_card/render_social_card_test.dart
+            fi
+            if [ -f "$WORK/$id.png" ]; then
+              PREVIEW_CARD="$WORK/$id.png" PREVIEW_TEXT="$WORK/$id.post.txt" \
+              PREVIEW_OUT="$WORK/$id-apercu.png" \
+                flutter test tool/social_card/render_bluesky_preview_test.dart
+            fi
+          done
+
+      - name: Commentaire de relecture
+        working-directory: backend
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          dart run bin/content.dart review-comment --base-url "$BASE_URL" \
+            --dir "$WORK" --body "$BODY_FILE" --version "${{ github.run_id }}" --store r2
+
+      - name: Mise à jour du commentaire
+        run: |
+          id=$(gh api "repos/${{ github.repository }}/issues/$ISSUE/comments" --paginate \
+            --jq '.[] | select(.body | startswith("<!-- content-review -->")) | .id' | head -1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$id" \
+              -F body=@"$WORK/review.md" > /dev/null
+          else
+            gh issue comment "$ISSUE" --body-file "$WORK/review.md"
+          fi

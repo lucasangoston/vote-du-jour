@@ -69,6 +69,19 @@ jobs:
             cat "$WORK/$id.png.json"; echo
           done
 
+      - name: Textes et aperçus Bluesky
+        if: steps.select.outputs.count != '0'
+        run: |
+          (cd backend && dart run bin/content.dart texts --base-url "$BASE_URL" --dir "$WORK")
+          cd app
+          for id in $(python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))))' "$WORK/selection.json"); do
+            if [ -f "$WORK/$id.post.txt" ]; then
+              PREVIEW_CARD="$WORK/$id.png" PREVIEW_TEXT="$WORK/$id.post.txt" \
+              PREVIEW_OUT="$WORK/$id-apercu.png" \
+                flutter test tool/social_card/render_bluesky_preview_test.dart
+            fi
+          done
+
       - name: Envoi des cartes et corps de l'issue
         if: steps.select.outputs.count != '0'
         working-directory: backend
