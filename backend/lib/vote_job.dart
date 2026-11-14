@@ -14,6 +14,7 @@ export 'src/content/content_pass.dart';
 export 'src/content/content_selection.dart';
 export 'src/content/daily_issue.dart';
 export 'src/content/post_text.dart';
+export 'src/content/proofreader.dart';
 export 'src/decision_details.dart';
 export 'src/decision_labels.dart';
 export 'src/decision_selector.dart';
