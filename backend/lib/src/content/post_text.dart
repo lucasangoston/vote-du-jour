@@ -27,12 +27,15 @@ int postLength(String text) => text.runes.length;
 String postText(DecisionDetail detail, {required String title}) {
   final d = detail.decision;
   final censure = d.type == DecisionType.motionDeCensure;
-  final head = '${_verdict(d.result)} : ${_sentence(title)}';
+  final head = '${_verdict(d.result)} — ${_sentence(frenchTypography(title))}';
   final figures = _sentence(
     _oneSpace(socialFigures(d.count!, censure: censure)),
   );
   final camps = _campsLine(detail.groups, censure: censure);
-  final explanation = d.summary?.explanation;
+  final explanation = switch (d.summary?.explanation) {
+    final e? => frenchTypography(e),
+    null => null,
+  };
 
   String compose({required bool withCamps, required bool withExplanation}) => [
     head,
@@ -72,12 +75,12 @@ String altText(DecisionDetail detail, {required String title}) {
   final hemicycle = censure
       ? 'Hémicycle : en blanc, les députés qui ont voté la motion'
             '${_list(positions[GroupPosition.pour], prefix: ' (', suffix: ')')}'
-      : 'Hémicycle coloré par le vote : ${[for (final (p, word) in _campWords)
-          if (positions[p] case final g? when g.isNotEmpty) '$word, ${g.join(', ')}'].join(' ; ')}';
+      : 'Hémicycle coloré par le vote : '
+            '${_unanimous(detail.groups) ?? _campParts(positions, spoken: true).join(' ; ')}';
   return [
     'Carte Le Perchoir',
     [?stage, frenchLongDate(d.date)].join(', '),
-    title,
+    frenchTypography(title),
     hemicycle,
     '${_verdict(d.result)}, ${_spokenFigures(count, censure: censure)}',
     ?turnout,
@@ -108,13 +111,6 @@ String _verdict(VoteResult r) => r == VoteResult.adopte ? 'Adopté' : 'Rejeté';
 String _sentence(String s) =>
     RegExp(r'[.!?…]$').hasMatch(s.trimRight()) ? s.trimRight() : '$s.';
 
-const _campWords = [
-  (GroupPosition.pour, 'pour'),
-  (GroupPosition.contre, 'contre'),
-  (GroupPosition.abstention, 'abstention'),
-  (GroupPosition.partage, 'partagés'),
-];
-
 /// Sigles des groupes par position, dans l'ordre de [groups] (open data :
 /// du plus grand au plus petit).
 Map<GroupPosition, List<String>> _positions(List<GroupVoteDetail> groups) {
@@ -125,25 +121,57 @@ Map<GroupPosition, List<String>> _positions(List<GroupVoteDetail> groups) {
   return byPosition;
 }
 
-/// « Pour : RN, UDR · Contre : EPR, LFI-NFP · Abst. : GDR », une position
-/// vide omise ; motion de censure : les seuls soutiens. `null` sans groupe.
+/// « Pour : RN, UDR · Contre : EPR, LFI-NFP · Abst. : GDR · NI partagés »,
+/// une position vide omise ; « Tous les groupes pour » si tous ont voté de
+/// même ; motion de censure : les seuls soutiens. `null` sans groupe.
 String? _campsLine(List<GroupVoteDetail> groups, {required bool censure}) {
   final positions = _positions(groups);
-  final labels = censure
-      ? const [(GroupPosition.pour, 'Pour la censure')]
-      : const [
-          (GroupPosition.pour, 'Pour'),
-          (GroupPosition.contre, 'Contre'),
-          (GroupPosition.abstention, 'Abst.'),
-          (GroupPosition.partage, 'Partagés'),
-        ];
-  final parts = [
-    for (final (p, label) in labels)
-      if (positions[p] case final g? when g.isNotEmpty)
-        '$label : ${g.join(', ')}',
-  ];
+  if (censure) {
+    final g = positions[GroupPosition.pour];
+    return g == null || g.isEmpty
+        ? null
+        : 'Pour la censure\u00A0: ${g.join(', ')}';
+  }
+  final unanimous = _unanimous(groups);
+  if (unanimous != null) {
+    return '${unanimous[0].toUpperCase()}${unanimous.substring(1)}';
+  }
+  final parts = _campParts(positions, spoken: false);
   return parts.isEmpty ? null : parts.join(' · ');
 }
+
+/// « tous les groupes pour » (ou contre, ou abstention) quand plusieurs
+/// groupes ont tous pris la même position, sinon `null`.
+String? _unanimous(List<GroupVoteDetail> groups) {
+  if (groups.length < 2) return null;
+  final position = groups.first.position;
+  if (groups.any((g) => g.position != position)) return null;
+  return switch (position) {
+    GroupPosition.pour => 'tous les groupes pour',
+    GroupPosition.contre => 'tous les groupes contre',
+    GroupPosition.abstention => 'tous les groupes abstentionnistes',
+    _ => null,
+  };
+}
+
+/// Une partie par position : « Pour : RN, UDR » à l'écrit, « pour, RN, UDR »
+/// pour un lecteur d'écran ([spoken]) ; les groupes partagés en dernier.
+List<String> _campParts(
+  Map<GroupPosition, List<String>> positions, {
+  required bool spoken,
+}) => [
+  for (final (p, label) in const [
+    (GroupPosition.pour, 'pour'),
+    (GroupPosition.contre, 'contre'),
+    (GroupPosition.abstention, 'abstention'),
+  ])
+    if (positions[p] case final g? when g.isNotEmpty)
+      spoken
+          ? '$label, ${g.join(', ')}'
+          : '${p == GroupPosition.abstention ? 'Abst.' : '${label[0].toUpperCase()}${label.substring(1)}'}\u00A0: ${g.join(', ')}',
+  if (positions[GroupPosition.partage] case final g? when g.isNotEmpty)
+    sharedGroups(g),
+];
 
 String _list(List<String>? items, {String prefix = '', String suffix = ''}) =>
     items == null || items.isEmpty ? '' : '$prefix${items.join(', ')}$suffix';

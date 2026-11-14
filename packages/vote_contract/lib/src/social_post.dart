@@ -42,3 +42,19 @@ String? socialTurnout(VoteTally c, int seats, {required bool censure}) {
   if (votants * 2 >= seats) return null;
   return votants == 1 ? '1 votant' : '$votants votants';
 }
+
+final _spaceBeforeDouble = RegExp(r' +([:;?!»])');
+final _spaceAfterGuillemet = RegExp(r'« +');
+
+/// Typographie française d'un texte affiché : espace insécable avant « : »,
+/// « ; », « ? », « ! » et « » », et après « « », pour qu'une ligne ne
+/// commence jamais par l'un de ces signes.
+String frenchTypography(String s) => s
+    .replaceAllMapped(_spaceBeforeDouble, (m) => '\u00A0${m[1]}')
+    .replaceAll(_spaceAfterGuillemet, '«\u00A0');
+
+/// Groupes partagés, accordés : « SOC partagé », « NI partagés » (les
+/// non-inscrits sont plusieurs), « SOC, NI partagés ».
+String sharedGroups(List<String> groups) =>
+    '${groups.join(', ')} '
+    '${groups.length == 1 && groups.single != 'NI' ? 'partagé' : 'partagés'}';
