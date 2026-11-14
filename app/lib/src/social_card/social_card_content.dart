@@ -2,10 +2,6 @@ import 'package:vote_contract/vote_contract.dart';
 
 import '../relative_date.dart';
 
-/// Majorité absolue des membres de l'Assemblée, requise pour adopter une
-/// motion de censure.
-const censureMajority = 289;
-
 /// Ce que dit la carte réseau social d'une décision (#109), sans mise en
 /// page : la content factory (#106) la rend en PNG avec [SocialCard].
 ///
@@ -40,7 +36,7 @@ class SocialCardContent {
       title: title ?? d.summary?.shortTitle ?? d.summary?.title,
       result: d.result,
       figures: socialFigures(count, censure: censure),
-      turnout: censure ? null : socialTurnout(count, seats.length),
+      turnout: socialTurnout(count, seats.length, censure: censure),
       censure: censure,
       seats: seats,
     );
@@ -67,44 +63,12 @@ class SocialCardContent {
   final List<HemicycleSeat> seats;
 }
 
-/// Étape raccourcie pour tenir sur une ligne : « Première partie du budget,
-/// 1re lecture à l'AN » devient « 1re partie du budget · 1re lecture ».
-String shortStage(String stage) => stage
-    .replaceAll('Première partie du budget', '1re partie du budget')
-    .replaceAll('Seconde partie du budget', '2e partie du budget')
-    .replaceAll(" à l'AN", '')
-    .replaceAll(', ', ' · ');
-
 /// Languette de la carte, en capitales, date insécable.
 String socialTab(DecisionSummary d) {
   final date = formatShortFrenchDate(d.date).replaceAll(' ', ' ');
   final stage = d.stage;
   return [
-    if (stage != null && stage.isNotEmpty) shortStage(stage),
+    if (stage != null && stage.isNotEmpty) socialStage(stage),
     date,
   ].join(' · ').toUpperCase();
-}
-
-/// « 151 pour · 187 contre », « 0 abst. » omis ; motion de censure :
-/// « 132 pour · 289 requis ». Chaque nombre reste collé à son mot.
-String socialFigures(VoteTally c, {required bool censure}) {
-  String part(int n, String word) => '$n $word';
-  return [
-    part(c.pour, 'pour'),
-    if (censure)
-      part(censureMajority, 'requis')
-    else ...[
-      part(c.contre, 'contre'),
-      if (c.abstentions > 0) part(c.abstentions, 'abst.'),
-    ],
-  ].join('  ·  ');
-}
-
-/// « 102 votants » quand moins de la moitié des [seats] sièges du scrutin a
-/// voté (pour, contre ou abstention), sinon `null` : la carte paraîtrait
-/// vide sans cette mention. Pas de dénominateur.
-String? socialTurnout(VoteTally c, int seats) {
-  final votants = c.pour + c.contre + c.abstentions;
-  if (votants * 2 >= seats) return null;
-  return votants == 1 ? '1 votant' : '$votants votants';
 }
