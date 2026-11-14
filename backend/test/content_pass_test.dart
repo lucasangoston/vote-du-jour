@@ -117,7 +117,7 @@ void main() {
     );
     final draft = parseDailyIssue(body).single;
     expect(draft.imageUrl, '$_base/content/2026-10-09/$id.png');
-    expect(draft.text, startsWith('Rejeté : Priorité nationale.\n'));
+    expect(draft.text, startsWith('Rejeté — Priorité nationale.\n'));
     expect(draft.alt, startsWith('Carte Le Perchoir.'));
 
     File(

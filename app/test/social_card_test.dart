@@ -39,7 +39,7 @@ void main() {
         expect(_content(9241).title, 'Soins des victimes de violences');
         expect(
           _content(8693).title,
-          'Titre-restaurant : passage au format dématérialisé et '
+          'Titre-restaurant\u00A0: passage au format dématérialisé et '
           'transparence des commissions',
         );
         expect(

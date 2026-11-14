@@ -13,12 +13,14 @@ const _pad = 72.0;
 const _contentWidth = 1080 - 2 * _pad;
 const _arcWidth = 840.0;
 
-/// Tailles du titre, de la plus grande à la plus petite : le titre n'est
-/// jamais tronqué ; s'il ne tient pas en [_titleMaxLines] lignes à la plus
-/// petite, il est à écrire à la main.
-const _titleMaxSize = 84.0;
-const _titleMinSize = 48.0;
-const _titleMaxLines = 3;
+/// Tailles du titre, de la plus grande à la plus petite, et lignes permises
+/// à chacune : 2 lignes de 84 à 60 px, puis 3 lignes de 60 à 48 px (un titre
+/// de 3 lignes en grand écrase l'hémicycle). Jamais tronqué : s'il ne tient
+/// pas, il est à écrire à la main.
+final _titleSteps = [
+  for (var size = 84.0; size >= 60; size -= 4) (size: size, lines: 2),
+  for (var size = 60.0; size >= 48; size -= 4) (size: size, lines: 3),
+];
 
 const _c = HemicycleColors.dark;
 
@@ -28,19 +30,19 @@ const _voteContre = Color(0xFFB5461F);
 const _voteAbstention = Color(0xFF9AA2AB);
 const _seatOff = Color(0xFF3A3A3A);
 
-/// Taille du titre [title] sur la carte, de 84 à 48 px, ou `null` s'il ne
-/// tient pas en 3 lignes : titre à écrire. Les polices de la carte doivent
-/// être chargées.
+/// Taille du titre [title] sur la carte ([_titleSteps]), ou `null` s'il ne
+/// tient pas en 3 lignes à 48 px : titre à écrire. Les polices de la carte
+/// doivent être chargées.
 double? socialTitleSize(String title) {
-  for (var size = _titleMaxSize; size >= _titleMinSize; size -= 4) {
+  for (final step in _titleSteps) {
     final painter = TextPainter(
-      text: TextSpan(text: title, style: _titleStyle(size)),
+      text: TextSpan(text: title, style: _titleStyle(step.size)),
       textDirection: TextDirection.ltr,
-      maxLines: _titleMaxLines,
+      maxLines: step.lines,
     )..layout(maxWidth: _contentWidth);
     final fits = !painter.didExceedMaxLines;
     painter.dispose();
-    if (fits) return size;
+    if (fits) return step.size;
   }
   return null;
 }
