@@ -9,6 +9,7 @@ import '../object_store.dart';
 import 'content_selection.dart';
 import 'daily_issue.dart';
 import 'post_text.dart';
+import 'proofreader.dart';
 
 /// Heure de Paris avant laquelle l'issue du jour n'est pas ouverte : le jeu
 /// de données des scrutins arrive vers 12 h 30 (#111).
@@ -97,14 +98,17 @@ Future<String> buildDailyIssue({
           await File('${dir.path}/$id.png').readAsBytes(),
           contentType: 'image/png',
         );
+        final text = postText(detail, title: title);
+        final alt = altText(detail, title: title);
         drafts.add(
           Draft(
             decisionId: id,
             sourceUrl: detail.decision.sourceUrl,
             title: title,
-            text: postText(detail, title: title),
-            alt: altText(detail, title: title),
+            text: text,
+            alt: alt,
             imageUrl: '$publicBaseUrl/$key',
+            problems: proofread(detail, text: text, alt: alt),
           ),
         );
       case 'titre_a_ecrire':
