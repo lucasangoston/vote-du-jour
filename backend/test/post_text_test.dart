@@ -41,10 +41,10 @@ void main() {
       final d = _fixture(8610);
       expect(
         postText(d, title: _title(d)),
-        'Rejeté : Donner aux acheteurs publics un critère de priorité '
+        'Rejeté — Donner aux acheteurs publics un critère de priorité '
         'nationale.\n'
         '151 pour · 187 contre.\n'
-        'Pour : RN, DR, UDR · Contre : EPR, LFI-NFP, SOC, EcoS, Dem, HOR, '
+        'Pour\u00A0: RN, DR, UDR · Contre\u00A0: EPR, LFI-NFP, SOC, EcoS, Dem, HOR, '
         'LIOT, GDR\n'
         'leperchoir.app',
       );
@@ -67,10 +67,10 @@ void main() {
     test('jamais plus de 300 caractères : la ligne des groupes tombe après '
         'l\'explication', () {
       final d = _fixture(9759);
-      final long = 'x' * 200;
+      final long = 'x' * 240;
       final text = postText(d, title: long);
       expect(postLength(text), lessThanOrEqualTo(postMaxLength));
-      expect(text, isNot(contains('Contre :')));
+      expect(text, isNot(contains('groupes')));
       expect(text, endsWith('\nleperchoir.app'));
     });
 
@@ -78,15 +78,18 @@ void main() {
       final d = _fixture(7979);
       final text = postText(d, title: _title(d));
       expect(text, contains('132 pour · 289 requis.'));
-      expect(text, contains('Pour la censure : LFI-NFP, SOC, EcoS, LIOT, GDR'));
-      expect(text, isNot(contains('Contre :')));
+      expect(
+        text,
+        contains('Pour la censure\u00A0: LFI-NFP, SOC, EcoS, LIOT, GDR'),
+      );
+      expect(text, isNot(contains('Contre\u00A0:')));
     });
 
     test('pas de double point après une ponctuation forte', () {
       final d = _fixture(8610);
       expect(
         postText(d, title: 'Faut-il une priorité nationale ?'),
-        startsWith('Rejeté : Faut-il une priorité nationale ?\n'),
+        startsWith('Rejeté — Faut-il une priorité nationale\u00A0?\n'),
       );
     });
 
@@ -98,6 +101,40 @@ void main() {
         expect(postLength(text), lessThanOrEqualTo(postMaxLength));
         expect(text, contains('${c.pour} pour'), reason: '$n');
       }
+    });
+  });
+
+  group('typographie et groupes (relecture du 14/11)', () {
+    test(
+      'espace insécable avant les deux-points : jamais en début de ligne',
+      () {
+        final d = _fixture(8610);
+        expect(
+          postText(d, title: 'Droits voisins de la presse : renforcer'),
+          startsWith(
+            'Rejeté — Droits voisins de la presse\u00A0: renforcer.\n',
+          ),
+        );
+        expect(
+          frenchTypography('« Oui » ; non ! Pourquoi ?'),
+          '«\u00A0Oui\u00A0»\u00A0; non\u00A0! Pourquoi\u00A0?',
+        );
+      },
+    );
+
+    test('tous les groupes du même avis : « Tous les groupes contre »', () {
+      final d = _fixture(9759);
+      expect(postText(d, title: 'Budget'), contains('Tous les groupes contre'));
+      expect(
+        altText(d, title: 'Budget'),
+        contains('Hémicycle coloré par le vote : tous les groupes contre.'),
+      );
+    });
+
+    test('groupes partagés : « NI partagés », « SOC partagé »', () {
+      expect(sharedGroups(['NI']), 'NI partagés');
+      expect(sharedGroups(['SOC']), 'SOC partagé');
+      expect(sharedGroups(['SOC', 'NI']), 'SOC, NI partagés');
     });
   });
 
