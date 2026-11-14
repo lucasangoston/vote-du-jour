@@ -33,6 +33,7 @@ class Draft {
     this.imageUrl,
     this.checked = false,
     this.postUrl,
+    this.problems = const [],
   });
 
   final String decisionId;
@@ -54,6 +55,9 @@ class Draft {
   /// Lien du post publié (#112) : un brouillon publié ne l'est jamais deux
   /// fois.
   final String? postUrl;
+
+  /// Problèmes trouvés par le relecteur (#120) ; vide : relecture OK.
+  final List<String> problems;
 
   bool get needsTitle => title == null;
 }
@@ -100,7 +104,14 @@ String renderDailyIssue(DateTime parisDay, List<Draft> drafts) {
         ..writeln()
         ..writeln('**Texte alternatif**')
         ..writeln()
-        ..writeln(_fence(d.alt!));
+        ..writeln(_fence(d.alt!))
+        ..writeln()
+        ..writeln(
+          d.problems.isEmpty
+              ? '✅ Relecture OK'
+              : '⚠️ Relecture : à corriger avant publication\n'
+                    '${d.problems.map((p) => '- $p').join('\n')}',
+        );
     }
     out
       ..writeln()
