@@ -33,7 +33,10 @@ class SocialCardContent {
     final censure = d.type == DecisionType.motionDeCensure;
     return SocialCardContent(
       tab: socialTab(d),
-      title: title ?? d.summary?.shortTitle ?? d.summary?.title,
+      title: switch (title ?? d.summary?.shortTitle ?? d.summary?.title) {
+        final t? => frenchTypography(t),
+        null => null,
+      },
       result: d.result,
       figures: socialFigures(count, censure: censure),
       turnout: socialTurnout(count, seats.length, censure: censure),

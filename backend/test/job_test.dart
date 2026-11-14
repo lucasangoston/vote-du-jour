@@ -373,4 +373,17 @@ class _FailingKeyStore implements ObjectStore {
       cacheControl: cacheControl,
     );
   }
+
+  @override
+  Future<void> writeBytes(
+    String key,
+    List<int> bytes, {
+    required String contentType,
+    String? cacheControl,
+  }) => _inner.writeBytes(
+    key,
+    bytes,
+    contentType: contentType,
+    cacheControl: cacheControl,
+  );
 }

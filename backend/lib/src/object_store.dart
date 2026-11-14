@@ -17,6 +17,14 @@ abstract interface class ObjectStore {
     String contentType = 'application/json; charset=utf-8',
     String? cacheControl,
   });
+
+  /// Écrit un fichier binaire (image de la content factory, #111).
+  Future<void> writeBytes(
+    String key,
+    List<int> bytes, {
+    required String contentType,
+    String? cacheControl,
+  });
 }
 
 /// Publie dans un dossier local (`<root>/<key>`).
@@ -43,6 +51,18 @@ class LocalDirectoryStore implements ObjectStore {
     final file = _file(key);
     await file.parent.create(recursive: true);
     await file.writeAsString(body);
+  }
+
+  @override
+  Future<void> writeBytes(
+    String key,
+    List<int> bytes, {
+    required String contentType,
+    String? cacheControl,
+  }) async {
+    final file = _file(key);
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes);
   }
 }
 
@@ -112,9 +132,21 @@ class R2Store implements ObjectStore {
     String body, {
     String contentType = 'application/json; charset=utf-8',
     String? cacheControl,
+  }) => writeBytes(
+    key,
+    utf8.encode(body),
+    contentType: contentType,
+    cacheControl: cacheControl,
+  );
+
+  @override
+  Future<void> writeBytes(
+    String key,
+    List<int> bytes, {
+    required String contentType,
+    String? cacheControl,
   }) async {
     final uri = _uri(key);
-    final bytes = utf8.encode(body);
     final response = await _withRetry(
       () => _client.put(
         uri,
@@ -235,4 +267,34 @@ String _encodeSegment(String segment) {
     }
   }
   return out.toString();
+}
+
+/// Variables d'environnement du bucket R2 (secrets GitHub).
+const r2Env = [
+  'R2_ACCOUNT_ID',
+  'R2_BUCKET',
+  'R2_ACCESS_KEY_ID',
+  'R2_SECRET_ACCESS_KEY',
+];
+
+/// Bucket R2 d'après les variables [r2Env] ; arrête le programme (code 64)
+/// s'il en manque.
+R2Store r2StoreFromEnvironment() {
+  final env = Platform.environment;
+  final missing = [
+    for (final name in r2Env)
+      if ((env[name] ?? '').isEmpty) name,
+  ];
+  if (missing.isNotEmpty) {
+    stderr.writeln(
+      'Variables manquantes pour --store=r2 : ${missing.join(', ')}',
+    );
+    exit(64);
+  }
+  return R2Store(
+    accountId: env['R2_ACCOUNT_ID']!,
+    bucket: env['R2_BUCKET']!,
+    accessKeyId: env['R2_ACCESS_KEY_ID']!,
+    secretAccessKey: env['R2_SECRET_ACCESS_KEY']!,
+  );
 }

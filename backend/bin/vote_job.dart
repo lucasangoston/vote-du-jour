@@ -4,13 +4,6 @@ import 'package:args/args.dart';
 import 'package:vote_contract/vote_contract.dart';
 import 'package:vote_job/vote_job.dart';
 
-const _r2Env = [
-  'R2_ACCOUNT_ID',
-  'R2_BUCKET',
-  'R2_ACCESS_KEY_ID',
-  'R2_SECRET_ACCESS_KEY',
-];
-
 Future<void> main(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption(
@@ -19,7 +12,7 @@ Future<void> main(List<String> arguments) async {
       defaultsTo: 'local',
       help:
           'Destination : dossier local (--out) ou bucket R2 '
-          '(variables ${_r2Env.join(', ')}).',
+          '(variables ${r2Env.join(', ')}).',
     )
     ..addOption(
       'out',
@@ -111,7 +104,7 @@ Future<void> main(List<String> arguments) async {
   }
 
   final store = switch (args.option('store')) {
-    'r2' => _r2StoreFromEnvironment(),
+    'r2' => r2StoreFromEnvironment(),
     _ => LocalDirectoryStore(args.option('out')!),
   };
   if (args.flag('live')) {
@@ -309,26 +302,6 @@ Future<void> _runLive(ArgResults args, ObjectStore store) async {
       stdout.writeln('::warning title=Détection en direct::$w');
     }
   }
-}
-
-R2Store _r2StoreFromEnvironment() {
-  final env = Platform.environment;
-  final missing = [
-    for (final name in _r2Env)
-      if ((env[name] ?? '').isEmpty) name,
-  ];
-  if (missing.isNotEmpty) {
-    stderr.writeln(
-      'Variables manquantes pour --store=r2 : ${missing.join(', ')}',
-    );
-    exit(64);
-  }
-  return R2Store(
-    accountId: env['R2_ACCOUNT_ID']!,
-    bucket: env['R2_BUCKET']!,
-    accessKeyId: env['R2_ACCESS_KEY_ID']!,
-    secretAccessKey: env['R2_SECRET_ACCESS_KEY']!,
-  );
 }
 
 /// Résumeur (#9), si la clé `ANTHROPIC_API_KEY` est définie (secret GitHub,
