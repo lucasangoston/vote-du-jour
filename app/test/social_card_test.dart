@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vote_contract/vote_contract.dart';
+import 'package:votedujour/src/social_card/bluesky_preview.dart';
 import 'package:votedujour/src/social_card/social_card.dart';
 import 'package:votedujour/src/social_card/social_card_content.dart';
 import 'package:votedujour/src/social_card/social_card_fonts.dart';
@@ -149,5 +150,42 @@ void main() {
         );
       });
     }
+  });
+
+  group('aperçu Bluesky (#122)', () {
+    setUpAll(loadSocialCardFonts);
+
+    testWidgets('post : nom, texte avec lien, carte', (tester) async {
+      tester.view
+        ..physicalSize = const Size(blueskyPreviewWidth, 900)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final card = MemoryImage(
+        File('test/goldens/carte-sociale-8610.png').readAsBytesSync(),
+      );
+      const text =
+          'Rejeté — Donner aux acheteurs publics un critère de priorité '
+          'nationale.\n151\u00A0pour · 187\u00A0contre.\nleperchoir.app';
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Align(
+            alignment: Alignment.topCenter,
+            child: RepaintBoundary(
+              child: BlueskyPreview(text: text, card: card),
+            ),
+          ),
+        ),
+      );
+      await tester.runAsync(
+        () => precacheImage(card, tester.element(find.byType(BlueskyPreview))),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('@leperchoir.app'), findsOneWidget);
+      await expectLater(
+        find.byType(BlueskyPreview),
+        matchesGoldenFile('goldens/apercu-bluesky-8610.png'),
+      );
+    });
   });
 }
