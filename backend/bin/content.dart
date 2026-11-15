@@ -19,6 +19,9 @@
 //     --dir <dossier> --store r2|local [--out <dossier local>]
 //       Envoie les cartes rendues et écrit <dossier>/issue.md et
 //       <dossier>/issue-title.txt (vides s'il n'y a aucun brouillon).
+//       [--history <closed.json>] : issues `content` fermées
+//       (`gh issue list --json body`), pour le compteur « 30 sans
+//       correction » (#113) affiché en tête.
 //
 // Relecture d'une issue du jour modifiée (#122), lancée par
 // content-review.yml :
@@ -60,6 +63,7 @@ Future<void> main(List<String> arguments) async {
     ..addOption('base-url', mandatory: true, help: 'URL publique du bucket.')
     ..addOption('dir', mandatory: true, help: 'Dossier de travail.')
     ..addOption('issues', help: 'Issues `content` récentes (JSON de gh).')
+    ..addOption('history', help: 'Issues `content` fermées (JSON de gh).')
     ..addOption('store', allowed: ['local', 'r2'], defaultsTo: 'local')
     ..addOption('out', defaultsTo: 'build/publish', help: 'Store local.')
     ..addOption('body', help: 'Corps de l\'issue du jour (fichier).')
@@ -135,6 +139,13 @@ Future<void> main(List<String> arguments) async {
         publicBaseUrl: baseUrl,
         parisDay: day,
         dir: dir,
+        streak: switch (args['history'] as String?) {
+          null => null,
+          final path => uncorrectedStreak([
+            for (final i in jsonDecode(File(path).readAsStringSync()) as List)
+              if (i is Map && i['body'] is String) i['body']! as String,
+          ]),
+        },
       );
       File('${dir.path}/issue.md').writeAsStringSync(body);
       File(
