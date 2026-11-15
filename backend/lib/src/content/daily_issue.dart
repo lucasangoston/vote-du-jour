@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'content_streak.dart';
 import 'post_text.dart';
 
 /// Label des issues du jour de la content factory (#111).
@@ -89,7 +90,9 @@ class Draft {
 /// Corps de l'issue du jour : un bloc par brouillon, case à cocher, image,
 /// texte et texte alternatif modifiables, lien de vérification, original
 /// caché (pour compter les corrections, #113).
-String renderDailyIssue(DateTime parisDay, List<Draft> drafts) {
+/// [streak] : posts publiés sans correction d'affilée (#113), affichés en
+/// tête.
+String renderDailyIssue(DateTime parisDay, List<Draft> drafts, {int? streak}) {
   final out = StringBuffer()
     ..writeln('<!-- $dailyIssueFormat day:${_isoDay(parisDay)} -->')
     ..writeln(
@@ -97,6 +100,17 @@ String renderDailyIssue(DateTime parisDay, List<Draft> drafts) {
       'besoin, puis pose le label `$publishLabel`. Fermer l\'issue sans ce '
       'label jette tout.',
     );
+  if (streak != null) {
+    out
+      ..writeln()
+      ..writeln(
+        'Compteur : $streak / $autoPublishAfter posts publiés sans '
+        'correction d\'affilée (format « $blueskyCardFormat »).'
+        '${streak >= autoPublishAfter ? ' Le format peut passer en '
+                  'publication automatique, sauf votes solennels, motions de '
+                  'censure et décisions avec arguments.' : ''}',
+      );
+  }
   for (final d in drafts) {
     out
       ..writeln()
