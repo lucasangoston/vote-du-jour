@@ -223,10 +223,23 @@ Future<NotificationReport> runNotificationPass({
     return report;
   }
 
+  // Une panne de lecture n'est pas une mémoire perdue : la réinitialiser
+  // marquerait toutes les décisions comme déjà traitées, et le vote publié
+  // à ce passage ne serait jamais notifié.
+  final String? rawState;
+  try {
+    rawState = await store.read(notificationsStateKey);
+  } on Exception catch (e) {
+    report.warnings.add(
+      'mémoire des notifications inaccessible, notifications reportées ($e)',
+    );
+    return report;
+  }
   NotificationState? state;
   try {
-    final raw = await store.read(notificationsStateKey);
-    if (raw != null) state = NotificationState.fromJson(jsonDecode(raw));
+    if (rawState != null) {
+      state = NotificationState.fromJson(jsonDecode(rawState));
+    }
   } on Object catch (e) {
     report.warnings.add(
       'mémoire des notifications illisible, réinitialisée sans envoi ($e)',

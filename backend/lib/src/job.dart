@@ -249,14 +249,6 @@ Future<JobOutcome> runJob({
         const JsonEncoder.withIndent('  ').convert(index.toJson()),
         cacheControl: indexCacheControl,
       );
-      await store.write(
-        stateKey,
-        jsonEncode({
-          'lastModified': lastModified,
-          'processedAt': now.toIso8601String(),
-        }),
-        cacheControl: 'no-store',
-      );
       if (dossierUpdate != null) {
         // Un état des dossiers non écrit est reconstruit au passage suivant
         // depuis le jeu de données : on ne bloque pas le reste de la
@@ -287,6 +279,19 @@ Future<JobOutcome> runJob({
       await live
           .keepOnly({for (final s in reconciled.pending) s.uid})
           .write(store);
+      // En dernier : tant que cet état n'est pas écrit, le passage suivant
+      // retraite le jeu de données. Écrit plus tôt, une panne sur l'une des
+      // écritures ci-dessus ne serait jamais rattrapée (304 au passage
+      // suivant), et la détection en direct repartirait d'un instantané
+      // périmé.
+      await store.write(
+        stateKey,
+        jsonEncode({
+          'lastModified': lastModified,
+          'processedAt': now.toIso8601String(),
+        }),
+        cacheControl: 'no-store',
+      );
       return JobPublished(
         scrutins: scrutins.length,
         index: index,

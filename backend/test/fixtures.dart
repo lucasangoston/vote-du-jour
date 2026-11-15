@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:vote_job/vote_job.dart';
+
 import 'package:archive/archive.dart';
 
 /// Numéros des scrutins enregistrés dans `test/fixtures/scrutins/`.
@@ -95,3 +97,44 @@ List<int> fixtureAgendaArchive({
 /// Contenu de la réunion [uid] des fixtures de l'agenda.
 String fixtureReunion(String uid) =>
     File('test/fixtures/agenda/reunion/$uid.json').readAsStringSync();
+
+/// Magasin dont la lecture des clés de [failReads] échoue comme un GET R2 en
+/// panne après ses essais ; le reste passe par [_inner].
+class FailingReadStore implements ObjectStore {
+  FailingReadStore(this._inner, this.failReads);
+
+  final ObjectStore _inner;
+  final Set<String> failReads;
+
+  @override
+  Future<String?> read(String key) {
+    if (failReads.contains(key)) throw HttpException('R2 GET $key : HTTP 503');
+    return _inner.read(key);
+  }
+
+  @override
+  Future<void> write(
+    String key,
+    String body, {
+    String contentType = 'application/json; charset=utf-8',
+    String? cacheControl,
+  }) => _inner.write(
+    key,
+    body,
+    contentType: contentType,
+    cacheControl: cacheControl,
+  );
+
+  @override
+  Future<void> writeBytes(
+    String key,
+    List<int> bytes, {
+    required String contentType,
+    String? cacheControl,
+  }) => _inner.writeBytes(
+    key,
+    bytes,
+    contentType: contentType,
+    cacheControl: cacheControl,
+  );
+}

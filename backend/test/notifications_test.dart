@@ -7,6 +7,8 @@ import 'package:test/test.dart';
 import 'package:vote_contract/vote_contract.dart';
 import 'package:vote_job/vote_job.dart';
 
+import 'fixtures.dart';
+
 /// Décision de test : par défaut, un texte de compromis (CMP) confirmé.
 DecisionSummary decision(
   String id, {
@@ -281,6 +283,24 @@ void main() {
       await pass();
       await publish([decision('A', date: DateTime.utc(2026, 10, 1))]);
       expect((await pass()).sent, isEmpty);
+    });
+
+    test('mémoire inaccessible (panne de lecture) : ni envoi ni '
+        'réinitialisation, le vote est notifié au passage suivant', () async {
+      await publish([]);
+      await pass();
+      await publish([decision('A')]);
+      final before = await store.read(notificationsStateKey);
+      final report = await runNotificationPass(
+        store: FailingReadStore(store, {notificationsStateKey}),
+        sender: sender,
+        clock: () => now,
+      );
+      expect(sender.messages, isEmpty);
+      expect(report.initialized, isNull);
+      expect(report.warnings.single, contains('inaccessible'));
+      expect(await store.read(notificationsStateKey), before);
+      expect((await pass()).sent, ['A']);
     });
 
     test('mémoire illisible : réinitialisée sans envoi', () async {
