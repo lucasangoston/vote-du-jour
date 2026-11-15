@@ -123,31 +123,41 @@ De haut en bas :
 
 ## Texte du post (gabarit, sans modèle)
 
-300 caractères au plus (limite Bluesky, lien compris). Lignes, dans cet ordre,
-la dernière ligne facultative tombant en premier si ça dépasse :
+300 caractères au plus (limite Bluesky, lien compris). Lignes, dans cet
+ordre ; si ça dépasse, l'explication tombe d'abord, puis la ligne des
+groupes :
 
 ```
-{Adopté|Rejeté} : {titre}.
+{Adopté|Rejeté} — {titre}.
 {chiffres, comme le bandeau}.
-Pour : {sigles} · Contre : {sigles} · Abst. : {sigles}
+Pour : {sigles} · Contre : {sigles} · Abst. : {sigles} · {sigles} partagés
 {summary.explanation}            ← seulement si le total tient
 leperchoir.app
 ```
 
-Sigles dans l'ordre de `groups` ; une position vide est omise.
+Sigles dans l'ordre de `groups` ; une position vide est omise. Tous les
+groupes du même avis : « Tous les groupes pour » (ou contre,
+abstentionnistes). Motion de censure : « Pour la censure : {sigles} ».
+Espaces insécables avant « : ; ? ! » (`frenchTypography`), y compris dans un
+titre écrit à la main.
 
 ## Texte alternatif (gabarit)
 
 Toujours présent, avec les chiffres exacts des données :
 
 « Carte Le Perchoir. {étape}, {date}. {titre}. Hémicycle coloré par le vote :
-{Pour : sigles}, {Contre : sigles}, {Abstention : sigles}. {Adopté|Rejeté},
-{chiffres}. {N votants, si affiché}. »
+pour, {sigles} ; contre, {sigles} ; abstention, {sigles}. {Adopté|Rejeté},
+{chiffres en toutes lettres}. {N votants, si affiché}. »
+
+Tous les groupes du même avis : « tous les groupes pour ». Motion de censure :
+« Hémicycle : en blanc, les députés qui ont voté la motion ({sigles}) » et
+« {N} pour, 289 requis ».
 
 ## Validation : l'issue du jour
 
 - Une issue par jour (label `content`), créée seulement s'il y a au moins un
-  brouillon. Un bloc par brouillon : case à cocher, image, texte modifiable,
+  brouillon, et pas avant 13 h (Paris) : le jeu de données des scrutins
+  arrive vers 12 h 30. Un bloc par brouillon : case à cocher, image, texte modifiable,
   texte alternatif, id de la décision, lien vers la page officielle du
   scrutin (`sourceUrl`) pour vérifier les chiffres.
 - Le texte d'origine est gardé en commentaire HTML caché dans le bloc.

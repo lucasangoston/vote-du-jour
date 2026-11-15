@@ -2,12 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:vote_contract/vote_contract.dart';
 
 import 'bluesky.dart';
 import 'daily_issue.dart';
-import 'post_text.dart';
-import 'proofreader.dart';
+import 'review_pass.dart';
 
 /// Corps de l'issue du jour, relu avant chaque écriture : une modification
 /// faite pendant la publication n'est pas écrasée.
@@ -131,20 +129,12 @@ Future<PublishReport> publishDrafts({
       block(['détail de la décision introuvable']);
       continue;
     }
-    if (render && await _status(dir, id) != 'ok') {
-      block([
-        'ce titre ne tient pas sur la carte, même en petit : raccourcis-le',
-      ]);
+    final review = await reviewDraft(dir, draft, render: render);
+    if (review == null) {
+      block([titleTooLong]);
       continue;
     }
-    final detail = DecisionDetail.fromJson(
-      jsonDecode(await File('${dir.path}/$id.json').readAsString()),
-    );
-    final text = await File('${dir.path}/$id.post.txt').readAsString();
-    final alt = render
-        ? altText(detail, title: frenchTypography(title))
-        : draft.alt;
-    final problems = proofread(detail, text: text, alt: alt);
+    final (:text, :alt, :problems) = review;
     final card = File('${dir.path}/$id.png');
     final image = await card.exists() ? await card.readAsBytes() : null;
     if (image == null) {
@@ -220,10 +210,4 @@ String publishComment(PublishReport report) {
   int at(int i) =>
       (png[i] << 24) | (png[i + 1] << 16) | (png[i + 2] << 8) | png[i + 3];
   return (at(16), at(20));
-}
-
-Future<String?> _status(Directory dir, String id) async {
-  final file = File('${dir.path}/$id.png.json');
-  if (!await file.exists()) return null;
-  return (jsonDecode(await file.readAsString()) as Map)['status'] as String?;
 }

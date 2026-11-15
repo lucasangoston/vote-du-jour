@@ -117,29 +117,17 @@ Future<String> buildReviewComment({
   for (final item in plan) {
     final id = item['id']! as String;
     final draft = drafts[id]!;
-    final detail = DecisionDetail.fromJson(
-      jsonDecode(await File('${dir.path}/$id.json').readAsString()),
-    );
     out
       ..writeln()
       ..writeln('#### ${draft.title}')
       ..writeln();
     final rendered = item['render'] == true;
-    if (rendered) {
-      final status = await _status(dir, id);
-      if (status != 'ok') {
-        out.writeln(
-          '⚠️ Ce titre ne tient pas sur la carte, même en petit : '
-          'raccourcis-le.',
-        );
-        continue;
-      }
+    final review = await reviewDraft(dir, draft, render: rendered);
+    if (review == null) {
+      out.writeln('⚠️ $titleTooLong.');
+      continue;
     }
-    final text = await File('${dir.path}/$id.post.txt').readAsString();
-    final alt = rendered
-        ? altText(detail, title: frenchTypography(draft.title!))
-        : draft.alt;
-    final problems = proofread(detail, text: text, alt: alt);
+    final (:text, :alt, :problems) = review;
     out.writeln(
       problems.isEmpty
           ? '✅ Relecture OK'
@@ -171,6 +159,35 @@ Future<String> buildReviewComment({
     }
   }
   return out.toString();
+}
+
+/// Problème d'un titre écrit à la main trop long pour la carte.
+const titleTooLong =
+    'Ce titre ne tient pas sur la carte, même en petit : raccourcis-le';
+
+/// Relecture d'un brouillon préparé par [planReview] dans [dir] (relecture
+/// #122 et publication #112) : texte du post, texte alternatif (produit pour
+/// un titre écrit à la main, [render]) et problèmes du relecteur (#120) ;
+/// `null` si la carte du titre écrit n'a pas pu être rendue.
+Future<({String text, String? alt, List<String> problems})?> reviewDraft(
+  Directory dir,
+  Draft draft, {
+  required bool render,
+}) async {
+  final id = draft.decisionId;
+  if (render && await _status(dir, id) != 'ok') return null;
+  final detail = DecisionDetail.fromJson(
+    jsonDecode(await File('${dir.path}/$id.json').readAsString()),
+  );
+  final text = await File('${dir.path}/$id.post.txt').readAsString();
+  final alt = render
+      ? altText(detail, title: frenchTypography(draft.title!))
+      : draft.alt;
+  return (
+    text: text,
+    alt: alt,
+    problems: proofread(detail, text: text, alt: alt),
+  );
 }
 
 Future<String?> _status(Directory dir, String id) async {
