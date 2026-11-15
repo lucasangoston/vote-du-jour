@@ -76,6 +76,7 @@ Future<String> buildDailyIssue({
   required String publicBaseUrl,
   required DateTime parisDay,
   required Directory dir,
+  int? streak,
 }) async {
   final ids =
       (jsonDecode(await File('${dir.path}/selection.json').readAsString())
@@ -135,7 +136,9 @@ Future<String> buildDailyIssue({
       // pas_de_carte : la sélection l'exclut déjà ; rien à proposer.
     }
   }
-  return drafts.isEmpty ? '' : renderDailyIssue(parisDay, drafts);
+  return drafts.isEmpty
+      ? ''
+      : renderDailyIssue(parisDay, drafts, streak: streak);
 }
 
 Future<String> _get(http.Client client, String url) async {
