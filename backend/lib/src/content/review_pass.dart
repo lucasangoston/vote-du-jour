@@ -38,17 +38,20 @@ Future<void> writeDraftTexts(Directory dir) async {
 /// brouillon non publié, écrit dans [dir] son détail (`<id>.json`), son
 /// texte (`<id>.post.txt`) et sa carte (`<id>.png`, téléchargée), ou, pour
 /// un titre écrit à la main, le titre à rendre (`<id>.title.txt`). Écrit
-/// `review.json` : `[{"id", "render": bool}]`.
+/// `review.json` : `[{"id", "render": bool}]`. Avec [checkedOnly] (publication,
+/// #112), seulement les brouillons cochés.
 Future<void> planReview({
   required http.Client client,
   required String baseUrl,
   required String body,
   required Directory dir,
+  bool checkedOnly = false,
 }) async {
   await dir.create(recursive: true);
   final plan = <Map<String, Object?>>[];
   for (final draft in parseDailyIssue(body)) {
     if (draft.postUrl != null) continue;
+    if (checkedOnly && !draft.checked) continue;
     final title = draft.title;
     if (title == null) continue;
     final raw = await _get(
