@@ -251,3 +251,22 @@ Set<String> handledDecisionIds(Iterable<String> bodies) => {
     if (body.contains(dailyIssueFormat))
       for (final m in _decisionMarker.allMatches(body)) m.group(1)!,
 };
+
+/// [body] avec le lien [postUrl] du post publié écrit dans le bloc de [id],
+/// sous la case (#112) : ce bloc ne sera plus jamais publié. Inchangé si le
+/// bloc est absent ou porte déjà un lien.
+String markPublished(String body, String id, String postUrl) {
+  final markers = _decisionMarker.allMatches(body).toList();
+  for (var i = 0; i < markers.length; i++) {
+    if (markers[i].group(1) != id) continue;
+    final start = markers[i].end;
+    final end = i + 1 < markers.length ? markers[i + 1].start : body.length;
+    final block = body.substring(start, end);
+    if (_posted.hasMatch(block)) return body;
+    final box = _checkbox.firstMatch(block);
+    if (box == null) return body;
+    final at = start + box.end;
+    return '${body.substring(0, at)}\n\nPublié : $postUrl${body.substring(at)}';
+  }
+  return body;
+}
