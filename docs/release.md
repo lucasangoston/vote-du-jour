@@ -107,14 +107,17 @@ Le reste demande un compte ou une console, donc l'éditeur.
 
 - [x] Créer l'app : nom « Le Perchoir », langue principale français, bundle
   `com.lucasangoston.votedujour`, SKU `Votedujour`.
-- [ ] Coller les textes de `docs/store/app-store.md` : sous-titre, texte
+- [x] Coller les textes de `docs/store/app-store.md` : sous-titre, texte
   promotionnel, description, mots-clés, URLs, copyright, catégories.
-- [ ] Déposer les captures `ios-6.9/` et `ios-6.3/` (7 chacune, dans l'ordre
+- [x] Déposer les captures `ios-6.9/` et `ios-6.3/` (7 chacune, dans l'ordre
   des noms).
-- [ ] Questionnaires : classification par âge, confidentialité de l'app
+- [x] Questionnaires : classification par âge, confidentialité de l'app
   (tableau de la fiche), droits sur le contenu, notes pour l'App Review.
 - [x] TestFlight : groupe externe « Public » avec lien public, informations
   de test remplies, build 3 soumis à la review bêta (15 novembre 2026).
+- Fiche remplie le 15 novembre 2026 par l'API (textes, captures, catégories,
+  classification 4+, droits, prix gratuit, 175 pays, build 3 choisi) ; le
+  questionnaire de confidentialité, sans API, à la main.
 - [ ] Soumettre la version 1.0.0 à la review de l'App Store.
 
 ### Play Console
