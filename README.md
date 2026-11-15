@@ -192,3 +192,11 @@ adb shell dumpsys jobscheduler | grep -A3 DecisionRefreshWorker   # tâches prog
 (cd ios && xcodebuild test -workspace Runner.xcworkspace -scheme Runner -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -only-testing:RunnerTests)
 # + téléchargement réel vers le groupe d'apps : préfixer par TEST_RUNNER_VDJ_NETWORK_TESTS=1
 ```
+
+### Envoi sur TestFlight (iOS)
+
+Le workflow `.github/workflows/ios.yml` (#124) construit l'app, la signe et l'envoie sur TestFlight : GitHub → Actions → « Envoi iOS sur TestFlight » → Run workflow, ou un tag `v*` poussé.
+
+- Version : `version:` de `app/pubspec.yaml` (avant le `+`), à augmenter pour chaque nouvelle version publique. Numéro de build : numéro d'exécution du workflow.
+- Signature automatique par la clé API App Store Connect (rôle Admin, variables `ASC_KEY_ID` et `ASC_ISSUER_ID`, secret `ASC_KEY_P8`) avec le certificat de distribution géré par Apple : aucun certificat dans le repo. Le certificat de développement que `xcodebuild archive` crée à chaque passage est révoqué en fin de job (`app/ios/tool/revoke_ci_certificates.rb`).
+- Le build apparaît dans TestFlight après 10 à 30 min de traitement ; la soumission à la review se fait dans App Store Connect (fiche « Le Perchoir »).

@@ -13,7 +13,6 @@ on:
   workflow_dispatch:
   push:
     tags: ['v*']
-    branches: [feat/124-ios-testflight] # essai, à retirer
 
 permissions:
   contents: read
