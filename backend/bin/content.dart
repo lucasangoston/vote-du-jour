@@ -32,6 +32,22 @@
 //   dart run bin/content.dart review-comment --base-url <URL> \
 //     --dir <dossier> --body <corps> --version <n> --store r2|local
 //       Envoie les aperçus, écrit <dossier>/review.md.
+//
+// Publication sur Bluesky au label `publier` (#112), lancée par
+// content-publish.yml :
+//
+//   dart run bin/content.dart publish-plan --base-url <URL> --dir <dossier> \
+//     --body <corps de l'issue>
+//       Comme review-plan, pour les seuls brouillons cochés.
+//
+//   (cartes des titres écrits à la main)
+//
+//   GITHUB_TOKEN=… BLUESKY_HANDLE=… BLUESKY_APP_PASSWORD=… \
+//   dart run bin/content.dart publish --base-url <URL> --dir <dossier> \
+//     --repo <propriétaire/dépôt> --issue <n>
+//       Publie les brouillons cochés, écrit le lien de chaque post dans
+//       l'issue, puis <dossier>/publish.md (commentaire) et
+//       <dossier>/publish.json ({"done": bool} : issue à fermer).
 import 'dart:convert';
 import 'dart:io';
 
@@ -47,13 +63,17 @@ Future<void> main(List<String> arguments) async {
     ..addOption('store', allowed: ['local', 'r2'], defaultsTo: 'local')
     ..addOption('out', defaultsTo: 'build/publish', help: 'Store local.')
     ..addOption('body', help: 'Corps de l\'issue du jour (fichier).')
-    ..addOption('version', help: 'Version des aperçus (cache des images).');
+    ..addOption('version', help: 'Version des aperçus (cache des images).')
+    ..addOption('repo', help: 'Dépôt GitHub de l\'issue du jour.')
+    ..addOption('issue', help: 'Numéro de l\'issue du jour.');
   const commands = [
     'select',
     'texts',
     'issue',
     'review-plan',
     'review-comment',
+    'publish-plan',
+    'publish',
   ];
   if (arguments.isEmpty || !commands.contains(arguments.first)) {
     stderr.writeln(
@@ -123,7 +143,7 @@ Future<void> main(List<String> arguments) async {
       stdout.writeln(body.isEmpty ? 'aucun brouillon' : dailyIssueTitle(day));
     case 'texts':
       await writeDraftTexts(dir);
-    case 'review-plan':
+    case 'review-plan' || 'publish-plan':
       final client = http.Client();
       try {
         await planReview(
@@ -131,6 +151,7 @@ Future<void> main(List<String> arguments) async {
           baseUrl: baseUrl,
           body: File(args['body'] as String).readAsStringSync(),
           dir: dir,
+          checkedOnly: arguments.first == 'publish-plan',
         );
       } finally {
         client.close();
@@ -149,5 +170,38 @@ Future<void> main(List<String> arguments) async {
             (args['version'] as String?) ?? '${now.millisecondsSinceEpoch}',
       );
       File('${dir.path}/review.md').writeAsStringSync(comment);
+    case 'publish':
+      final env = Platform.environment;
+      final client = http.Client();
+      try {
+        final report = await publishDrafts(
+          bluesky: BlueskyClient(
+            client: client,
+            handle: env['BLUESKY_HANDLE']!,
+            appPassword: env['BLUESKY_APP_PASSWORD']!,
+          ),
+          issue: GitHubIssueBody(
+            client: client,
+            repository: args['repo'] as String,
+            number: int.parse(args['issue'] as String),
+            token: env['GITHUB_TOKEN']!,
+          ),
+          dir: dir,
+        );
+        File(
+          '${dir.path}/publish.md',
+        ).writeAsStringSync(publishComment(report));
+        File(
+          '${dir.path}/publish.json',
+        ).writeAsStringSync(jsonEncode({'done': report.done}));
+        for (final p in report.published) {
+          stdout.writeln('publié  ${p.id}  ${p.url}');
+        }
+        for (final b in report.blocked) {
+          stdout.writeln('bloqué  ${b.id}  ${b.problems.join(' ; ')}');
+        }
+      } finally {
+        client.close();
+      }
   }
 }

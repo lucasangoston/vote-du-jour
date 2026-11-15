@@ -118,4 +118,16 @@ void main() {
       {'VTANR5L17V8610', 'VTANR5L17V8693'},
     );
   });
+
+  test('lien du post écrit sous la case, une seule fois', () {
+    final body = renderDailyIssue(_day, [_ready, _toTitle]);
+    const url = 'https://bsky.app/profile/leperchoir.app/post/r0';
+    final marked = markPublished(body, _ready.decisionId, url);
+    expect(marked, contains('- [ ] Publier ce post\n\nPublié : $url\n'));
+    final drafts = parseDailyIssue(marked);
+    expect(drafts.first.postUrl, url);
+    expect(drafts.last.postUrl, isNull);
+    expect(markPublished(marked, _ready.decisionId, 'autre'), marked);
+    expect(markPublished(body, 'inconnu', url), body);
+  });
 }

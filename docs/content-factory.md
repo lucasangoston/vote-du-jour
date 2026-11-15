@@ -33,8 +33,8 @@ publish.yml (horaire) ──succès──▶ content.yml
                                    ├─ écrit texte + texte alternatif (gabarit)
                                    └─ ouvre l'issue du jour (label `content`)
 
-issue : label `publier` ──▶ content.yml (issues: labeled)
-                                   ├─ publie sur Bluesky les brouillons cochés
+issue : label `publier` ──▶ content-publish.yml (issues: labeled)
+                                   ├─ publie sur Bluesky les brouillons cochés et relus
                                    ├─ écrit le lien du post dans l'issue
                                    └─ ferme l'issue
 ```
@@ -153,11 +153,21 @@ Toujours présent, avec les chiffres exacts des données :
 - Le texte d'origine est gardé en commentaire HTML caché dans le bloc.
 - Brouillon « titre à écrire » : un champ titre vide ; non publiable tant
   qu'il n'est pas rempli.
-- Valider : cocher, puis poser le label `publier`. `content.yml`
-  (`issues: labeled`) publie les blocs cochés, avec leur texte tel qu'édité.
+- Valider : cocher, puis poser le label `publier`. `content-publish.yml`
+  (`issues: labeled`) publie les blocs cochés, avec leur texte tel qu'édité,
+  l'image (proportions 4:5) et son texte alternatif ; `leperchoir.app` est
+  un lien cliquable. Un titre écrit à la main est rendu sur la carte à ce
+  moment.
+- Un bloc coché en échec du relecteur (#120), ou « titre à écrire » vide,
+  n'est pas publié : l'issue reste ouverte, un commentaire dit quoi
+  corriger et le label `publier` est retiré, à reposer après correction.
 - Garde contre les doublons : un bloc qui porte déjà un lien de post n'est
-  jamais republié. Le workflow peut être relancé sans risque.
-- Après publication : lien de chaque post écrit dans son bloc, issue fermée.
+  jamais republié ; le lien est écrit aussitôt chaque post publié, et un
+  post déjà en ligne avec le même texte (panne entre le post et l'écriture
+  du lien) est retrouvé parmi les 50 derniers au lieu d'être republié. Le
+  workflow peut être relancé sans risque.
+- Après publication : lien de chaque post écrit dans son bloc, issue fermée
+  quand tous les blocs cochés sont publiés.
   Une issue fermée sans `publier` = tout jeté.
 
 ## Passage en automatique
@@ -173,10 +183,10 @@ Toujours présent, avec les chiffres exacts des données :
 
 ## Compte et domaine
 
-- Domaine `leperchoir.app` chez Cloudflare Registrar (repli : `le-perchoir.fr`).
+- Domaine `leperchoir.app` enregistré chez IONOS, DNS confiés à Cloudflare.
 - Compte Bluesky `@leperchoir.app`, vérifié par l'enregistrement DNS
   `_atproto`. Mot de passe d'application en secret GitHub
-  (`BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`).
+  `BLUESKY_APP_PASSWORD` ; le nom du compte en variable `BLUESKY_HANDLE`.
 - `leperchoir.app` sert la page d'accueil (`docs/index.html`), lien de chaque
   post ; l'app n'est pas encore sur les stores.
 

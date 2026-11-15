@@ -1,0 +1,96 @@
+name: Publication Bluesky (content factory)
+
+# Au label `publier` sur l'issue du jour (#112) : publie sur Bluesky les
+# brouillons cochés, avec leur texte tel qu'édité et relu (#120), écrit le
+# lien de chaque post dans son bloc, puis ferme l'issue. Un brouillon en
+# échec n'est pas publié : l'issue reste ouverte et le label est retiré, à
+# reposer après correction. Relancer est sans risque : un bloc qui porte un
+# lien n'est jamais republié.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  # Jamais deux publications de la même issue en même temps.
+  group: content-publish-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event.label.name == 'publier' &&
+      contains(github.event.issue.labels.*.name, 'content') &&
+      github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
+      WORK: ${{ github.workspace }}/publish-work
+      BODY_FILE: ${{ github.workspace }}/issue-body.md
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Corps de l'issue (à jour)
+        run: gh issue view "$ISSUE" --json body --jq .body > "$BODY_FILE"
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+
+      - name: Préparation des brouillons cochés
+        id: plan
+        working-directory: backend
+        run: |
+          dart pub get
+          dart run bin/content.dart publish-plan --base-url "$BASE_URL" \
+            --dir "$WORK" --body "$BODY_FILE"
+          echo "render=$(jq '[.[] | select(.render)] | length' "$WORK/review.json")" >> "$GITHUB_OUTPUT"
+
+      - if: steps.plan.outputs.render != '0'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+
+      - name: Cartes des titres écrits à la main
+        if: steps.plan.outputs.render != '0'
+        working-directory: app
+        run: |
+          flutter pub get
+          for id in $(jq -r '.[] | select(.render) | .id' "$WORK/review.json"); do
+            SOCIAL_CARD_DETAIL="$WORK/$id.json" SOCIAL_CARD_OUT="$WORK/$id.png" \
+            SOCIAL_CARD_TITLE="$(cat "$WORK/$id.title.txt")" \
+              flutter test tool/social_card/render_social_card_test.dart
+          done
+
+      - name: Publication sur Bluesky
+        working-directory: backend
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BLUESKY_HANDLE: ${{ vars.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+        run: |
+          dart run bin/content.dart publish --base-url "$BASE_URL" --dir "$WORK" \
+            --repo "${{ github.repository }}" --issue "$ISSUE"
+
+      - name: Compte rendu et fermeture
+        run: |
+          gh issue comment "$ISSUE" --body-file "$WORK/publish.md"
+          if [ "$(jq -r .done "$WORK/publish.json")" = true ]; then
+            gh issue close "$ISSUE" --reason completed
+          else
+            gh issue edit "$ISSUE" --remove-label publier
+          fi
+
+      - name: Signalement d'une panne
+        if: failure()
+        run: |
+          gh issue comment "$ISSUE" --body "⚠️ La publication a échoué : \
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. \
+          Relance le workflow : les posts déjà publiés ne le seront pas deux fois."
