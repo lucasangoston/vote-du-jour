@@ -80,6 +80,10 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID"
 
+      - name: Révocation du certificat de développement de la CI
+        if: always()
+        run: ruby ios/tool/revoke_ci_certificates.rb
+
       - name: Nettoyage de la clé
         if: always()
         run: rm -f "$ASC_KEY_PATH"
