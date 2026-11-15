@@ -4,10 +4,14 @@ Toutes les commandes `flutter` se lancent depuis `app/`.
 
 ## Avant chaque envoi : numéro de build
 
-Incrémenter le numéro de build (`+N`) dans `app/pubspec.yaml` à chaque envoi,
-sur l'un ou l'autre store : `version: 1.0.0+1` → `1.0.0+2`. Les stores refusent
-un numéro déjà envoyé. Changer `1.0.0` seulement pour une nouvelle version
-visible des utilisateurs.
+- **iOS** : rien à faire, le numéro de build est celui de l'exécution du
+  workflow (voir plus bas).
+- **Android** : incrémenter le numéro de build (`+N`) dans `app/pubspec.yaml`
+  à chaque envoi : `version: 1.0.0+1` → `1.0.0+2`. Le Play Store refuse un
+  numéro déjà envoyé.
+
+Changer `1.0.0` seulement pour une nouvelle version visible des utilisateurs
+(les deux stores).
 
 ## Android (Play Store)
 
@@ -51,25 +55,34 @@ flutter build appbundle
 Envoyer `build/app/outputs/bundle/release/app-release.aab` dans la Play Console
 (Tests internes d'abord).
 
-## iOS (App Store)
+## iOS (App Store) : par la CI
 
-La signature est automatique (équipe `792WRWDFHZ`). Il faut un compte Apple
-Developer connecté dans Xcode (Réglages → Comptes) ; Xcode crée lui-même le
-certificat de distribution et les profils App Store de l'app et du widget au
-premier export.
+Le workflow `.github/workflows/ios.yml` (#124, #129) fait tout depuis GitHub,
+sans Xcode : GitHub → Actions → « Envoi iOS sur TestFlight » → **Run
+workflow** (avec le texte « À tester » montré aux testeurs), ou un tag `v*`
+poussé.
 
-```bash
-flutter build ipa
-```
+1. Construit et signe l'app : signature automatique par la clé API App Store
+   Connect (rôle Admin ; variables `ASC_KEY_ID`, `ASC_ISSUER_ID`, secret
+   `ASC_KEY_P8`) avec le certificat de distribution géré par Apple. Version :
+   `version:` de `app/pubspec.yaml` ; numéro de build : numéro d'exécution du
+   workflow.
+2. Envoie le build sur App Store Connect et attend son traitement (10 à
+   30 min).
+3. Le distribue au groupe externe **Public** de TestFlight et le soumet à la
+   review bêta : les testeurs du lien public le reçoivent à l'approbation
+   (souvent moins de 24 h). Apple n'accepte qu'un build en review bêta à la
+   fois : si un autre y est encore, le run le signale par un avertissement et
+   le build se soumet à la main depuis TestFlight.
+4. Révoque le certificat de développement que `xcodebuild archive` crée à
+   chaque passage (`app/ios/tool/revoke_ci_certificates.rb`).
 
-- Si l'export réussit, envoyer `build/ios/ipa/*.ipa` avec l'app **Transporter**
-  (glisser-déposer).
-- Sinon, ouvrir l'archive dans Xcode et passer par l'Organizer
-  (Distribute App → App Store Connect → Upload) :
+Les scripts appellent l'API App Store Connect via `app/ios/tool/asc.rb`.
 
-  ```bash
-  open build/ios/archive/Runner.xcarchive
-  ```
+- Lien public des testeurs : https://testflight.apple.com/join/CAYBUgMY
+- Un build TestFlight expire au bout de 90 jours.
+- Publication sur l'App Store : dans App Store Connect, choisir le build dans
+  la version, puis « Ajouter pour vérification ».
 
 L'app est déclarée sans chiffrement soumis à l'export
 (`ITSAppUsesNonExemptEncryption = false`) : pas de questionnaire à chaque envoi.
@@ -84,24 +97,25 @@ Le reste demande un compte ou une console, donc l'éditeur.
 
 ### Comptes et signature
 
-- [ ] Apple Developer Program actif (99 €/an), compte connecté dans Xcode.
+- [x] Apple Developer Program actif (99 €/an).
 - [ ] Compte développeur Google Play (25 $, vérification d'identité).
 - [ ] Android : clé d'upload et `app/android/key.properties` (voir plus
   haut), puis `flutter build appbundle` signé.
-- [ ] iOS : `flutter build ipa` signé (certificat et profils créés par Xcode),
-  envoi avec Transporter ou l'Organizer.
+- [x] iOS : envoi par la CI (`ios.yml`), builds 2 et 3 reçus le 15 novembre 2026.
 
 ### App Store Connect
 
-- [ ] Créer l'app : nom « Le Perchoir », langue principale français, bundle
-  `com.lucasangoston.votedujour`, SKU au choix.
+- [x] Créer l'app : nom « Le Perchoir », langue principale français, bundle
+  `com.lucasangoston.votedujour`, SKU `Votedujour`.
 - [ ] Coller les textes de `docs/store/app-store.md` : sous-titre, texte
   promotionnel, description, mots-clés, URLs, copyright, catégories.
 - [ ] Déposer les captures `ios-6.9/` et `ios-6.3/` (7 chacune, dans l'ordre
   des noms).
 - [ ] Questionnaires : classification par âge, confidentialité de l'app
   (tableau de la fiche), droits sur le contenu, notes pour l'App Review.
-- [ ] TestFlight : testeurs internes, puis soumettre la version 1.0.0.
+- [x] TestFlight : groupe externe « Public » avec lien public, informations
+  de test remplies, build 3 soumis à la review bêta (15 novembre 2026).
+- [ ] Soumettre la version 1.0.0 à la review de l'App Store.
 
 ### Play Console
 
