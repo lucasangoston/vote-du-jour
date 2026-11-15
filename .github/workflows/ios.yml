@@ -19,7 +19,6 @@ on:
         default: 'Corrections et améliorations.'
   push:
     tags: ['v*']
-    branches: [feat/129-testflight-public] # essai, à retirer
 
 permissions:
   contents: read

@@ -28,10 +28,19 @@ loop do
   sleep 30
 end
 
-Asc.call('Post', '/v1/betaBuildLocalizations',
-         { data: { type: 'betaBuildLocalizations',
-                   attributes: { locale: 'fr-FR', whatsNew: whats_new },
-                   relationships: { build: { data: { type: 'builds', id: build['id'] } } } } })
+# Apple crée souvent la localisation fr-FR du build lui-même : la modifier
+# si elle existe, la créer sinon.
+loc = Asc.call('Get', "/v1/builds/#{build['id']}/betaBuildLocalizations")['data']
+         .find { |l| l.dig('attributes', 'locale') == 'fr-FR' }
+if loc
+  Asc.call('Patch', "/v1/betaBuildLocalizations/#{loc['id']}",
+           { data: { type: 'betaBuildLocalizations', id: loc['id'], attributes: { whatsNew: whats_new } } })
+else
+  Asc.call('Post', '/v1/betaBuildLocalizations',
+           { data: { type: 'betaBuildLocalizations',
+                     attributes: { locale: 'fr-FR', whatsNew: whats_new },
+                     relationships: { build: { data: { type: 'builds', id: build['id'] } } } } })
+end
 puts "À tester : #{whats_new}"
 
 group = Asc.call('Get', "/v1/apps/#{app['id']}/betaGroups")['data']
@@ -49,7 +58,7 @@ rescue RuntimeError => e
   # Apple n'accepte qu'un build en review bêta à la fois : le build est dans
   # le groupe, il reste à le soumettre depuis TestFlight après la review en
   # cours. Avertissement visible dans le résumé du run, sans échec.
-  raise unless e.message.include?('HTTP 409')
+  raise unless e.message.include?('ANOTHER_BUILD_IN_REVIEW')
 
   puts "::warning::Build #{build_number} non soumis à la review bêta (#{e.message[0, 300]}). " \
        'Le soumettre depuis App Store Connect → TestFlight une fois la review en cours terminée.'
