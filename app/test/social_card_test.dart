@@ -63,8 +63,8 @@ void main() {
     });
 
     test('« N votants » seulement sous la moitié des sièges', () {
-      expect(_content(8693).turnout, '102 votants');
-      expect(_content(9241).turnout, '267 votants');
+      expect(_content(8693).turnout, '102\u00A0votants sur\u00A0574');
+      expect(_content(9241).turnout, startsWith('267\u00A0votants sur\u00A0'));
       expect(_content(8610).turnout, isNull);
       expect(
         socialTurnout(
@@ -72,9 +72,32 @@ void main() {
           574,
           censure: false,
         ),
-        '1 votant',
+        '1\u00A0votant sur\u00A0574',
       );
     });
+
+    test(
+      'légende : les groupes par camp, unanimité, soutiens de la censure',
+      () {
+        expect(_content(8610).legend, [
+          (position: GroupPosition.pour, label: 'Pour', groups: 'RN, DR, UDR'),
+          (
+            position: GroupPosition.contre,
+            label: 'Contre',
+            groups: 'EPR, LFI-NFP, SOC, EcoS, Dem, HOR, LIOT, GDR',
+          ),
+        ]);
+        expect(_content(9759).legend.single.label, 'Tous les groupes contre');
+        expect(_content(9759).legend.single.groups, isEmpty);
+        expect(_content(7979).legend, [
+          (
+            position: GroupPosition.pour,
+            label: 'Pour la censure',
+            groups: 'LFI-NFP, SOC, EcoS, LIOT, GDR',
+          ),
+        ]);
+      },
+    );
 
     test('pas de carte sans sièges ni décompte', () {
       final d = _fixture(8610);
@@ -155,9 +178,11 @@ void main() {
   group('aperçu Bluesky (#122)', () {
     setUpAll(loadSocialCardFonts);
 
-    testWidgets('post : nom, texte avec lien, carte', (tester) async {
+    testWidgets('fil : post avec carte, mots-dièse et lien, puis réponses', (
+      tester,
+    ) async {
       tester.view
-        ..physicalSize = const Size(blueskyPreviewWidth, 900)
+        ..physicalSize = const Size(blueskyPreviewWidth, 1300)
         ..devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final card = MemoryImage(
@@ -165,13 +190,20 @@ void main() {
       );
       const text =
           'Rejeté — Donner aux acheteurs publics un critère de priorité '
-          'nationale.\n151\u00A0pour · 187\u00A0contre.\nleperchoir.app';
+          'nationale.\n151 pour · 187 contre.\n'
+          '#AssembléeNationale\nleperchoir.app';
+      const replies = [
+        'Les arguments en séance.\nPour (RN) : le texte donne une '
+            'liberté aux acheteurs publics.',
+        'Contre (LFI-NFP) : le texte ne crée aucune obligation.\n'
+            'Scrutin officiel : assemblee-nationale.fr/dyn/17/scrutins/8610',
+      ];
       await tester.pumpWidget(
         MaterialApp(
           home: Align(
             alignment: Alignment.topCenter,
             child: RepaintBoundary(
-              child: BlueskyPreview(text: text, card: card),
+              child: BlueskyPreview(text: text, card: card, replies: replies),
             ),
           ),
         ),
@@ -181,7 +213,8 @@ void main() {
       );
       await tester.pump();
       expect(tester.takeException(), isNull);
-      expect(find.textContaining('@leperchoir.app'), findsOneWidget);
+      expect(find.textContaining('@leperchoir.app'), findsNWidgets(3));
+      expect(find.byType(Image), findsOneWidget);
       await expectLater(
         find.byType(BlueskyPreview),
         matchesGoldenFile('goldens/apercu-bluesky-8610.png'),

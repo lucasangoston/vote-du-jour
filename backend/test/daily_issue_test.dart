@@ -130,4 +130,70 @@ void main() {
     expect(markPublished(marked, _ready.decisionId, 'autre'), marked);
     expect(markPublished(body, 'inconnu', url), body);
   });
+
+  group('fil de réponses', () {
+    const reply = 'Pour (RN) : un argument.\n---\nScrutin officiel : an.fr/1';
+    const threaded = Draft(
+      decisionId: 'VTANR5L17V8610',
+      sourceUrl: 'https://www.assemblee-nationale.fr/dyn/17/scrutins/8610',
+      title: 'Titre',
+      text: 'Rejeté — Titre.\nleperchoir.app',
+      alt: 'Carte Le Perchoir.',
+      reply: reply,
+      imageUrl: 'https://pub.r2.dev/carte.png',
+    );
+    final body = renderDailyIssue(_day, [threaded]);
+
+    test('écrit dans un troisième bloc modifiable, relu tel quel', () {
+      expect(body, contains('**Fil de réponses**'));
+      expect(body, contains('```text\n$reply\n```'));
+      final draft = parseDailyIssue(body).single;
+      expect(draft.reply, reply);
+      expect(draft.text, threaded.text);
+      expect(draft.alt, threaded.alt);
+      expect(originalDraft(body, threaded.decisionId)!['reply'], reply);
+    });
+
+    test('bloc vidé, ou issue d\'avant le fil : pas de réponse', () {
+      final emptied = body.replaceFirst(
+        '```text\n$reply\n```',
+        '```text\n\n```',
+      );
+      expect(parseDailyIssue(emptied).single.reply, isNull);
+      final legacy = body.substring(0, body.indexOf('**Fil de réponses**'));
+      expect(
+        parseDailyIssue(
+          '$legacy\n${body.substring(body.indexOf('Vérifier'))}',
+        ).single.reply,
+        isNull,
+      );
+    });
+  });
+
+  test('audience des derniers posts : sous le compteur', () {
+    final body = renderDailyIssue(
+      _day,
+      [_ready],
+      streak: 2,
+      stats: const [
+        (
+          title: 'Budget | 2027',
+          url: 'https://bsky.app/profile/leperchoir.app/post/a',
+          likes: 12,
+          reposts: 3,
+          replies: 1,
+          quotes: 0,
+        ),
+      ],
+    );
+    expect(
+      body,
+      contains(
+        '| [Budget / 2027](https://bsky.app/profile/leperchoir.app/post/a) '
+        '| 12 | 3 | 0 | 1 |',
+      ),
+    );
+    expect(body.indexOf('Audience'), lessThan(body.indexOf('decision:')));
+    expect(renderDailyIssue(_day, [_ready]), isNot(contains('Audience')));
+  });
 }

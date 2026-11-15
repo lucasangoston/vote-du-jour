@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:vote_contract/vote_contract.dart';
+
+import 'content_stats.dart';
 import 'content_streak.dart';
 import 'post_text.dart';
 
@@ -51,6 +54,7 @@ class Draft {
     required this.title,
     this.text,
     this.alt,
+    this.reply,
     this.imageUrl,
     this.previewUrl,
     this.checked = false,
@@ -69,6 +73,11 @@ class Draft {
 
   final String? text;
   final String? alt;
+
+  /// Réponse publiée en fil sous le post (arguments ou points, lien du
+  /// scrutin) ; `null` ou vide : pas de réponse.
+  final String? reply;
+
   final String? imageUrl;
 
   /// Aperçu Bluesky du post (#122).
@@ -88,11 +97,16 @@ class Draft {
 }
 
 /// Corps de l'issue du jour : un bloc par brouillon, case à cocher, image,
-/// texte et texte alternatif modifiables, lien de vérification, original
+/// texte, texte alternatif et réponse en fil modifiables, lien de vérification, original
 /// caché (pour compter les corrections, #113).
 /// [streak] : posts publiés sans correction d'affilée (#113), affichés en
-/// tête.
-String renderDailyIssue(DateTime parisDay, List<Draft> drafts, {int? streak}) {
+/// tête. [stats] : audience des derniers posts publiés, sous le compteur.
+String renderDailyIssue(
+  DateTime parisDay,
+  List<Draft> drafts, {
+  int? streak,
+  List<PostStats> stats = const [],
+}) {
   final out = StringBuffer()
     ..writeln('<!-- $dailyIssueFormat day:${_isoDay(parisDay)} -->')
     ..writeln(
@@ -110,6 +124,11 @@ String renderDailyIssue(DateTime parisDay, List<Draft> drafts, {int? streak}) {
                   'publication automatique, sauf votes solennels, motions de '
                   'censure et décisions avec arguments.' : ''}',
       );
+  }
+  if (stats.isNotEmpty) {
+    out
+      ..writeln()
+      ..writeln(renderPostStats(stats));
   }
   for (final d in drafts) {
     out
@@ -155,6 +174,13 @@ String renderDailyIssue(DateTime parisDay, List<Draft> drafts, {int? streak}) {
         ..writeln(_fence(d.alt!))
         ..writeln()
         ..writeln(
+          '**Fil de réponses** (une ligne `$threadSeparator` entre deux '
+          'réponses, $postMaxLength caractères chacune ; vide : pas de fil)',
+        )
+        ..writeln()
+        ..writeln(_fence(d.reply ?? ''))
+        ..writeln()
+        ..writeln(
           d.problems.isEmpty
               ? '✅ Relecture OK'
               : '⚠️ Relecture : à corriger avant publication\n'
@@ -176,7 +202,14 @@ String renderDailyIssue(DateTime parisDay, List<Draft> drafts, {int? streak}) {
 String _fence(String body) => '```text\n$body\n```';
 
 String _encodeOriginal(Draft d) => base64Url.encode(
-  utf8.encode(jsonEncode({'title': d.title, 'text': d.text, 'alt': d.alt})),
+  utf8.encode(
+    jsonEncode({
+      'title': d.title,
+      'text': d.text,
+      'alt': d.alt,
+      'reply': d.reply,
+    }),
+  ),
 );
 
 final _decisionMarker = RegExp(r'<!-- decision:([A-Za-z0-9-]+) -->');
@@ -225,6 +258,10 @@ Draft? _parseBlock(String id, String block) {
         : original['title'],
     text: needsTitle ? null : (fences.isNotEmpty ? fences[0] : null),
     alt: needsTitle ? null : (fences.length > 1 ? fences[1] : null),
+    // Absente des issues ouvertes avant la réponse en fil.
+    reply: needsTitle || fences.length < 3 || fences[2].trim().isEmpty
+        ? null
+        : fences[2],
     imageUrl: _image.firstMatch(block)?.group(1),
     checked: checked ?? false,
     postUrl: _posted.firstMatch(block)?.group(1),
@@ -247,7 +284,7 @@ Map<String, String?>? _decodeOriginal(String block) {
     final json = jsonDecode(utf8.decode(base64Url.decode(raw)));
     if (json is! Map) return null;
     return {
-      for (final k in ['title', 'text', 'alt'])
+      for (final k in ['title', 'text', 'alt', 'reply'])
         k: json[k] is String ? json[k] as String : null,
     };
   } on FormatException {

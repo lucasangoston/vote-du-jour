@@ -55,7 +55,11 @@ class _FakeBluesky {
         return _json({
           'records': [
             for (final (i, r) in records.indexed)
-              {'uri': 'at://did:plc:test/app.bsky.feed.post/r$i', 'value': r},
+              {
+                'uri': 'at://did:plc:test/app.bsky.feed.post/r$i',
+                'cid': 'c$i',
+                'value': r,
+              },
           ],
         });
       case '/xrpc/com.atproto.repo.uploadBlob':
@@ -72,7 +76,7 @@ class _FakeBluesky {
         records.add((json['record'] as Map).cast());
         return _json({
           'uri': 'at://did:plc:test/app.bsky.feed.post/r${records.length - 1}',
-          'cid': 'c',
+          'cid': 'c${records.length - 1}',
         });
     }
     return http.Response('', 404);
@@ -108,22 +112,24 @@ class _FakeIssue implements IssueBody {
   }
 }
 
-String _issue({required bool needsTitle}) => renderDailyIssue(_day, [
-  needsTitle
-      ? Draft(
-          decisionId: _id,
-          sourceUrl: _detail.decision.sourceUrl,
-          title: null,
-        )
-      : Draft(
-          decisionId: _id,
-          sourceUrl: _detail.decision.sourceUrl,
-          title: _title,
-          text: postText(_detail, title: _title),
-          alt: altText(_detail, title: _title),
-          imageUrl: '$_base/${draftImageKey(_day, _id)}',
-        ),
-]);
+String _issue({required bool needsTitle, bool withReply = false}) =>
+    renderDailyIssue(_day, [
+      needsTitle
+          ? Draft(
+              decisionId: _id,
+              sourceUrl: _detail.decision.sourceUrl,
+              title: null,
+            )
+          : Draft(
+              decisionId: _id,
+              sourceUrl: _detail.decision.sourceUrl,
+              title: _title,
+              text: postText(_detail, title: _title),
+              alt: altText(_detail, title: _title),
+              reply: withReply ? replyText(_detail) : null,
+              imageUrl: '$_base/${draftImageKey(_day, _id)}',
+            ),
+    ]);
 
 String _checked(String body) =>
     body.replaceFirst('- [ ] Publier ce post', '- [x] Publier ce post');
@@ -171,6 +177,7 @@ void main() {
       final image = ((record['embed']! as Map)['images'] as List).single as Map;
       expect(image['alt'], altText(_detail, title: _title));
       expect(image['aspectRatio'], {'width': 1080, 'height': 1350});
+      expect(record.containsKey('reply'), isFalse);
       final facet = (record['facets']! as List).single as Map;
       final index = facet['index'] as Map;
       expect(
@@ -275,7 +282,7 @@ void main() {
       dir: dir,
     );
     expect(report.done, isTrue);
-    final record = server.records.single;
+    final record = server.records.first;
     expect(record['text'], startsWith('Rejeté — Priorité nationale'));
     final image = ((record['embed']! as Map)['images'] as List).single as Map;
     expect(image['alt'], altText(_detail, title: frenchTypography(written)));
@@ -307,12 +314,121 @@ void main() {
     expect(report.blocked.single.problems.single, contains('raccourcis-le'));
   });
 
-  test('lien cliquable : positions en octets malgré les accents', () {
-    const text = 'Adopté — Été.\nleperchoir.app';
-    final index = (linkFacets(text).single['index']! as Map);
-    expect(index['byteStart'], utf8.encode('Adopté — Été.\n').length);
-    expect(index['byteEnd'], utf8.encode(text).length);
-    expect(linkFacets('sans lien'), isEmpty);
+  test('fil : chaque réponse suit la précédente, sous le post', () async {
+    final issue = _FakeIssue(
+      _checked(_issue(needsTitle: false, withReply: true)),
+    );
+    final report = await publish(issue);
+    expect(report.done, isTrue);
+    expect(report.published.single.url, endsWith('/r0'));
+    final parts = threadParts(replyText(_detail));
+    expect(server.records, hasLength(3));
+    expect(server.uploads, 1);
+    expect([for (final r in server.records.skip(1)) r['text']], parts);
+    Map ref(int i) => {
+      'uri': 'at://did:plc:test/app.bsky.feed.post/r$i',
+      'cid': 'c$i',
+    };
+    expect(server.records[1]['reply'], {'root': ref(0), 'parent': ref(0)});
+    expect(server.records[2]['reply'], {'root': ref(0), 'parent': ref(1)});
+    expect(server.records[1].containsKey('embed'), isFalse);
+    final link = (server.records[2]['facets']! as List).single as Map;
+    expect(
+      ((link['features'] as List).single as Map)['uri'],
+      'https://www.assemblee-nationale.fr/dyn/17/scrutins/8610',
+    );
+  });
+
+  test(
+    'fil : une panne en chemin, relancer ne publie que ce qui manque',
+    () async {
+      final issue = _FakeIssue(
+        _checked(_issue(needsTitle: false, withReply: true)),
+      )..failWrites = true;
+      await expectLater(publish(issue), throwsA(isA<HttpException>()));
+      expect(server.records, hasLength(3));
+      server.records.removeLast();
+
+      issue.failWrites = false;
+      final report = await publish(issue);
+      expect(report.done, isTrue);
+      expect(server.records, hasLength(3));
+      expect((server.records[2]['reply']! as Map)['parent'], {
+        'uri': 'at://did:plc:test/app.bsky.feed.post/r1',
+        'cid': 'c1',
+      });
+    },
+  );
+
+  test('fil vidé dans l\'issue : le post seul', () async {
+    final body = _checked(_issue(needsTitle: false, withReply: true));
+    final reply = replyText(_detail);
+    final issue = _FakeIssue(
+      body.replaceFirst('```text\n$reply\n```', '```text\n\n```'),
+    );
+    expect(issue.body, isNot(body));
+    await publish(issue);
+    expect(server.records, hasLength(1));
+  });
+
+  test('titre écrit à la main : le fil est produit avec les textes', () async {
+    const written = 'Priorité nationale : achats publics';
+    final issue = _FakeIssue(
+      _checked(_issue(needsTitle: true)).replaceFirst(
+        '**Titre**\n\n```text\n\n```',
+        '**Titre**\n\n```text\n$written\n```',
+      ),
+    );
+    await planReview(
+      client: _bucket(),
+      baseUrl: _base,
+      body: issue.body,
+      dir: dir,
+      checkedOnly: true,
+    );
+    File('${dir.path}/$_id.png').writeAsBytesSync(_png);
+    File('${dir.path}/$_id.png.json').writeAsStringSync(
+      jsonEncode({'status': 'ok', 'title': written, 'titleSize': 84}),
+    );
+    await publishDrafts(bluesky: server.bluesky, issue: issue, dir: dir);
+    expect(server.records, hasLength(3));
+  });
+
+  test('facettes : liens et mots-dièse, positions en octets malgré les '
+      'accents', () {
+    const text =
+        'Adopté — Été.\n#AssembléeNationale #Budget\n'
+        'Scrutin : assemblee-nationale.fr/dyn/17/scrutins/9.\n'
+        'https://exemple.fr/a?b=1 leperchoir.app';
+    String shown(Map facet) {
+      final index = facet['index'] as Map;
+      return utf8.decode(
+        utf8
+            .encode(text)
+            .sublist(index['byteStart'] as int, index['byteEnd'] as int),
+      );
+    }
+
+    Map feature(Map facet) => (facet['features'] as List).single as Map;
+    final facets = richTextFacets(text);
+    expect(facets.map(shown), [
+      '#AssembléeNationale',
+      '#Budget',
+      'assemblee-nationale.fr/dyn/17/scrutins/9',
+      'https://exemple.fr/a?b=1',
+      'leperchoir.app',
+    ]);
+    expect(feature(facets[0]), {
+      r'$type': 'app.bsky.richtext.facet#tag',
+      'tag': 'AssembléeNationale',
+    });
+    expect(
+      feature(facets[2])['uri'],
+      'https://www.assemblee-nationale.fr/dyn/17/scrutins/9',
+    );
+    expect(feature(facets[3])['uri'], 'https://exemple.fr/a?b=1');
+    expect(feature(facets[4])['uri'], 'https://leperchoir.app');
+    expect(richTextFacets('sans lien, loi n° 12 et C#'), isEmpty);
   });
 
   test('taille d\'une image PNG', () {

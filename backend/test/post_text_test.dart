@@ -35,54 +35,129 @@ DecisionDetail _withExplanation(DecisionDetail d, String explanation) {
   );
 }
 
+/// La même décision avec un autre décompte (et un autre [result]).
+DecisionDetail _withVote(
+  DecisionDetail d,
+  int pour,
+  int contre,
+  int abstentions, {
+  String? result,
+}) {
+  final json = jsonDecode(jsonEncode(d.toJson())) as Map<String, Object?>;
+  final decision = json['decision']! as Map<String, Object?>;
+  decision['count'] = {
+    'pour': pour,
+    'contre': contre,
+    'abstentions': abstentions,
+  };
+  if (result != null) decision['result'] = result;
+  return DecisionDetail.fromJson(json);
+}
+
 void main() {
   group('texte du post', () {
-    test('verdict et titre, chiffres, groupes, lien', () {
+    test('verdict et titre, chiffres, explication, lien', () {
       final d = _fixture(8610);
       expect(
         postText(d, title: _title(d)),
         'Rejeté — Donner aux acheteurs publics un critère de priorité '
         'nationale.\n'
-        '151 pour · 187 contre.\n'
-        'Pour\u00A0: RN, DR, UDR · Contre\u00A0: EPR, LFI-NFP, SOC, EcoS, Dem, HOR, '
-        'LIOT, GDR\n'
+        '151\u00A0pour · 187\u00A0contre.\n'
+        '${d.decision.explanation}\n'
         'leperchoir.app',
       );
     });
 
-    test('l\'explication seulement si tout tient', () {
+    test('les groupes sont sur la carte, plus dans le texte', () {
+      for (final n in [8610, 7979, 8693, 9759]) {
+        final d = _fixture(n);
+        final text = postText(d, title: _title(d));
+        expect(text, isNot(contains('Pour :')), reason: '$n');
+        expect(text, isNot(contains('groupes')), reason: '$n');
+      }
+    });
+
+    test('verdict précisé : sans voix contre, sans voix pour, à N voix '
+        'près, unanimité', () {
+      expect(
+        postText(_fixture(8693), title: 'Titre-restaurant'),
+        startsWith('Adopté sans voix contre — Titre-restaurant.\n'),
+      );
+      expect(
+        postText(_fixture(9759), title: 'Budget'),
+        startsWith('Rejeté sans voix pour — Budget.\n'),
+      );
       final d = _fixture(8610);
+      DecisionDetail tally(int pour, int contre, {String? result}) =>
+          _withVote(d, pour, contre, 0, result: result);
+      expect(
+        postText(tally(168, 170), title: 'T'),
+        startsWith('Rejeté à 2 voix près — T.\n168 pour'),
+      );
+      expect(
+        postText(tally(170, 170), title: 'T'),
+        startsWith('Rejeté à égalité des voix — T.\n'),
+      );
+      expect(
+        postText(tally(300, 0, result: 'adopte'), title: 'T'),
+        startsWith('Adopté à l\'unanimité — T.\n'),
+      );
+    });
+
+    test('fait saillant : voix manquantes, abstentions, participation', () {
+      expect(
+        postFact(_fixture(7979)),
+        'Il manquait 157 voix sur les 289 requises.',
+      );
+      expect(postFact(_fixture(8693)), '102 députés sur 574 ont voté.');
+      expect(postFact(_fixture(8610)), isNull);
+      final d = _fixture(8610);
+      expect(
+        postFact(_withVote(d, 49, 63, 76)),
+        'Plus d\'abstentions (76) que de votes pour ou contre.',
+      );
+    });
+
+    test('mots-dièse : le compte, puis le type de décision', () {
+      expect(
+        postText(_fixture(7979), title: 'Motion de censure'),
+        endsWith('\n#AssembléeNationale #MotionDeCensure\nleperchoir.app'),
+      );
+      expect(
+        postText(_fixture(9759), title: 'Budget'),
+        contains('\n#AssembléeNationale #Budget\n'),
+      );
+    });
+
+    test('jamais plus de 300 caractères : les mots-dièse tombent, puis '
+        'l\'explication, puis le fait saillant', () {
+      // 8610 : l'explication publiée (171 caractères) ne laisse pas la place
+      // des mots-dièse.
+      final d = _fixture(8610);
+      expect(postText(d, title: _title(d)), isNot(contains('#')));
       final court = postText(
         _withExplanation(d, 'Le texte vise les achats publics.'),
         title: _title(d),
       );
-      expect(court, contains('Le texte vise les achats publics.\n'));
-      // L'explication publiée (171 caractères) ne tient pas : elle tombe.
       expect(
-        postText(d, title: _title(d)),
-        isNot(contains(d.decision.explanation!)),
+        court,
+        endsWith('Le texte vise les achats publics.\n$postTag\nleperchoir.app'),
       );
-    });
-
-    test('jamais plus de 300 caractères : la ligne des groupes tombe après '
-        'l\'explication', () {
-      final d = _fixture(9759);
-      final long = 'x' * 240;
-      final text = postText(d, title: long);
+      final b = _fixture(8693);
+      final long = postText(b, title: 'x' * 150);
+      expect(long, contains('102 députés'));
+      expect(long, isNot(contains(b.decision.explanation!)));
+      final text = postText(b, title: 'x' * 225);
       expect(postLength(text), lessThanOrEqualTo(postMaxLength));
-      expect(text, isNot(contains('groupes')));
+      expect(text, isNot(contains('députés')));
       expect(text, endsWith('\nleperchoir.app'));
     });
 
-    test('motion de censure : pour et majorité requise, soutiens seuls', () {
+    test('motion de censure : pour et majorité requise, sans précision', () {
       final d = _fixture(7979);
       final text = postText(d, title: _title(d));
+      expect(text, startsWith('Rejeté — '));
       expect(text, contains('132 pour · 289 requis.'));
-      expect(
-        text,
-        contains('Pour la censure\u00A0: LFI-NFP, SOC, EcoS, LIOT, GDR'),
-      );
-      expect(text, isNot(contains('Contre\u00A0:')));
     });
 
     test('pas de double point après une ponctuation forte', () {
@@ -122,9 +197,8 @@ void main() {
       },
     );
 
-    test('tous les groupes du même avis : « Tous les groupes contre »', () {
+    test('tous les groupes du même avis : « tous les groupes contre »', () {
       final d = _fixture(9759);
-      expect(postText(d, title: 'Budget'), contains('Tous les groupes contre'));
       expect(
         altText(d, title: 'Budget'),
         contains('Hémicycle coloré par le vote : tous les groupes contre.'),
@@ -157,7 +231,9 @@ void main() {
         final d = _fixture(8693);
         expect(
           altText(d, title: _title(d)),
-          endsWith('Adopté, 87 pour, 0 contre, 15 abstentions. 102 votants.'),
+          endsWith(
+            'Adopté, 87 pour, 0 contre, 15 abstentions. 102 votants sur 574.',
+          ),
         );
       },
     );
@@ -176,6 +252,52 @@ void main() {
     test('date : « 1er » le premier du mois', () {
       expect(frenchLongDate(DateTime.utc(2026, 10, 1)), '1er octobre 2026');
       expect(frenchLongDate(DateTime.utc(2026, 11, 4)), '4 novembre 2026');
+    });
+  });
+
+  group('fil de réponses', () {
+    test('arguments en séance : une réponse par camp, puis le scrutin', () {
+      final d = _fixture(8610);
+      final parts = threadParts(replyText(d));
+      expect(parts, hasLength(2));
+      expect(parts[0], startsWith('Les arguments en séance.\nPour (RN) : '));
+      expect(parts[1], startsWith('Contre (LFI-NFP) : '));
+      expect(
+        parts[1],
+        endsWith(
+          '\nScrutin officiel : assemblee-nationale.fr/dyn/17/scrutins/8610',
+        ),
+      );
+      for (final p in parts) {
+        expect(postLength(p), lessThanOrEqualTo(postMaxLength));
+      }
+    });
+
+    test('sans arguments : les points du résumé qui tiennent', () {
+      final d = _fixture(8693);
+      final parts = threadParts(replyText(d));
+      expect(
+        parts.single,
+        startsWith('Ce que prévoit le texte :\n• Il met fin'),
+      );
+      expect(
+        parts.single,
+        contains('assemblee-nationale.fr/dyn/17/scrutins/8693'),
+      );
+      expect(postLength(parts.single), lessThanOrEqualTo(postMaxLength));
+    });
+
+    test('ni arguments ni points : le lien du scrutin seul', () {
+      expect(
+        replyText(_fixture(7979)),
+        'Scrutin officiel : assemblee-nationale.fr/dyn/17/scrutins/7979',
+      );
+    });
+
+    test('parties : séparées par une ligne « --- », vides ignorées', () {
+      expect(threadParts(null), isEmpty);
+      expect(threadParts(' \n'), isEmpty);
+      expect(threadParts('A\n---\n\n---\nB\nC\n'), ['A', 'B\nC']);
     });
   });
 }

@@ -67,8 +67,8 @@ TextStyle _geist(
 );
 
 /// La carte réseau social d'une décision (#109), 1080 × 1350, fond noir :
-/// languette, titre, hémicycle coloré par le vote, bandeau du résultat,
-/// pied. [titleSize] vient de [socialTitleSize].
+/// languette, titre, hémicycle coloré par le vote, légende des groupes par
+/// camp, bandeau du résultat, pied. [titleSize] vient de [socialTitleSize].
 class SocialCard extends StatelessWidget {
   const SocialCard({
     super.key,
@@ -113,27 +113,38 @@ class SocialCard extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(title, style: _titleStyle(titleSize)),
-              const Spacer(),
-              Center(
-                child: CustomPaint(
-                  size: Size(
-                    _arcWidth,
-                    _arcWidth * hemicyclePlan.height / hemicyclePlan.width,
-                  ),
-                  painter: VoteSeatsPainter(
-                    content.seats,
-                    censure: content.censure,
+              const SizedBox(height: 28),
+              // L'hémicycle prend la place qui reste : il rétrécit sous un
+              // titre de 3 lignes et une légende de 3 lignes, sans déborder.
+              Expanded(
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: CustomPaint(
+                      size: Size(
+                        _arcWidth,
+                        _arcWidth * hemicyclePlan.height / hemicyclePlan.width,
+                      ),
+                      painter: VoteSeatsPainter(
+                        content.seats,
+                        censure: content.censure,
+                      ),
+                    ),
                   ),
                 ),
               ),
+              if (content.legend.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                _Legend(content),
+              ],
               if (content.turnout case final turnout?) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Text(
                   turnout,
-                  style: _geist(30, weight: FontWeight.w500, color: _c.ink2),
+                  style: _geist(28, weight: FontWeight.w500, color: _c.ink2),
                 ),
               ],
-              const Spacer(),
+              const SizedBox(height: 28),
               Container(
                 width: double.infinity,
                 color: resultColor,
@@ -180,6 +191,84 @@ class SocialCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Légende de l'hémicycle : pour chaque camp, une pastille de la couleur de
+/// ses sièges, son nom et ses groupes. Un camp ne se coupe pas : s'il ne
+/// tient pas à la suite du précédent, il passe à la ligne.
+class _Legend extends StatelessWidget {
+  const _Legend(this.content);
+
+  final SocialCardContent content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 36,
+      runSpacing: 12,
+      children: [
+        for (final line in content.legend)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _contentWidth),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, right: 12),
+                  child: _dot(line.position),
+                ),
+                Flexible(
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: line.label),
+                        if (line.groups.isNotEmpty)
+                          TextSpan(
+                            text: '\u00A0 ${line.groups}',
+                            style: _geist(
+                              28,
+                              weight: FontWeight.w400,
+                              color: _c.ink2,
+                            ).copyWith(height: 1.25),
+                          ),
+                      ],
+                    ),
+                    style: _geist(
+                      28,
+                      weight: FontWeight.w600,
+                    ).copyWith(height: 1.25),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Pastille d'un camp : la couleur de ses sièges ; un groupe partagé, à
+  /// cheval sur plusieurs votes, n'a qu'un contour.
+  Widget _dot(GroupPosition position) {
+    final color = switch (position) {
+      GroupPosition.pour => socialSeatColor(
+        SeatVote.pour,
+        censure: content.censure,
+      ),
+      GroupPosition.contre => _voteContre,
+      GroupPosition.abstention => _voteAbstention,
+      _ => null,
+    };
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: color == null ? Border.all(color: _c.ink2, width: 3) : null,
       ),
     );
   }

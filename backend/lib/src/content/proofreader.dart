@@ -58,8 +58,10 @@ List<String> proofread(
   }
 
   // Complétude.
+  // Le verdict ouvre le post, suivi au plus d'une précision (« à
+  // l'unanimité », « à 3 voix près ») avant le tiret.
   final verdict = d.result == VoteResult.adopte ? 'Adopté' : 'Rejeté';
-  if (!text.startsWith('$verdict — ')) {
+  if (!RegExp('^$verdict( [^—\n]{1,40})? — ').hasMatch(text)) {
     problems.add('le post ne commence pas par « $verdict — »');
   }
   if (!text.trimRight().endsWith(postLink)) {
@@ -139,3 +141,14 @@ List<String> _checkFigures(
   }
   return problems;
 }
+
+/// Problèmes du fil [reply] (#112), tel que généré ou édité : la longueur
+/// de chaque réponse ([threadParts]) seulement. Les arguments y sont
+/// attribués à leur groupe, avec ses mots : la règle de neutralité du post
+/// ne s'y applique pas.
+List<String> proofreadReply(String? reply) => [
+  for (final (i, part) in threadParts(reply).indexed)
+    if (postLength(part) > postMaxLength)
+      'réponse ${i + 1} du fil : ${postLength(part)} caractères, '
+          '$postMaxLength au plus',
+];

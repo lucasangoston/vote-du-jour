@@ -11,7 +11,8 @@
 //   (rendu des cartes : app/tool/social_card/render_social_card_test.dart)
 //
 //   dart run bin/content.dart texts --base-url <URL> --dir <dossier>
-//       Écrit <id>.post.txt pour chaque carte rendue (aperçus, #122).
+//       Écrit <id>.post.txt et <id>.reply.txt (fil de réponses) pour
+//       chaque carte rendue (aperçus, #122).
 //
 //   (aperçus : app/tool/social_card/render_bluesky_preview_test.dart)
 //
@@ -21,7 +22,8 @@
 //       <dossier>/issue-title.txt (vides s'il n'y a aucun brouillon).
 //       [--history <closed.json>] : issues `content` fermées
 //       (`gh issue list --json body`), pour le compteur « 30 sans
-//       correction » (#113) affiché en tête.
+//       correction » (#113) affiché en tête, et l'audience des derniers
+//       posts publiés.
 //
 // Relecture d'une issue du jour modifiée (#122), lancée par
 // content-review.yml :
@@ -134,18 +136,33 @@ Future<void> main(List<String> arguments) async {
           ? r2StoreFromEnvironment()
           : LocalDirectoryStore(args['out'] as String);
       final day = parisDay(now);
+      final history = switch (args['history'] as String?) {
+        null => null,
+        final path => [
+          for (final i in jsonDecode(File(path).readAsStringSync()) as List)
+            if (i is Map && i['body'] is String) i['body']! as String,
+        ],
+      };
+      // L'audience est un rappel : une panne de Bluesky n'empêche pas
+      // l'issue du jour.
+      var stats = const <PostStats>[];
+      if (history != null) {
+        final client = http.Client();
+        try {
+          stats = await fetchPostStats(client: client, bodies: history);
+        } on Exception catch (e) {
+          stderr.writeln('audience des posts indisponible : $e');
+        } finally {
+          client.close();
+        }
+      }
       final body = await buildDailyIssue(
         store: store,
         publicBaseUrl: baseUrl,
         parisDay: day,
         dir: dir,
-        streak: switch (args['history'] as String?) {
-          null => null,
-          final path => uncorrectedStreak([
-            for (final i in jsonDecode(File(path).readAsStringSync()) as List)
-              if (i is Map && i['body'] is String) i['body']! as String,
-          ]),
-        },
+        streak: history == null ? null : uncorrectedStreak(history),
+        stats: stats,
       );
       File('${dir.path}/issue.md').writeAsStringSync(body);
       File(

@@ -7,6 +7,7 @@ import 'package:vote_contract/vote_contract.dart';
 import '../live/paris_time.dart';
 import '../object_store.dart';
 import 'content_selection.dart';
+import 'content_stats.dart';
 import 'daily_issue.dart';
 import 'post_text.dart';
 import 'proofreader.dart';
@@ -77,6 +78,7 @@ Future<String> buildDailyIssue({
   required DateTime parisDay,
   required Directory dir,
   int? streak,
+  List<PostStats> stats = const [],
 }) async {
   final ids =
       (jsonDecode(await File('${dir.path}/selection.json').readAsString())
@@ -101,6 +103,7 @@ Future<String> buildDailyIssue({
         );
         final text = postText(detail, title: title);
         final alt = altText(detail, title: title);
+        final reply = replyText(detail);
         final preview = File('${dir.path}/$id-apercu.png');
         String? previewUrl;
         if (await preview.exists()) {
@@ -119,9 +122,13 @@ Future<String> buildDailyIssue({
             title: title,
             text: text,
             alt: alt,
+            reply: reply,
             imageUrl: '$publicBaseUrl/$key',
             previewUrl: previewUrl,
-            problems: proofread(detail, text: text, alt: alt),
+            problems: [
+              ...proofread(detail, text: text, alt: alt),
+              ...proofreadReply(reply),
+            ],
           ),
         );
       case 'titre_a_ecrire':
@@ -138,7 +145,7 @@ Future<String> buildDailyIssue({
   }
   return drafts.isEmpty
       ? ''
-      : renderDailyIssue(parisDay, drafts, streak: streak);
+      : renderDailyIssue(parisDay, drafts, streak: streak, stats: stats);
 }
 
 Future<String> _get(http.Client client, String url) async {

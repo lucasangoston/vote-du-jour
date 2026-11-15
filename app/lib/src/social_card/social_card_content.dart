@@ -16,6 +16,8 @@ class SocialCardContent {
     required this.turnout,
     required this.censure,
     required this.seats,
+    this.camps = const [],
+    this.unanimous,
   });
 
   /// Construit la carte de [detail]. [title] remplace le titre du résumé
@@ -42,6 +44,8 @@ class SocialCardContent {
       turnout: socialTurnout(count, seats.length, censure: censure),
       censure: censure,
       seats: seats,
+      camps: socialCamps(detail.groups),
+      unanimous: socialUnanimous(detail.groups),
     );
   }
 
@@ -57,13 +61,67 @@ class SocialCardContent {
   /// Chiffres du bandeau, sur une ligne.
   final String figures;
 
-  /// « 102 votants », seulement quand moins de la moitié des sièges a voté.
+  /// « 102 votants sur 574 », seulement quand moins de la moitié des sièges
+  /// a voté.
   final String? turnout;
 
   /// Motion de censure : seuls les pour comptent, soutiens en encre neutre.
   final bool censure;
 
   final List<HemicycleSeat> seats;
+
+  /// Groupes par position, pour la légende sous l'hémicycle : la couleur
+  /// d'un siège dit le vote, la légende dit qui a voté quoi.
+  final List<SocialCamp> camps;
+
+  /// Position commune quand tous les groupes ont voté de même : la légende
+  /// tient en « Tous les groupes pour ».
+  final GroupPosition? unanimous;
+
+  /// Lignes de la légende : un libellé et, sauf unanimité, ses groupes.
+  /// Motion de censure : les seuls soutiens.
+  List<({GroupPosition position, String label, String groups})> get legend {
+    if (censure) {
+      return [
+        for (final camp in camps)
+          if (camp.position == GroupPosition.pour)
+            (
+              position: camp.position,
+              label: 'Pour la censure',
+              groups: camp.groups.join(', '),
+            ),
+      ];
+    }
+    if (unanimous case final position?) {
+      return [
+        (
+          position: position,
+          label: switch (position) {
+            GroupPosition.pour => 'Tous les groupes pour',
+            GroupPosition.contre => 'Tous les groupes contre',
+            _ => 'Tous les groupes abstentionnistes',
+          },
+          groups: '',
+        ),
+      ];
+    }
+    return [
+      for (final camp in camps)
+        (
+          position: camp.position,
+          label: switch (camp.position) {
+            GroupPosition.pour => 'Pour',
+            GroupPosition.contre => 'Contre',
+            GroupPosition.abstention => 'Abst.',
+            _ =>
+              camp.groups.length == 1 && camp.groups.single != 'NI'
+                  ? 'Partagé'
+                  : 'Partagés',
+          },
+          groups: camp.groups.join(', '),
+        ),
+    ];
+  }
 }
 
 /// Languette de la carte, en capitales, date insécable.
