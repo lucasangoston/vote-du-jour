@@ -179,7 +179,12 @@ Toujours présent, avec les chiffres exacts des données :
 - Par format (v1 : un seul, « carte Bluesky ») : après 30 posts publiés sans
   aucune correction, le format peut passer en publication automatique.
 - Toujours validés à la main, quel que soit le compteur : votes solennels,
-  motions de censure, et tout post qui contient des arguments.
+  motions de censure, et toute décision qui a des arguments (les gabarits
+  v1 n'en mettent pas dans le post : on exclut par prudence dès que le
+  détail en porte).
+- Le compteur est affiché en tête de chaque issue du jour (« Compteur :
+  12 / 30 »). Le passage en automatique lui-même n'est pas encore branché :
+  `canAutoPublish` dit si un post y aurait droit.
 
 ## Compte et domaine
 
