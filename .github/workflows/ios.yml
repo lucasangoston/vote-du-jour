@@ -6,11 +6,17 @@ name: Envoi iOS sur TestFlight
 # géré par Apple (cloud), rien n'est stocké dans le repo.
 # - version : celle de app/pubspec.yaml (avant le +) ;
 # - numéro de build : numéro d'exécution de ce workflow, toujours croissant ;
-# - après l'envoi, le build apparaît dans TestFlight au bout de 10 à 30 min
-#   (traitement par Apple) ; la soumission à la review reste dans App Store
-#   Connect.
+# - après l'envoi, le job attend le traitement par Apple (10 à 30 min), puis
+#   distribue le build au groupe externe « Public » (lien public) et le soumet
+#   à la review bêta (#129) ; les testeurs le reçoivent à l'approbation. La
+#   soumission à la review de l'App Store reste dans App Store Connect.
 on:
   workflow_dispatch:
+    inputs:
+      a_tester:
+        description: 'Texte « À tester » montré aux testeurs'
+        type: string
+        default: 'Corrections et améliorations.'
   push:
     tags: ['v*']
 
@@ -24,7 +30,7 @@ concurrency:
 jobs:
   testflight:
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: app
@@ -78,6 +84,11 @@ jobs:
             -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Distribution aux testeurs externes
+        env:
+          A_TESTER: ${{ inputs.a_tester || format('Version {0}.', github.ref_name) }}
+        run: ruby ios/tool/distribute_testflight.rb "${{ vars.APP_ID }}" "${{ github.run_number }}" "$A_TESTER"
 
       - name: Révocation du certificat de développement de la CI
         if: always()
