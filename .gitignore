@@ -1,0 +1,5 @@
+# Cache local du CLI Cloudflare (compte), jamais dans le repo.
+.cloudflare/
+# Réglages locaux et worktrees de Claude Code.
+.claude/settings.local.json
+.claude/worktrees/
