@@ -34,12 +34,12 @@ jobs:
       BODY_FILE: ${{ github.workspace }}/issue-body.md
       ISSUE: ${{ github.event.issue.number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Corps de l'issue (à jour)
         run: gh issue view "$ISSUE" --json body --jq .body > "$BODY_FILE"
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
         with:
           sdk: 3.13.5
 
@@ -53,7 +53,7 @@ jobs:
           echo "render=$(jq '[.[] | select(.render)] | length' "$WORK/review.json")" >> "$GITHUB_OUTPUT"
 
       - if: steps.plan.outputs.render != '0'
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: 3.47.7
           channel: stable
