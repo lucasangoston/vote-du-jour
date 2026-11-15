@@ -157,7 +157,10 @@ Tous les groupes du même avis : « tous les groupes pour ». Motion de censure 
 
 - Une issue par jour (label `content`), créée seulement s'il y a au moins un
   brouillon, et pas avant 13 h (Paris) : le jeu de données des scrutins
-  arrive vers 12 h 30. Un bloc par brouillon : case à cocher, image, texte modifiable,
+  arrive vers 12 h 30.
+- L'issue est verrouillée dès sa création (repo public) : seuls les
+  collaborateurs la commentent ; les labels `content` et `publier` ne
+  peuvent de toute façon être posés que par eux. Un bloc par brouillon : case à cocher, image, texte modifiable,
   texte alternatif, id de la décision, lien vers la page officielle du
   scrutin (`sourceUrl`) pour vérifier les chiffres.
 - Le texte d'origine est gardé en commentaire HTML caché dans le bloc.
