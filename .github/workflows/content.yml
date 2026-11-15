@@ -101,8 +101,11 @@ jobs:
         if: steps.select.outputs.count != '0'
         run: |
           if [ -s "$WORK/issue.md" ]; then
-            gh issue create --title "$(cat "$WORK/issue-title.txt")" \
-              --label content --body-file "$WORK/issue.md"
+            url=$(gh issue create --title "$(cat "$WORK/issue-title.txt")" \
+              --label content --body-file "$WORK/issue.md")
+            # Repo public : seuls les collaborateurs commentent l'issue du jour.
+            gh issue lock "$url"
+            echo "$url"
           else
             echo "aucun brouillon"
           fi
