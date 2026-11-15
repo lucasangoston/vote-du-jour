@@ -1,0 +1,88 @@
+name: Envoi iOS sur TestFlight
+
+# Construit l'app, la signe et l'envoie sur TestFlight (#124), sans Xcode
+# local. Signature automatique par la clé API App Store Connect (rôle Admin) :
+# Xcode télécharge les profils et signe avec le certificat de distribution
+# géré par Apple (cloud), rien n'est stocké dans le repo.
+# - version : celle de app/pubspec.yaml (avant le +) ;
+# - numéro de build : numéro d'exécution de ce workflow, toujours croissant ;
+# - après l'envoi, le build apparaît dans TestFlight au bout de 10 à 30 min
+#   (traitement par Apple) ; la soumission à la review reste dans App Store
+#   Connect.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: app
+    env:
+      ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+
+      - name: Clé API App Store Connect
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          printf '%s' "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+          echo "ASC_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+          echo "ARCHIVE=$RUNNER_TEMP/Runner.xcarchive" >> "$GITHUB_ENV"
+
+      - name: Configuration Flutter (version et numéro de build)
+        run: |
+          flutter pub get
+          flutter build ios --release --config-only --build-number=${{ github.run_number }}
+          xcodebuild -version
+          grep -E '^version:' pubspec.yaml
+          echo "build ${{ github.run_number }}"
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$ARCHIVE" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Signature et envoi sur TestFlight
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE" -exportOptionsPlist ios/ExportOptions.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Révocation du certificat de développement de la CI
+        if: always()
+        run: ruby ios/tool/revoke_ci_certificates.rb
+
+      - name: Nettoyage de la clé
+        if: always()
+        run: rm -f "$ASC_KEY_PATH"
