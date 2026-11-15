@@ -189,18 +189,22 @@ final _original = RegExp(r'<!-- original:([A-Za-z0-9_=-]+) -->');
 
 /// Brouillons de l'issue [body], tels qu'édités : case, textes, titre écrit.
 /// Un bloc illisible est ignoré.
-List<Draft> parseDailyIssue(String body) {
+List<Draft> parseDailyIssue(String body) => [
+  for (final b in _blocks(body))
+    ?_parseBlock(b.id, body.substring(b.start, b.end)),
+];
+
+/// Blocs de [body] : id de la décision, début (après le marqueur) et fin
+/// (marqueur suivant ou fin du corps).
+Iterable<({String id, int start, int end})> _blocks(String body) sync* {
   final markers = _decisionMarker.allMatches(body).toList();
-  return [
-    for (var i = 0; i < markers.length; i++)
-      ?_parseBlock(
-        markers[i].group(1)!,
-        body.substring(
-          markers[i].end,
-          i + 1 < markers.length ? markers[i + 1].start : body.length,
-        ),
-      ),
-  ];
+  for (var i = 0; i < markers.length; i++) {
+    yield (
+      id: markers[i].group(1)!,
+      start: markers[i].end,
+      end: i + 1 < markers.length ? markers[i + 1].start : body.length,
+    );
+  }
 }
 
 Draft? _parseBlock(String id, String block) {
@@ -230,15 +234,8 @@ Draft? _parseBlock(String id, String block) {
 /// Brouillon tel que généré, d'après l'original caché du bloc de [id] dans
 /// [body] ; `null` s'il est absent.
 Map<String, String?>? originalDraft(String body, String id) {
-  final markers = _decisionMarker.allMatches(body).toList();
-  for (var i = 0; i < markers.length; i++) {
-    if (markers[i].group(1) != id) continue;
-    return _decodeOriginal(
-      body.substring(
-        markers[i].end,
-        i + 1 < markers.length ? markers[i + 1].start : body.length,
-      ),
-    );
+  for (final b in _blocks(body)) {
+    if (b.id == id) return _decodeOriginal(body.substring(b.start, b.end));
   }
   return null;
 }
@@ -270,11 +267,8 @@ Set<String> handledDecisionIds(Iterable<String> bodies) => {
 /// sous la case (#112) : ce bloc ne sera plus jamais publié. Inchangé si le
 /// bloc est absent ou porte déjà un lien.
 String markPublished(String body, String id, String postUrl) {
-  final markers = _decisionMarker.allMatches(body).toList();
-  for (var i = 0; i < markers.length; i++) {
-    if (markers[i].group(1) != id) continue;
-    final start = markers[i].end;
-    final end = i + 1 < markers.length ? markers[i + 1].start : body.length;
+  for (final (id: blockId, :start, :end) in _blocks(body)) {
+    if (blockId != id) continue;
     final block = body.substring(start, end);
     if (_posted.hasMatch(block)) return body;
     final box = _checkbox.firstMatch(block);
