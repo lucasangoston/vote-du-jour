@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Garde-fou avant commit, en deux étages :
+#  1. vérifications de la CI (format + analyse) sur les paquets Dart touchés ;
+#  2. relecture du diff indexé par Claude (consignes dans review-prompt.md),
+#     qui bloque le commit sur un problème marqué « bloquant ».
+#
+# Activation (une fois par clone) : git config core.hooksPath .githooks
+# Sauter la relecture Claude : SKIP_REVIEW=1 git commit …
+# Tout sauter (à éviter)     : git commit --no-verify
+# Modèle de la relecture     : REVIEW_MODEL (sonnet par défaut)
+set -euo pipefail
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+hooks="$root/.githooks"
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+rouge() { printf '\033[31m%s\033[0m\n' "$*"; }
+vert() { printf '\033[32m%s\033[0m\n' "$*"; }
+
+# --- 1. Format et analyse, comme la CI -------------------------------------
+dart_files=$(printf '%s\n' "$staged" | grep -E '\.dart$' || true)
+if [ -n "$dart_files" ]; then
+  echo "▸ dart format (fichiers indexés)"
+  # Limite connue : format et analyse lisent le working tree, pas l'index
+  # (un `git add -p` partiel n'est donc vérifié qu'approximativement).
+  # Les chemins du repo n'ont pas d'espace : découpage par mot assumé.
+  # shellcheck disable=SC2086
+  if ! out=$(dart format --output=none --set-exit-if-changed $dart_files); then
+    rouge "✗ Fichiers mal formatés : lance « dart format » puis réindexe."
+    printf '%s\n' "$out" | grep '^Changed' || true
+    exit 1
+  fi
+fi
+
+for pkg in app backend packages/vote_contract; do
+  printf '%s\n' "$staged" | grep -qE "^$pkg/.*\.(dart|yaml)$" || continue
+  echo "▸ analyse de $pkg"
+  if [ "$pkg" = app ]; then
+    (cd "$pkg" && flutter analyze) || { rouge "✗ flutter analyze a échoué dans $pkg."; exit 1; }
+  else
+    (cd "$pkg" && dart analyze --fatal-infos) || { rouge "✗ dart analyze a échoué dans $pkg."; exit 1; }
+  fi
+done
+
+# --- 2. Relecture par Claude ------------------------------------------------
+if [ "${SKIP_REVIEW:-}" = 1 ]; then
+  echo "▸ relecture Claude sautée (SKIP_REVIEW=1)"
+  exit 0
+fi
+if ! command -v claude >/dev/null; then
+  echo "▸ relecture Claude sautée : commande « claude » introuvable"
+  exit 0
+fi
+
+# Générés, verrous, binaires : rien à relire. Secrets : jamais envoyés.
+diff=$(git diff --cached --no-color --diff-filter=ACMR -- . \
+  ':(exclude)*.lock' ':(exclude)*/package-lock.json' \
+  ':(exclude)*.g.dart' ':(exclude)*.pbxproj' ':(exclude)*.xcscheme' \
+  ':(exclude)*.png' ':(exclude)*.jpg' ':(exclude)*.svg' ':(exclude)*.json' \
+  ':(exclude,glob)**/.env*' ':(exclude)*.pem' ':(exclude)*.p8' \
+  ':(exclude)*.p12' ':(exclude)*.key' ':(exclude)*.jks' ':(exclude)*.keystore')
+[ -z "$diff" ] && exit 0
+
+echo "▸ relecture Claude du diff indexé ($(printf '%s\n' "$diff" | wc -l | tr -d ' ') lignes)…"
+# Hooks personnels coupés (ils injecteraient leur contexte dans la relecture) ;
+# outils limités à la lecture.
+report=$(
+  {
+    cat "$hooks/review-prompt.md"
+    printf '\n\n<diff>\n%s\n</diff>\n' "$diff"
+  } | claude -p \
+    --model "${REVIEW_MODEL:-sonnet}" \
+    --effort "${REVIEW_EFFORT:-medium}" \
+    --tools "Read,Grep,Glob" \
+    --settings '{"disableAllHooks": true}' \
+    2>&1
+) || {
+  echo "▸ relecture Claude en échec (non bloquant) :"
+  printf '%s\n' "$report" | tail -5
+  exit 0
+}
+
+printf '\n%s\n\n' "$report"
+# Dernier verdict trouvé, tolérant aux fences, espaces ou emoji autour.
+verdict=$(printf '%s\n' "$report" | grep -oE 'VERDICT: (OK|BLOQUANT)' | tail -1 || true)
+case "$verdict" in
+  "VERDICT: BLOQUANT")
+    rouge "✗ Commit bloqué par la relecture. Corrige, ou SKIP_REVIEW=1 si tu assumes."
+    exit 1 ;;
+  "VERDICT: OK") vert "✓ Relecture OK" ;;
+  *) rouge "⚠ Relecture sans verdict lisible : commit laissé passer, relis le rapport." ;;
+esac
