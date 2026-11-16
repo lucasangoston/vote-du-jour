@@ -14,6 +14,16 @@ Données : open data de l'Assemblée nationale (Licence Ouverte Etalab).
 - Secrets GitHub Actions : `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `ANTHROPIC_API_KEY`, `FCM_SERVICE_ACCOUNT` (clé JSON du compte de service Firebase, notifications push ; facultatif).
 - Variables GitHub Actions : `R2_PUBLIC_BASE_URL`, `APPLE_TEAM_ID`, `APP_ID`.
 
+## Relecture avant commit
+
+Le hook `.githooks/pre-commit` refait les vérifications de la CI (`dart format`, `dart analyze --fatal-infos` / `flutter analyze`) sur les paquets touchés. Il fait ensuite relire le diff indexé par Claude, selon les consignes de `.githooks/review-prompt.md`, et bloque le commit sur une remarque `bloquant` (bug, régression, contrat cassé, logique sans test, secret). Il faut la commande `claude` connectée, sinon la relecture est sautée.
+
+```bash
+git config core.hooksPath .githooks   # une fois par clone
+SKIP_REVIEW=1 git commit …            # sans la relecture Claude
+REVIEW_MODEL=opus git commit …        # relecture plus poussée (sonnet par défaut)
+```
+
 ## Structure
 
 ```
