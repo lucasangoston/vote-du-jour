@@ -205,4 +205,97 @@ void main() {
       ),
     );
   });
+  group('vote provisoire sur le texte en débat', () {
+    // Scrutin 9905 du 16/11/2026, détecté en direct : ni dossier ni résumé.
+    final provisional = DecisionSummary(
+      id: 'VTANR5L17V9905',
+      numero: 9905,
+      type: DecisionType.ensembleTexte,
+      status: DecisionStatus.provisoire,
+      result: VoteResult.adopte,
+      date: DateTime.utc(2026, 11, 16),
+      officialTitle:
+          "l'ensemble de la proposition de loi visant au renforcement de "
+          "l'attractivité de l'épargne salariale et à la mise en œuvre d'une "
+          'procédure de déblocage exceptionnelle (première lecture).',
+      sourceUrl: 'https://www.assemblee-nationale.fr/dyn/17/scrutins/9905',
+      shortTitle:
+          "Proposition de loi visant au renforcement de l'attractivité de "
+          "l'épargne salariale et à la mise en œuvre d'une procédure de "
+          'déblocage exceptionnelle',
+    );
+    const summary = PlainSummary(
+      title: 'Épargne salariale : déblocage exceptionnel',
+      shortTitle: 'Épargne salariale : déblocage',
+      explanation:
+          "Le texte permet de débloquer par anticipation, pendant un an et "
+          "dans la limite de 5 000 €, des sommes d'épargne salariale.",
+      promptVersion: 2,
+    );
+    const dossierUrl =
+        'https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53699';
+    final inDebate = InDebate(
+      dossierRef: 'DLR5L17N53699',
+      shortTitle:
+          "Proposition de loi visant au renforcement de l'attractivité de "
+          "l'épargne salariale et à la mise en oeuvre d'une procédure de "
+          'déblocage exceptionnelle',
+      dossierUrl: dossierUrl,
+      seanceRef: 'RUANR5L17S2027IDS31002',
+      startsAt: DateTime.utc(2026, 11, 16, 15),
+      summary: summary,
+    );
+    DecisionIndex index(List<DecisionSummary> decisions, {InDebate? debate}) =>
+        DecisionIndex(
+          generatedAt: DateTime.utc(2026, 11, 16, 19),
+          decisions: decisions,
+          inDebate: debate,
+        );
+
+    test('reprend le dossier et le résumé du texte en débat', () {
+      final d = withDebatedText(
+        index([provisional], debate: inDebate),
+      ).decisions.single;
+      expect(d.compactTitle, 'Épargne salariale : déblocage');
+      expect(d.explanation, summary.explanation);
+      expect(d.dossierUrl, dossierUrl);
+      expect(d.status, DecisionStatus.provisoire);
+    });
+
+    test('garde ce qu\'il avait quand le texte n\'est plus en débat', () {
+      final published = withDebatedText(index([provisional], debate: inDebate));
+      final d = withDebatedText(
+        index([provisional]),
+        published: published,
+      ).decisions.single;
+      expect(d.compactTitle, 'Épargne salariale : déblocage');
+      expect(d.dossierUrl, dossierUrl);
+    });
+
+    test('ni un autre texte, ni une décision confirmée', () {
+      final other = DecisionSummary.tryFromJson({
+        ...provisional.toJson(),
+        'id': 'VTANR5L17V9906',
+        'officialTitle':
+            "l'ensemble du projet de loi visant la relance et la "
+            'décentralisation du logement (première lecture).',
+      })!;
+      final confirmed = DecisionSummary.tryFromJson({
+        ...provisional.toJson(),
+        'status': DecisionStatus.confirmee.json,
+      })!;
+      final decisions = withDebatedText(
+        index([other, confirmed], debate: inDebate),
+      ).decisions;
+      expect(decisions.map((d) => d.summary), [null, null]);
+      expect(decisions.map((d) => d.dossierUrl), [null, null]);
+    });
+
+    test('le résumé emprunté n\'entre pas dans le cache', () {
+      final published = withDebatedText(index([provisional], debate: inDebate));
+      final cache = SummaryCache();
+      cache.adoptPublished(published, now: DateTime.utc(2026, 11, 16, 20));
+      expect(cache.summaryOf(provisional.id), isNull);
+    });
+  });
 }

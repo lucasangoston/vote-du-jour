@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 
+import 'package:vote_contract/vote_contract.dart';
+
 import 'decision_status_label.dart';
+
+/// Vote par groupe d'une décision provisoire, pas encore publié.
+const provisionalGroupsNotice = 'Vote par groupe publié après confirmation.';
+
+/// Décision lue sur le site pendant la séance (#10) : le décompte est connu,
+/// pas encore le vote de chaque député. Ses sièges se dessinent en gris,
+/// comme l'hémicycle d'un texte en débat, jamais en arc par camp, qui
+/// ressemblerait à une autre figure que l'hémicycle.
+bool isProvisionalScrutin(DecisionSummary d) =>
+    d.status == DecisionStatus.provisoire &&
+    d.voteMode == VoteMode.scrutinPublic;
 
 /// Badge discret « provisoire », rectangle au filet : décision lue sur le site de l'Assemblée
 /// pendant la séance, confirmée le lendemain par le jeu de données officiel.

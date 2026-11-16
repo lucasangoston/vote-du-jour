@@ -4,6 +4,7 @@ import 'package:archive/archive.dart';
 import 'package:vote_contract/vote_contract.dart';
 
 import '../decision_selector.dart' show normalizeTitle;
+import '../dossier_index.dart' show sameTextWords;
 
 /// Organe des séances publiques de l'Assemblée nationale dans l'agenda.
 const assembleeSeanceOrgane = 'PO838901';
@@ -135,6 +136,8 @@ AgendaRead readAgendaArchive(List<int> zipBytes, {required DateTime since}) {
   final seances = <_Seance>[];
   // Texte nommé par un libellé → dossiers des points qui le nomment.
   final dossiersBySubject = <String, Set<String>>{};
+  // Libellé sans formule de procédure → dossier, pour les libellés abrégés.
+  final labelledDossiers = <(String, String)>{};
   for (final file in archive) {
     final name = file.name.split('/').last;
     if (!file.isFile || !name.startsWith('RUAN') || !name.endsWith('.json')) {
@@ -151,6 +154,7 @@ AgendaRead readAgendaArchive(List<int> zipBytes, {required DateTime since}) {
     for (final p in seance.points) {
       if (p.dossierRef case final dossier?) {
         (dossiersBySubject[subjectKey(p.label)] ??= {}).add(dossier);
+        labelledDossiers.add((cleanLabel(p.label), dossier));
       }
     }
     if (seance.confirmed && seance.endsAt.isAfter(since)) seances.add(seance);
@@ -171,7 +175,8 @@ AgendaRead readAgendaArchive(List<int> zipBytes, {required DateTime since}) {
           switch (dossiersBySubject[subjectKey(p.label)]) {
             final dossiers? when dossiers.length == 1 => dossiers.single,
             _ => null,
-          };
+          } ??
+          _dossierByWords(cleanLabel(p.label), labelledDossiers);
       if (kind.$1 == UpcomingKind.discussion &&
           dossierRef == null &&
           !_discussesText.hasMatch(normalizeTitle(p.label))) {
@@ -194,6 +199,20 @@ AgendaRead readAgendaArchive(List<int> zipBytes, {required DateTime since}) {
   return (points: points, unreadable: unreadable);
 }
 
+/// Dossier d'un libellé abrégé, que [subjectKey] ne retrouve pas (« Pt Sénat
+/// résilience des infrastructures critiques et renforcement de la
+/// cybersécurité » ↔ « Projet de loi, adopté par le Sénat, relatif à la
+/// résilience des infrastructures critiques et au renforcement de la
+/// cybersécurité ») : celui des points [labelled] qui nomment le même texte
+/// aux mots significatifs près ([sameTextWords]), s'il est seul.
+String? _dossierByWords(String label, Set<(String, String)> labelled) {
+  final dossiers = {
+    for (final (other, dossier) in labelled)
+      if (sameTextWords(label, other)) dossier,
+  };
+  return dossiers.length == 1 ? dossiers.single : null;
+}
+
 /// `typePointODJ` retenus : nature du point et « suite de la discussion ».
 const _kinds = {
   'Discussion': (UpcomingKind.discussion, false),
@@ -209,7 +228,7 @@ final _discussesText = RegExp(r'^(?:suite de la )?discussion\b');
 final _procedurePrefix = RegExp(
   r'^(?:suite de la discussion|discussion|vote solennel|'
   r'vote par scrutin public|explications de vote(?: et vote)?'
-  r"(?: par scrutin public)?)\s+(?:sur |du |des |de |d[‘’ʼ'])?"
+  r"(?: par scrutin public)?)\s*:?\s+(?:sur |du |des |de |d[‘’ʼ'])?"
   r"(?:la |le |les |l[‘’ʼ'])?",
   caseSensitive: false,
 );

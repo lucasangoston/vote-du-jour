@@ -414,4 +414,27 @@ void main() {
     );
     expect(find.text('Toutes les décisions'), findsOneWidget);
   });
+  testWidgets('vote à venir sans dossier : la carte répond au toucher', (
+    tester,
+  ) async {
+    final noLink = UpcomingItem(
+      id: 'PT53670',
+      kind: UpcomingKind.voteSolennel,
+      startsAt: DateTime.utc(2026, 11, 3, 14),
+      seanceRef: 'S31004',
+      label: 'Vote solennel : Pt Sénat résilience des infrastructures',
+      shortTitle: 'Résilience des infrastructures critiques',
+    );
+    await _pumpHome(
+      tester,
+      index: DecisionIndex(
+        generatedAt: DateTime.utc(2026, 10, 23, 8),
+        decisions: [_d8706.decision],
+        upcoming: [noLink],
+      ),
+    );
+    await tester.tap(find.text('Résilience des infrastructures critiques'));
+    await tester.pump();
+    expect(find.text(upcomingNoLinkNotice), findsOneWidget);
+  });
 }

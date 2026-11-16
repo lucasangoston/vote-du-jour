@@ -50,6 +50,19 @@ String _withDeletedPoint(String uid, String point) {
   return jsonEncode(json);
 }
 
+/// La réunion [uid] des fixtures, avec le libellé du point [point] remplacé
+/// par [label] (libellé abrégé de l'ordre du jour).
+String _withPointLabel(String uid, String point, String label) {
+  final json = jsonDecode(fixtureReunion(uid)) as Map<String, Object?>;
+  final reunion = json['reunion'] as Map<String, Object?>;
+  final points =
+      ((reunion['ODJ'] as Map)['pointsODJ'] as Map)['pointODJ'] as List;
+  for (final p in points.cast<Map<String, Object?>>()) {
+    if (p['uid'] == point) p['objet'] = label;
+  }
+  return jsonEncode(json);
+}
+
 void main() {
   // Mercredi 21 octobre 2026, 21 h 17 à Paris : date de l'agenda des
   // fixtures, pendant la séance du soir sur le PLFSS.
@@ -212,6 +225,42 @@ void main() {
         cleanLabel('Suite de la discussion de l’ensemble du texte'),
         'Ensemble du texte',
       );
+      // Libellé abrégé, avec deux-points (agenda du 17/11/2026).
+      expect(
+        cleanLabel(
+          'Vote solennel : Pt Sénat résilience des infrastructures critiques '
+          'et renforcement de la cybersécurité',
+        ),
+        'Pt Sénat résilience des infrastructures critiques et renforcement '
+        'de la cybersécurité',
+      );
+    });
+
+    test('dossier d\'un vote solennel au libellé abrégé', () {
+      // Même vote solennel que l'agenda réel, sous un libellé abrégé que
+      // la comparaison des intitulés ne reconnaît pas : le dossier est
+      // retrouvé par les mots du texte.
+      final items = buildUpcoming(
+        readAgendaArchive(
+          fixtureAgendaArchive(
+            replace: {
+              'RUANR5L17S2027IDS30964': _withPointLabel(
+                'RUANR5L17S2027IDS30964',
+                'RUANR5L17S2027IDS30964PT53289',
+                'Vote solennel : Pt financement de la sécurité sociale pour '
+                    '2027',
+              ),
+            },
+          ),
+          since: now,
+        ).points,
+        now: now,
+      );
+      final vote = items.singleWhere(
+        (u) => u.id == 'RUANR5L17S2027IDS30964PT53289',
+      );
+      expect(vote.dossierUrl, _dossierUrl(_plfss));
+      expect(vote.shortTitle, isNot(startsWith(':')));
     });
   });
 

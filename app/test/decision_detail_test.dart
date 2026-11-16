@@ -9,6 +9,8 @@ import 'package:votedujour/main.dart';
 import 'package:votedujour/src/decision_detail/decision_detail_repository.dart';
 import 'package:votedujour/src/decision_detail/decision_route.dart';
 import 'package:votedujour/src/decisions_repository.dart';
+import 'package:votedujour/src/hemicycle/hemicycle_seats.dart';
+import 'package:votedujour/src/hemicycle/vote_arc.dart';
 import 'package:votedujour/src/home_widget/widget_link.dart';
 
 final _summary = DecisionSummary(
@@ -261,6 +263,13 @@ void main() {
 
     expect(find.text('provisoire'), findsOneWidget);
     expect(find.text('503'), findsOneWidget);
+    // Sièges en attente, pas l'arc par camp : le vote par député manque.
+    expect(find.byType(WaitingHemicycle), findsOneWidget);
+    expect(find.byType(VoteArc), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Vote par groupe publié après confirmation.'),
+      300,
+    );
     expect(
       find.text('Vote par groupe publié après confirmation.'),
       findsOneWidget,

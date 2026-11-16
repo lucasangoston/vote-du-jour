@@ -225,10 +225,13 @@ Future<JobOutcome> runJob({
       }
       // L'ordre du jour (#52) et le texte en débat (#55) publiés sont
       // gardés : le passage de l'agenda, juste après le job, les met à jour.
-      final index = summaryCache
-          .applyTo(reconciled.index)
-          .withUpcoming(published?.upcoming)
-          .withInDebate(summaryCache.applyToInDebate(published?.inDebate));
+      final index = withDebatedText(
+        summaryCache
+            .applyTo(reconciled.index)
+            .withUpcoming(published?.upcoming)
+            .withInDebate(summaryCache.applyToInDebate(published?.inDebate)),
+        published: published,
+      );
       // Les détails avant l'index, qui renvoie vers eux. Les décisions
       // encore provisoires ont le décompte du site, sans vote par groupe.
       // Les décisions déjà argumentées (#35) gardent leurs arguments.

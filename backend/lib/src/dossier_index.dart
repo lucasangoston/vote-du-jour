@@ -447,14 +447,24 @@ bool sameVotedText(String titre, Iterable<String> titles) {
   final voted = _votedText.firstMatch(normalizeTitle(titre))?.group(0);
   if (voted == null) return false;
   final a = _significantWords(voted.replaceFirst(_trailingParenthesis, ''));
-  for (final title in titles) {
-    final b = _significantWords(title);
-    final (small, large) = a.length <= b.length ? (a, b) : (b, a);
-    if (small.length < 2) continue;
-    final shared = small.where(large.contains).length;
-    if (shared >= 0.8 * small.length) return true;
-  }
-  return false;
+  return titles.any((title) => _shareWords(a, _significantWords(title)));
+}
+
+/// [a] et [b] nomment-ils le même texte, aux mots significatifs près (même
+/// règle que [sameVotedText]), sans que [a] commence par « projet de loi… » ?
+/// Sert aux libellés abrégés de l'ordre du jour (« Vote solennel : Pt Sénat
+/// résilience des infrastructures critiques… »).
+bool sameTextWords(String a, String b) => _shareWords(
+  _significantWords(a.replaceFirst(_trailingParenthesis, '')),
+  _significantWords(b.replaceFirst(_trailingParenthesis, '')),
+);
+
+/// Au moins 80 % des mots du plus court (deux mots au moins) figurent dans
+/// l'autre.
+bool _shareWords(Set<String> a, Set<String> b) {
+  final (small, large) = a.length <= b.length ? (a, b) : (b, a);
+  if (small.length < 2) return false;
+  return small.where(large.contains).length >= 0.8 * small.length;
 }
 
 Set<String> _significantWords(String title) => {
