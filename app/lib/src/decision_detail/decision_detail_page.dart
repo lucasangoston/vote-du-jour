@@ -19,9 +19,9 @@ import 'decision_detail_repository.dart';
 import 'vote_arguments.dart';
 import 'who_voted_what.dart';
 
-/// Écran de détail d'une décision : carte du vote (hémicycle aux places
-/// réelles ou grand arc, résultat, décompte), méta, titre, explication, points du résumé, « Qui a voté
-/// quoi » (groupes rangés par position), « Pourquoi ils ont voté ainsi »
+/// Écran de détail d'une décision : méta, titre, explication, carte du vote
+/// (hémicycle aux places réelles ou grand arc, résultat, décompte), points
+/// du résumé, « Qui a voté quoi » (groupes rangés par position), « Pourquoi ils ont voté ainsi »
 /// (arguments des groupes), liens vers les pages officielles et source.
 ///
 /// Tant que le fichier de détail charge, toute la page est en squelette
@@ -120,16 +120,8 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
     final detail = _detail;
     return [
       const SizedBox(height: 8),
-      if (_seatsOf(detail) case (final detail, final count)?)
-        _SeatsVoteCard(
-          key: _voteCardKey,
-          detail: detail,
-          count: count,
-          lit: _lit,
-        )
-      else
-        _VoteCard(decision: decision, count: detail?.count),
-      const SizedBox(height: 24),
+      // Le sujet avant le résultat : un lecteur qui ne connaît pas le texte
+      // sait de quoi parle le vote avant d'en lire l'issue.
       _Meta(decision),
       const SizedBox(height: 8),
       Text(
@@ -143,6 +135,16 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
           style: HemicycleText.bodySerif.copyWith(color: context.colors.body),
         ),
       ],
+      const SizedBox(height: 24),
+      if (_seatsOf(detail) case (final detail, final count)?)
+        _SeatsVoteCard(
+          key: _voteCardKey,
+          detail: detail,
+          count: count,
+          lit: _lit,
+        )
+      else
+        _VoteCard(decision: decision, count: detail?.count),
       // Résumé en points (#9) : dans le fichier de détail seulement.
       if (detail?.decision.summary?.points case final points?
           when points.isNotEmpty) ...[
