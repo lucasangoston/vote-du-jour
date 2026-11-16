@@ -87,14 +87,19 @@ bool isTightVote(DecisionSummary d) {
       (c.pour - c.contre).abs() <= exprimes * tightMarginRatio;
 }
 
-/// Configuration inhabituelle : unanimité des exprimés, ou un groupe
-/// partagé (égalité entre ses positions les plus suivies).
+/// Configuration inhabituelle : unanimité des exprimés quand au moins la
+/// moitié des sièges a voté (à 59 votants, une unanimité est banale), ou un
+/// groupe partagé (égalité entre ses positions les plus suivies).
 bool isUnusualVote(DecisionDetail detail) {
   final d = detail.decision;
   final c = d.count;
   if (c != null && d.type != DecisionType.motionDeCensure) {
     final exprimes = c.pour + c.contre;
-    if (exprimes > 0 && (c.pour == 0 || c.contre == 0)) return true;
+    final seats = detail.seats?.length ?? 0;
+    final unanimous = exprimes > 0 && (c.pour == 0 || c.contre == 0);
+    if (unanimous && socialTurnout(c, seats, censure: false) == null) {
+      return true;
+    }
   }
   return detail.groups.any((g) => g.position == GroupPosition.partage);
 }

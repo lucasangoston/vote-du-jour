@@ -195,6 +195,24 @@ void main() {
       );
     });
 
+    test('unanimité à faible participation : configuration ordinaire', () {
+      final base = detail(
+        'unanime',
+        count: const VoteTally(pour: 59, contre: 0, abstentions: 0),
+      );
+      DecisionDetail withSeats(int n) => DecisionDetail(
+        decision: base.decision,
+        groups: base.groups,
+        seats: List.filled(
+          n,
+          const HemicycleSeat(place: 1, group: 'PO1', vote: SeatVote.pour),
+        ),
+      );
+      // 59 votants sur 574 sièges : moins de la moitié.
+      expect(isUnusualVote(withSeats(574)), isFalse);
+      expect(isUnusualVote(withSeats(100)), isTrue);
+    });
+
     test('puis présence d\'arguments, puis la plus récente', () {
       expect(
         select([

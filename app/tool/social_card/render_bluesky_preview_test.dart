@@ -5,7 +5,7 @@
 // Depuis app/ :
 //
 //   PREVIEW_CARD=<carte.png> PREVIEW_TEXT=<texte du post.txt> \
-//   PREVIEW_OUT=<aperçu.png> \
+//   PREVIEW_OUT=<aperçu.png> [PREVIEW_REPLY=<fil de réponses.txt>] \
 //     flutter test tool/social_card/render_bluesky_preview_test.dart
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -13,6 +13,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vote_contract/vote_contract.dart';
 import 'package:votedujour/src/social_card/bluesky_preview.dart';
 import 'package:votedujour/src/social_card/social_card_fonts.dart';
 
@@ -21,14 +22,19 @@ void main() {
   final cardPath = env['PREVIEW_CARD'];
   final textPath = env['PREVIEW_TEXT'];
   final out = env['PREVIEW_OUT'];
+  final replyPath = env['PREVIEW_REPLY'];
 
   testWidgets('aperçu Bluesky', (tester) async {
     await tester.runAsync(loadSocialCardFonts);
     final card = MemoryImage(File(cardPath!).readAsBytesSync());
     final text = File(textPath!).readAsStringSync().trimRight();
+    final reply = replyPath == null ? null : File(replyPath);
+    final replies = reply != null && reply.existsSync()
+        ? threadParts(reply.readAsStringSync())
+        : const <String>[];
 
     tester.view
-      ..physicalSize = const Size(blueskyPreviewWidth * 2, 3000)
+      ..physicalSize = const Size(blueskyPreviewWidth * 2, 5000)
       ..devicePixelRatio = 2;
     addTearDown(tester.view.reset);
     final key = GlobalKey();
@@ -39,7 +45,7 @@ void main() {
           alignment: Alignment.topCenter,
           child: RepaintBoundary(
             key: key,
-            child: BlueskyPreview(text: text, card: card),
+            child: BlueskyPreview(text: text, card: card, replies: replies),
           ),
         ),
       ),

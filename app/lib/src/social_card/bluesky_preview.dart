@@ -15,24 +15,34 @@ const _link = Color(0xFF208BFE);
 const _divider = Color(0xFF2E4052);
 
 /// Aperçu d'un post Le Perchoir dans un fil Bluesky mobile (#122) : avatar,
-/// nom, `@leperchoir.app`, [text] (le lien en couleur de lien), puis la carte
-/// [card] (PNG) à son format 4:5, angles arrondis comme dans l'app.
+/// nom, `@leperchoir.app`, [text] (liens et mots-dièse en couleur de lien),
+/// la carte [card] (PNG) à son format 4:5, angles arrondis comme dans l'app,
+/// puis les [replies] du fil, reliées par le trait des fils de Bluesky.
 class BlueskyPreview extends StatelessWidget {
-  const BlueskyPreview({super.key, required this.text, required this.card});
+  const BlueskyPreview({
+    super.key,
+    required this.text,
+    required this.card,
+    this.replies = const [],
+  });
 
   final String text;
   final ImageProvider card;
 
+  /// Réponses publiées sous le post, dans l'ordre.
+  final List<String> replies;
+
   static const handle = 'leperchoir.app';
+
+  static const _body = TextStyle(
+    fontFamily: geist,
+    fontSize: 15,
+    height: 1.35,
+    color: _text,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final body = const TextStyle(
-      fontFamily: geist,
-      fontSize: 15,
-      height: 1.35,
-      color: _text,
-    );
     return Material(
       color: _background,
       child: Container(
@@ -41,21 +51,54 @@ class BlueskyPreview extends StatelessWidget {
           border: Border(bottom: BorderSide(color: _divider)),
         ),
         padding: const EdgeInsets.fromLTRB(12, 12, 16, 14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: const BoxDecoration(
-                color: Colors.black,
-                shape: BoxShape.circle,
+            _post(text, image: card, threaded: replies.isNotEmpty),
+            for (final (i, reply) in replies.indexed)
+              _post(reply, threaded: i < replies.length - 1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Un post du fil ; [threaded] : un autre le suit, le trait descend de
+  /// l'avatar jusqu'au suivant.
+  Widget _post(String text, {ImageProvider? image, required bool threaded}) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const HemicycleLogo.small(
+                  width: 28,
+                  color: Colors.white,
+                ),
               ),
-              alignment: Alignment.center,
-              child: const HemicycleLogo.small(width: 28, color: Colors.white),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
+              if (threaded)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    color: _divider,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: threaded ? 14 : 0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,11 +108,11 @@ class BlueskyPreview extends StatelessWidget {
                       children: [
                         TextSpan(
                           text: 'Le Perchoir ',
-                          style: body.copyWith(fontWeight: FontWeight.w700),
+                          style: _body.copyWith(fontWeight: FontWeight.w700),
                         ),
                         TextSpan(
                           text: '@$handle · 1 min',
-                          style: body.copyWith(color: _muted),
+                          style: _body.copyWith(color: _muted),
                         ),
                       ],
                     ),
@@ -77,18 +120,17 @@ class BlueskyPreview extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  Text.rich(
-                    TextSpan(children: _withLink(text, body)),
-                    style: body,
-                  ),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: AspectRatio(
-                      aspectRatio: 4 / 5,
-                      child: Image(image: card, fit: BoxFit.cover),
+                  Text.rich(TextSpan(children: _rich(text)), style: _body),
+                  if (image != null) ...[
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: AspectRatio(
+                        aspectRatio: 4 / 5,
+                        child: Image(image: image, fit: BoxFit.cover),
+                      ),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -106,24 +148,35 @@ class BlueskyPreview extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Le texte, avec `leperchoir.app` en couleur de lien.
-  static List<InlineSpan> _withLink(String text, TextStyle style) {
-    final parts = text.split(handle);
-    return [
-      for (var i = 0; i < parts.length; i++) ...[
-        TextSpan(text: parts[i]),
-        if (i < parts.length - 1)
+  // Ce que Bluesky colore : une adresse, `leperchoir.app`, le lien du
+  // scrutin écrit sans `https://`, un mot-dièse.
+  static final _linked = RegExp(
+    r'https?://\S+|assemblee-nationale\.fr/[^\s.,;]+(?:\.[^\s.,;]+)*'
+    r'|leperchoir\.app|(?<![\p{L}\p{N}])#[\p{L}][\p{L}\p{N}_]*',
+    unicode: true,
+  );
+
+  /// [text], avec ses liens et ses mots-dièse en couleur de lien.
+  static List<InlineSpan> _rich(String text) {
+    final spans = <InlineSpan>[];
+    var at = 0;
+    for (final m in _linked.allMatches(text)) {
+      spans
+        ..add(TextSpan(text: text.substring(at, m.start)))
+        ..add(
           TextSpan(
-            text: handle,
-            style: style.copyWith(color: _link),
+            text: m[0],
+            style: _body.copyWith(color: _link),
           ),
-      ],
-    ];
+        );
+      at = m.end;
+    }
+    return spans..add(TextSpan(text: text.substring(at)));
   }
 }

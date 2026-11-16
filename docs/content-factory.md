@@ -73,7 +73,8 @@ Déterministe, en trois filtres. Rien n'est publié un jour sans décision
    3. `resolution` et `autre`.
 
    À priorité égale : écart serré (au plus 3 % des exprimés), puis
-   configuration inhabituelle (unanimité, groupe partagé), puis présence
+   configuration inhabituelle (unanimité quand au moins la moitié des
+   sièges a voté, groupe partagé), puis présence
    d'`arguments`, puis la plus récente.
 3. Diversité : une décision par `dossierUrl` et par jour (une décision sans
    `dossierUrl` est son propre dossier). On garde les 3 premières.
@@ -111,35 +112,70 @@ De haut en bas :
    du dossier, trop long).
 3. Hémicycle, couleur = vote (palette vote sombre de `DESIGN.md` : pour
    `#4FB08F`, contre `#B5461F`, abstention `#9AA2AB`), absents et non-votants
-   très atténués. Pas de sigles de groupes autour de l'arc.
+   très atténués. Pas de sigles de groupes autour de l'arc. L'arc prend la
+   place qui reste et rétrécit sous un titre et une légende longs.
    Motion de censure : les soutiens en encre neutre (`ink`), jamais le vert.
-4. Sous l'arc, « N votants » seulement si moins de la moitié des sièges du
-   scrutin a voté, et jamais pour une motion de censure. Pas de dénominateur.
-5. Bandeau plein couleur du résultat (`#4FB08F` adopté, `#E07A58` rejeté) :
+4. Légende sous l'arc : par camp, une pastille de la couleur de ses sièges,
+   son nom et ses sigles (« ● Pour EPR, DR · ● Contre LFI-NFP · ● Abst. RN ·
+   ○ Partagés NI »), dans l'ordre de `groups`. Tous les groupes du même
+   avis : « Tous les groupes pour ». Motion de censure : « Pour la censure »
+   et les soutiens. Les groupes sont ici, plus dans le texte du post.
+5. Sous la légende, « N votants sur S » (S : sièges du scrutin) seulement
+   si moins de la moitié des sièges a voté, et jamais pour une motion de
+   censure.
+6. Bandeau plein couleur du résultat (`#4FB08F` adopté, `#E07A58` rejeté) :
    « ADOPTÉ » / « REJETÉ » en Geist 700, et les chiffres sur une ligne
    (« 151 pour · 187 contre »). « 0 abst. » omis ; les autres zéros gardés.
    Motion de censure : « 132 pour · 289 requis ».
-6. Pied : « Le Perchoir » et « Source : Assemblée nationale ».
+7. Pied : « Le Perchoir » et « Source : Assemblée nationale ».
 
 ## Texte du post (gabarit, sans modèle)
 
 300 caractères au plus (limite Bluesky, lien compris). Lignes, dans cet
-ordre ; si ça dépasse, l'explication tombe d'abord, puis la ligne des
-groupes :
+ordre ; si ça dépasse, les mots-dièse tombent d'abord, puis l'explication,
+puis le fait saillant :
 
 ```
-{Adopté|Rejeté} — {titre}.
+{Adopté|Rejeté}{ précision} — {titre}.
 {chiffres, comme le bandeau}.
-Pour : {sigles} · Contre : {sigles} · Abst. : {sigles} · {sigles} partagés
-{summary.explanation}            ← seulement si le total tient
+{fait saillant}                  ← s'il y en a un
+{summary.explanation}
+#AssembléeNationale {#MotionDeCensure|#Budget}
 leperchoir.app
 ```
 
-Sigles dans l'ordre de `groups` ; une position vide est omise. Tous les
-groupes du même avis : « Tous les groupes pour » (ou contre,
-abstentionnistes). Motion de censure : « Pour la censure : {sigles} ».
+- Précision du verdict, ce qui le rend remarquable : « à l'unanimité »
+  (aucun contre, aucune abstention), « sans voix contre », « sans voix
+  pour », « à N voix près » (écart serré de la sélection), « à égalité des
+  voix ». Jamais pour une motion de censure.
+- Fait saillant, un seul, dans cet ordre : « Il manquait N voix sur les
+  289 requises. » (motion de censure rejetée), « Plus d'abstentions (N) que
+  de votes pour ou contre. », « N députés sur S ont voté. » (quand la carte
+  affiche les votants), « Groupe partagé : {sigles}. » (hors NI).
+- Les groupes ne sont plus dans le texte : ils sont dans la légende de la
+  carte et dans son texte alternatif.
+- Mots-dièse et liens sont cliquables (`richTextFacets`).
+
 Espaces insécables avant « : ; ? ! » (`frenchTypography`), y compris dans un
 titre écrit à la main.
+
+## Fil de réponses (gabarit, sans modèle)
+
+Publié en réponse au post, chaque réponse à la suite de la précédente,
+300 caractères chacune :
+
+- deux camps au moins ont des `arguments` : une réponse par camp avec son
+  premier argument, attribué à son groupe (« Les arguments en séance. /
+  Pour (DR) : … », puis « Contre (EcoS) : … ») ;
+- sinon : « Ce que prévoit le texte : » et les `summary.points` qui
+  tiennent dans une réponse ;
+- le lien du scrutin officiel ferme le fil (« Scrutin officiel :
+  assemblee-nationale.fr/dyn/17/scrutins/N », écrit sans `https://www.`,
+  complété par la facette).
+
+Dans l'issue, le fil est un troisième bloc modifiable ; une ligne `---`
+sépare deux réponses ; bloc vidé : pas de fil. Le relecteur n'y vérifie que
+la longueur : un argument porte les mots de son groupe.
 
 ## Texte alternatif (gabarit)
 
@@ -147,7 +183,7 @@ Toujours présent, avec les chiffres exacts des données :
 
 « Carte Le Perchoir. {étape}, {date}. {titre}. Hémicycle coloré par le vote :
 pour, {sigles} ; contre, {sigles} ; abstention, {sigles}. {Adopté|Rejeté},
-{chiffres en toutes lettres}. {N votants, si affiché}. »
+{chiffres en toutes lettres}. {N votants sur S, si affiché}. »
 
 Tous les groupes du même avis : « tous les groupes pour ». Motion de censure :
 « Hémicycle : en blanc, les députés qui ont voté la motion ({sigles}) » et
@@ -160,16 +196,17 @@ Tous les groupes du même avis : « tous les groupes pour ». Motion de censure 
   arrive vers 12 h 30.
 - L'issue est verrouillée dès sa création (repo public) : seuls les
   collaborateurs la commentent ; les labels `content` et `publier` ne
-  peuvent de toute façon être posés que par eux. Un bloc par brouillon : case à cocher, image, texte modifiable,
-  texte alternatif, id de la décision, lien vers la page officielle du
+  peuvent de toute façon être posés que par eux. Un bloc par brouillon : case à cocher, aperçu Bluesky (le post,
+  sa carte et son fil), texte modifiable, texte alternatif, fil de
+  réponses, id de la décision, lien vers la page officielle du
   scrutin (`sourceUrl`) pour vérifier les chiffres.
 - Le texte d'origine est gardé en commentaire HTML caché dans le bloc.
 - Brouillon « titre à écrire » : un champ titre vide ; non publiable tant
   qu'il n'est pas rempli.
 - Valider : cocher, puis poser le label `publier`. `content-publish.yml`
   (`issues: labeled`) publie les blocs cochés, avec leur texte tel qu'édité,
-  l'image (proportions 4:5) et son texte alternatif ; `leperchoir.app` est
-  un lien cliquable. Un titre écrit à la main est rendu sur la carte à ce
+  l'image (proportions 4:5) et son texte alternatif, puis le fil de
+  réponses ; liens et mots-dièse sont cliquables. Un titre écrit à la main est rendu sur la carte à ce
   moment.
 - Un bloc coché en échec du relecteur (#120), ou « titre à écrire » vide,
   n'est pas publié : l'issue reste ouverte, un commentaire dit quoi
@@ -177,11 +214,18 @@ Tous les groupes du même avis : « tous les groupes pour ». Motion de censure 
 - Garde contre les doublons : un bloc qui porte déjà un lien de post n'est
   jamais republié ; le lien est écrit aussitôt chaque post publié, et un
   post déjà en ligne avec le même texte (panne entre le post et l'écriture
-  du lien) est retrouvé parmi les 50 derniers au lieu d'être republié. Le
-  workflow peut être relancé sans risque.
+  du lien) est retrouvé parmi les 50 derniers au lieu d'être republié, les
+  réponses du fil aussi. Le workflow peut être relancé sans risque.
 - Après publication : lien de chaque post écrit dans son bloc, issue fermée
   quand tous les blocs cochés sont publiés.
   Une issue fermée sans `publier` = tout jeté.
+
+## Audience
+
+En tête de l'issue du jour, sous le compteur : j'aime, reposts, citations et
+réponses des 10 derniers posts publiés, relevés sur l'API publique de
+Bluesky depuis les liens des issues fermées (`content_stats.dart`). Une
+panne de Bluesky laisse la section vide, sans bloquer l'issue.
 
 ## Passage en automatique
 
@@ -192,9 +236,8 @@ Tous les groupes du même avis : « tous les groupes pour ». Motion de censure 
 - Par format (v1 : un seul, « carte Bluesky ») : après 30 posts publiés sans
   aucune correction, le format peut passer en publication automatique.
 - Toujours validés à la main, quel que soit le compteur : votes solennels,
-  motions de censure, et toute décision qui a des arguments (les gabarits
-  v1 n'en mettent pas dans le post : on exclut par prudence dès que le
-  détail en porte).
+  motions de censure, et toute décision qui a des arguments (le fil de
+  réponses les cite, résumés par un modèle : à relire).
 - Le compteur est affiché en tête de chaque issue du jour (« Compteur :
   12 / 30 »). Le passage en automatique lui-même n'est pas encore branché :
   `canAutoPublish` dit si un post y aurait droit.

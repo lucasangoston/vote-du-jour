@@ -39,10 +39,10 @@ class BlueskyClient {
     _did = session['did']! as String;
   }
 
-  /// Lien du post du compte dont le texte est [text] parmi les 50 derniers,
-  /// ou `null` : un post publié dont le lien n'a pas pu être écrit dans
-  /// l'issue n'est pas republié quand on relance.
-  Future<String?> findPost(String text) async {
+  /// Le post du compte dont le texte est [text] parmi les 50 derniers, ou
+  /// `null` : un post publié dont le lien n'a pas pu être écrit dans l'issue
+  /// n'est pas republié quand on relance.
+  Future<PostRef?> findPost(String text) async {
     await _login();
     final uri = Uri.parse('$service/xrpc/com.atproto.repo.listRecords').replace(
       queryParameters: {
@@ -56,16 +56,14 @@ class BlueskyClient {
     for (final r in (json['records'] as List? ?? const [])) {
       if (r is! Map) continue;
       final value = r['value'];
-      if (value is Map && value['text'] == text) {
-        return _webUrl(r['uri']! as String);
-      }
+      if (value is Map && value['text'] == text) return _ref(r);
     }
     return null;
   }
 
   /// Publie [text] avec l'image PNG [image] ([width] × [height]) et son
-  /// texte alternatif [alt] ; renvoie le lien bsky.app du post.
-  Future<String> post({
+  /// texte alternatif [alt].
+  Future<PostRef> post({
     required String text,
     required List<int> image,
     required String alt,
@@ -80,22 +78,51 @@ class BlueskyClient {
       body: image,
     );
     final blob = _decode(upload, 'uploadBlob')['blob'];
-    final created = await _post(
+    return _create(
+      postRecord(
+        text: text,
+        blob: blob,
+        alt: alt,
+        width: width,
+        height: height,
+        createdAt: now ?? DateTime.now().toUtc(),
+      ),
+    );
+  }
+
+  /// Publie [text] en réponse au post [parent], dans le fil ouvert par
+  /// [root].
+  Future<PostRef> reply({
+    required String text,
+    required PostRef root,
+    required PostRef parent,
+    DateTime? now,
+  }) async {
+    await _login();
+    return _create(
+      replyRecord(
+        text: text,
+        root: root,
+        parent: parent,
+        createdAt: now ?? DateTime.now().toUtc(),
+      ),
+    );
+  }
+
+  Future<PostRef> _create(Map<String, Object?> record) async => _ref(
+    await _post(
       'com.atproto.repo.createRecord',
       jsonEncode({
         'repo': _did,
         'collection': 'app.bsky.feed.post',
-        'record': postRecord(
-          text: text,
-          blob: blob,
-          alt: alt,
-          width: width,
-          height: height,
-          createdAt: now ?? DateTime.now().toUtc(),
-        ),
+        'record': record,
       }),
-    );
-    return _webUrl(created['uri']! as String);
+    ),
+  );
+
+  PostRef _ref(Map<Object?, Object?> record) {
+    final uri = record['uri']! as String;
+    return (uri: uri, cid: record['cid']! as String, url: _webUrl(uri));
   }
 
   String _webUrl(String atUri) =>
@@ -133,9 +160,13 @@ class BlueskyClient {
   }
 }
 
-/// Enregistrement `app.bsky.feed.post` : texte en français, lien
-/// [postLink] cliquable (facet, positions en octets UTF-8), image avec son
-/// texte alternatif et ses proportions.
+/// Un post publié : son adresse AT ([uri]) et son empreinte ([cid]), qu'une
+/// réponse cite pour s'y rattacher, et son lien bsky.app ([url]).
+typedef PostRef = ({String uri, String cid, String url});
+
+/// Enregistrement `app.bsky.feed.post` : texte en français, liens et
+/// mots-dièse cliquables ([richTextFacets]), image avec son texte alternatif
+/// et ses proportions.
 Map<String, Object?> postRecord({
   required String text,
   required Object? blob,
@@ -148,7 +179,7 @@ Map<String, Object?> postRecord({
   'text': text,
   'createdAt': createdAt.toUtc().toIso8601String(),
   'langs': ['fr'],
-  'facets': linkFacets(text),
+  'facets': richTextFacets(text),
   'embed': {
     r'$type': 'app.bsky.embed.images',
     'images': [
@@ -161,20 +192,64 @@ Map<String, Object?> postRecord({
   },
 };
 
-/// Facet du dernier [postLink] de [text], vers `https://leperchoir.app`.
-List<Map<String, Object?>> linkFacets(String text) {
-  final at = text.lastIndexOf(postLink);
-  if (at < 0) return const [];
-  final start = utf8.encode(text.substring(0, at)).length;
-  return [
-    {
+/// Enregistrement d'une réponse à [parent], sans image, dans le fil ouvert
+/// par [root].
+Map<String, Object?> replyRecord({
+  required String text,
+  required PostRef root,
+  required PostRef parent,
+  required DateTime createdAt,
+}) => {
+  r'$type': 'app.bsky.feed.post',
+  'text': text,
+  'createdAt': createdAt.toUtc().toIso8601String(),
+  'langs': ['fr'],
+  'facets': richTextFacets(text),
+  'reply': {
+    'root': {'uri': root.uri, 'cid': root.cid},
+    'parent': {'uri': parent.uri, 'cid': parent.cid},
+  },
+};
+
+// Ce que Bluesky rend cliquable : une adresse complète, le domaine de
+// l'Assemblée ou [postLink] écrits sans `https://`, un mot-dièse.
+final _rich = RegExp(
+  r'(https?://[^\s]+)'
+  r'|((?<![\p{L}\p{N}./-])(?:assemblee-nationale\.fr/[^\s]+|leperchoir\.app)(?![\p{L}\p{N}-]))'
+  r'|((?<![\p{L}\p{N}])#[\p{L}][\p{L}\p{N}_]*)',
+  unicode: true,
+);
+final _trailingPunctuation = RegExp(r'[.,;:!?)»]+$');
+
+/// Facettes de [text] : liens (`https://…`, `assemblee-nationale.fr/…` et
+/// [postLink], complétés en adresse) et mots-dièse, positions en octets
+/// UTF-8 comme le veut le protocole.
+List<Map<String, Object?>> richTextFacets(String text) {
+  final facets = <Map<String, Object?>>[];
+  for (final m in _rich.allMatches(text)) {
+    final raw = m[0]!;
+    final tag = m[3] != null;
+    final shown = tag ? raw : raw.replaceFirst(_trailingPunctuation, '');
+    final start = utf8.encode(text.substring(0, m.start)).length;
+    facets.add({
       'index': {
         'byteStart': start,
-        'byteEnd': start + utf8.encode(postLink).length,
+        'byteEnd': start + utf8.encode(shown).length,
       },
       'features': [
-        {r'$type': 'app.bsky.richtext.facet#link', 'uri': 'https://$postLink'},
+        if (tag)
+          {r'$type': 'app.bsky.richtext.facet#tag', 'tag': shown.substring(1)}
+        else
+          {
+            r'$type': 'app.bsky.richtext.facet#link',
+            'uri': switch (shown) {
+              _ when m[1] != null => shown,
+              postLink => 'https://$postLink',
+              _ => 'https://www.$shown',
+            },
+          },
       ],
-    },
-  ];
+    });
+  }
+  return facets;
 }

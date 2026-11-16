@@ -14,7 +14,8 @@ import 'proofreader.dart';
 const reviewCommentMarker = '<!-- content-review -->';
 
 /// Écrit dans `<dir>/<id>.post.txt` le texte de chaque carte rendue de la
-/// sélection (statut `ok`), pour l'aperçu Bluesky de l'issue du jour.
+/// sélection (statut `ok`) et dans `<dir>/<id>.reply.txt` sa réponse en fil,
+/// pour l'aperçu Bluesky de l'issue du jour.
 Future<void> writeDraftTexts(Directory dir) async {
   final ids =
       (jsonDecode(await File('${dir.path}/selection.json').readAsString())
@@ -31,12 +32,14 @@ Future<void> writeDraftTexts(Directory dir) async {
     await File(
       '${dir.path}/$id.post.txt',
     ).writeAsString(postText(detail, title: status['title']! as String));
+    await File('${dir.path}/$id.reply.txt').writeAsString(replyText(detail));
   }
 }
 
 /// Étape 1 de la relecture d'une issue modifiée (#122) : pour chaque
 /// brouillon non publié, écrit dans [dir] son détail (`<id>.json`), son
-/// texte (`<id>.post.txt`) et sa carte (`<id>.png`, téléchargée), ou, pour
+/// texte (`<id>.post.txt`), sa réponse en fil (`<id>.reply.txt`, vide s'il
+/// n'y en a pas) et sa carte (`<id>.png`, téléchargée), ou, pour
 /// un titre écrit à la main, le titre à rendre (`<id>.title.txt`). Écrit
 /// `review.json` : `[{"id", "render": bool}]`. Avec [checkedOnly] (publication,
 /// #112), seulement les brouillons cochés.
@@ -75,8 +78,10 @@ Future<void> planReview({
         text = '';
       }
       await File('${dir.path}/$id.post.txt').writeAsString(text);
+      await File('${dir.path}/$id.reply.txt').writeAsString(replyText(detail));
     } else {
       await File('${dir.path}/$id.post.txt').writeAsString(draft.text!);
+      await File('${dir.path}/$id.reply.txt').writeAsString(draft.reply ?? '');
       final image = draft.imageUrl;
       if (image != null) {
         final response = await client.get(Uri.parse(image));
@@ -127,7 +132,7 @@ Future<String> buildReviewComment({
       out.writeln('⚠️ $titleTooLong.');
       continue;
     }
-    final (:text, :alt, :problems) = review;
+    final (:text, :alt, :reply, :problems) = review;
     out.writeln(
       problems.isEmpty
           ? '✅ Relecture OK'
@@ -156,6 +161,13 @@ Future<String> buildReviewComment({
         ..writeln('Texte alternatif :')
         ..writeln()
         ..writeln('```text\n$alt\n```');
+      if (reply != null) {
+        out
+          ..writeln()
+          ..writeln('Réponse en fil :')
+          ..writeln()
+          ..writeln('```text\n$reply\n```');
+      }
     }
   }
   return out.toString();
@@ -167,13 +179,11 @@ const titleTooLong =
 
 /// Relecture d'un brouillon préparé par [planReview] dans [dir] (relecture
 /// #122 et publication #112) : texte du post, texte alternatif (produit pour
-/// un titre écrit à la main, [render]) et problèmes du relecteur (#120) ;
-/// `null` si la carte du titre écrit n'a pas pu être rendue.
-Future<({String text, String? alt, List<String> problems})?> reviewDraft(
-  Directory dir,
-  Draft draft, {
-  required bool render,
-}) async {
+/// un titre écrit à la main, [render]), réponse en fil (`null` : aucune) et
+/// problèmes du relecteur (#120) ; `null` si la carte du titre écrit n'a pas
+/// pu être rendue.
+Future<({String text, String? alt, String? reply, List<String> problems})?>
+reviewDraft(Directory dir, Draft draft, {required bool render}) async {
   final id = draft.decisionId;
   if (render && await _status(dir, id) != 'ok') return null;
   final detail = DecisionDetail.fromJson(
@@ -183,10 +193,19 @@ Future<({String text, String? alt, List<String> problems})?> reviewDraft(
   final alt = render
       ? altText(detail, title: frenchTypography(draft.title!))
       : draft.alt;
+  final replyFile = File('${dir.path}/$id.reply.txt');
+  final written = await replyFile.exists()
+      ? (await replyFile.readAsString()).trim()
+      : '';
+  final reply = written.isEmpty ? null : written;
   return (
     text: text,
     alt: alt,
-    problems: proofread(detail, text: text, alt: alt),
+    reply: reply,
+    problems: [
+      ...proofread(detail, text: text, alt: alt),
+      ...proofreadReply(reply),
+    ],
   );
 }
 

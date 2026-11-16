@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:vote_contract/vote_contract.dart';
 
 import 'bluesky.dart';
 import 'daily_issue.dart';
@@ -85,7 +86,8 @@ typedef PublishReport = ({
 
 /// Étape 3 de la publication (#112), après `planReview(checkedOnly: true)`
 /// et le rendu des cartes des titres écrits à la main : publie sur Bluesky
-/// chaque brouillon coché, avec son texte tel qu'édité, relu (#120). Un
+/// chaque brouillon coché, avec son texte tel qu'édité, relu (#120), et sa
+/// réponse en fil s'il en a une. Un
 /// brouillon en échec n'est pas publié. Le lien de chaque post est écrit
 /// dans son bloc aussitôt publié ; un bloc qui porte un lien n'est jamais
 /// republié, et un post déjà en ligne avec le même texte est retrouvé au lieu
@@ -134,7 +136,7 @@ Future<PublishReport> publishDrafts({
       block([titleTooLong]);
       continue;
     }
-    final (:text, :alt, :problems) = review;
+    final (:text, :alt, :reply, :problems) = review;
     final card = File('${dir.path}/$id.png');
     final image = await card.exists() ? await card.readAsBytes() : null;
     if (image == null) {
@@ -149,7 +151,7 @@ Future<PublishReport> publishDrafts({
       continue;
     }
     final (width, height) = pngSize(image!);
-    final url =
+    final post =
         await bluesky.findPost(text) ??
         await bluesky.post(
           text: text,
@@ -159,6 +161,15 @@ Future<PublishReport> publishDrafts({
           height: height,
           now: now,
         );
+    // Le fil : chaque réponse à la suite de la précédente, retrouvée elle
+    // aussi si un passage précédent s'est arrêté en chemin.
+    var parent = post;
+    for (final part in threadParts(reply)) {
+      parent =
+          await bluesky.findPost(part) ??
+          await bluesky.reply(text: part, root: post, parent: parent, now: now);
+    }
+    final url = post.url;
     await issue.write(markPublished(await issue.read(), id, url));
     published.add((id: id, title: title, url: url));
   }

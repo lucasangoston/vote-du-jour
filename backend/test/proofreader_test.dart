@@ -41,21 +41,21 @@ void main() {
   group('typographie', () {
     test('espace ordinaire avant les deux-points', () {
       expect(
-        check(text.replaceFirst('Pour :', 'Pour :')),
+        check(text.replaceFirst('.\nleperchoir', '.\nPour : RN\nleperchoir')),
         contains(contains('insécable')),
       );
     });
 
     test('ligne qui commence par une ponctuation', () {
       expect(
-        check(text.replaceFirst(' : RN', '\n: RN')),
+        check(text.replaceFirst('\nleperchoir', '\n: RN\nleperchoir')),
         contains('une ligne commence par une ponctuation'),
       );
     });
 
     test('espace avant une virgule, double espace', () {
       expect(
-        check(text.replaceFirst('RN, DR', 'RN , DR')),
+        check(text.replaceFirst('résolution, sans', 'résolution , sans')),
         contains('espace avant « , » ou « . »'),
       );
       expect(
@@ -144,9 +144,44 @@ void main() {
     );
   });
 
+  test('verdict précisé : « à l\'unanimité », « à 3 voix près » acceptés', () {
+    final x = _fixture(8693);
+    final t = postText(x, title: 'Titre-restaurant');
+    expect(t, startsWith('Adopté sans voix contre — Titre-restaurant.'));
+    expect(
+      proofread(
+        x,
+        text: t,
+        alt: altText(x, title: 'Titre-restaurant'),
+      ),
+      isEmpty,
+    );
+    expect(
+      proofread(
+        x,
+        text: t.replaceFirst('Adopté sans voix contre — ', 'Titre : adopté — '),
+        alt: altText(x, title: 'Titre-restaurant'),
+      ),
+      contains('le post ne commence pas par « Adopté — »'),
+    );
+  });
+
+  test('fil : chaque réponse tient en 300 caractères', () {
+    expect(proofreadReply(null), isEmpty);
+    expect(proofreadReply(replyText(d)), isEmpty);
+    expect(proofreadReply('Courte.\n---\n${'x' * 301}'), [
+      'réponse 2 du fil : 301 caractères, 300 au plus',
+    ]);
+  });
+
   test('groupes : seulement les sigles du scrutin', () {
     expect(
-      check(text.replaceFirst('RN, DR, UDR', 'RN, DR, UDR, XYZ')),
+      check(
+        text.replaceFirst(
+          '\nleperchoir',
+          '\nPour\u00A0: RN, DR, UDR, XYZ\nleperchoir',
+        ),
+      ),
       contains('groupe inconnu « XYZ »'),
     );
   });

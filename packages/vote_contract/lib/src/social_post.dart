@@ -1,4 +1,5 @@
 import 'decision.dart';
+import 'decision_detail.dart';
 
 /// Majorité absolue des membres de l'Assemblée, requise pour adopter une
 /// motion de censure.
@@ -32,15 +33,51 @@ String socialFigures(VoteTally c, {required bool censure}) {
   ].join('  ·  ');
 }
 
-/// « 102 votants » quand moins de la moitié des [seats] sièges du scrutin a
-/// voté (pour, contre ou abstention), sinon `null` : la carte paraîtrait
-/// vide sans cette mention. Pas de dénominateur. Jamais pour une motion de
-/// censure, où seuls les pour votent.
+/// « 102 votants sur 574 » quand moins de la moitié des [seats] sièges du
+/// scrutin a voté (pour, contre ou abstention), sinon `null` : la carte
+/// paraîtrait vide sans cette mention, et le dénominateur dit qu'un résultat
+/// net vient de peu de députés. Jamais pour une motion de censure, où seuls
+/// les pour votent.
 String? socialTurnout(VoteTally c, int seats, {required bool censure}) {
   if (censure) return null;
   final votants = c.pour + c.contre + c.abstentions;
   if (votants * 2 >= seats) return null;
-  return votants == 1 ? '1 votant' : '$votants votants';
+  return '$votants ${votants == 1 ? 'votant' : 'votants'} sur $seats';
+}
+
+/// Un camp de la carte et du texte : les sigles des groupes d'une même
+/// position, dans l'ordre de l'open data (du plus grand au plus petit).
+typedef SocialCamp = ({GroupPosition position, List<String> groups});
+
+/// Camps de [groups], dans l'ordre pour, contre, abstention, partagés ; une
+/// position sans groupe est omise, les groupes qui n'ont pas voté aussi.
+List<SocialCamp> socialCamps(List<GroupVoteDetail> groups) => [
+  for (final position in const [
+    GroupPosition.pour,
+    GroupPosition.contre,
+    GroupPosition.abstention,
+    GroupPosition.partage,
+  ])
+    if ([
+          for (final g in groups)
+            if (g.position == position) g.abbreviation ?? g.name,
+        ]
+        case final sigles when sigles.isNotEmpty)
+      (position: position, groups: sigles),
+];
+
+/// La position commune quand plusieurs groupes ont tous voté de même (pour,
+/// contre ou abstention), sinon `null`.
+GroupPosition? socialUnanimous(List<GroupVoteDetail> groups) {
+  if (groups.length < 2) return null;
+  final position = groups.first.position;
+  if (groups.any((g) => g.position != position)) return null;
+  return switch (position) {
+    GroupPosition.pour ||
+    GroupPosition.contre ||
+    GroupPosition.abstention => position,
+    _ => null,
+  };
 }
 
 final _spaceBeforeDouble = RegExp(r' +([:;?!»])');
@@ -58,3 +95,16 @@ String frenchTypography(String s) => s
 String sharedGroups(List<String> groups) =>
     '${groups.join(', ')} '
     '${groups.length == 1 && groups.single != 'NI' ? 'partagé' : 'partagés'}';
+
+/// Ligne qui sépare deux réponses d'un même fil dans l'issue du jour de la
+/// content factory, et dans son aperçu.
+const threadSeparator = '---';
+
+final _threadSplit = RegExp(r'^[ \t]*-{3,}[ \t]*$', multiLine: true);
+
+/// Les réponses du fil [reply], dans l'ordre : ses parties séparées par une
+/// ligne [threadSeparator], sans les vides. `null` ou vide : aucune.
+List<String> threadParts(String? reply) => [
+  for (final part in (reply ?? '').split(_threadSplit))
+    if (part.trim().isNotEmpty) part.trim(),
+];

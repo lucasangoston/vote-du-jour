@@ -68,7 +68,7 @@ jobs:
             fi
             if [ -f "$WORK/$id.png" ]; then
               PREVIEW_CARD="$WORK/$id.png" PREVIEW_TEXT="$WORK/$id.post.txt" \
-              PREVIEW_OUT="$WORK/$id-apercu.png" \
+              PREVIEW_OUT="$WORK/$id-apercu.png" PREVIEW_REPLY="$WORK/$id.reply.txt" \
                 flutter test tool/social_card/render_bluesky_preview_test.dart
             fi
           done
