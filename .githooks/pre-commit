@@ -20,6 +20,11 @@ staged=$(git diff --cached --name-only --diff-filter=ACMR)
 rouge() { printf '\033[31m%s\033[0m\n' "$*"; }
 vert() { printf '\033[32m%s\033[0m\n' "$*"; }
 
+# Dart et Flutter sans les variables que git passe au hook : dans un
+# worktree, GIT_DIR est absolu et Flutter prend ce dépôt pour le sien
+# (version « 0.0.0-unknown », résolution des paquets en échec).
+sans_git() { env -u GIT_DIR -u GIT_INDEX_FILE -u GIT_WORK_TREE -u GIT_PREFIX "$@"; }
+
 # --- 1. Format et analyse, comme la CI -------------------------------------
 dart_files=$(printf '%s\n' "$staged" | grep -E '\.dart$' || true)
 if [ -n "$dart_files" ]; then
@@ -28,7 +33,7 @@ if [ -n "$dart_files" ]; then
   # (un `git add -p` partiel n'est donc vérifié qu'approximativement).
   # Les chemins du repo n'ont pas d'espace : découpage par mot assumé.
   # shellcheck disable=SC2086
-  if ! out=$(dart format --output=none --set-exit-if-changed $dart_files); then
+  if ! out=$(sans_git dart format --output=none --set-exit-if-changed $dart_files); then
     rouge "✗ Fichiers mal formatés : lance « dart format » puis réindexe."
     printf '%s\n' "$out" | grep '^Changed' || true
     exit 1
@@ -39,9 +44,9 @@ for pkg in app backend packages/vote_contract; do
   printf '%s\n' "$staged" | grep -qE "^$pkg/.*\.(dart|yaml)$" || continue
   echo "▸ analyse de $pkg"
   if [ "$pkg" = app ]; then
-    (cd "$pkg" && flutter analyze) || { rouge "✗ flutter analyze a échoué dans $pkg."; exit 1; }
+    (cd "$pkg" && sans_git flutter analyze) || { rouge "✗ flutter analyze a échoué dans $pkg."; exit 1; }
   else
-    (cd "$pkg" && dart analyze --fatal-infos) || { rouge "✗ dart analyze a échoué dans $pkg."; exit 1; }
+    (cd "$pkg" && sans_git dart analyze --fatal-infos) || { rouge "✗ dart analyze a échoué dans $pkg."; exit 1; }
   fi
 done
 
