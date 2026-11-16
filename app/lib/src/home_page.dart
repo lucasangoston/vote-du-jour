@@ -18,6 +18,7 @@ import 'in_debate/in_debate_page.dart' show finalVoteLabel;
 import 'in_debate/in_debate_route.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
+import 'rubric.dart';
 import 'skeleton.dart';
 import 'theme.dart';
 import 'upcoming.dart';
@@ -299,8 +300,7 @@ class _HomePageState extends State<HomePage> {
         excludeSemantics: true,
         child: CardDeck(
           count: homeDecisionCount,
-          itemBuilder: (context, i, width) =>
-              _SkeletonCard(width: width, tab: _tabSides[i % _tabSides.length]),
+          itemBuilder: (context, i, width) => _SkeletonCard(width: width),
         ),
       );
     }
@@ -315,13 +315,11 @@ class _HomePageState extends State<HomePage> {
           inDebate,
           upcoming: index.upcoming,
           width: width,
-          tab: _tabSides[i % _tabSides.length],
           now: _now,
         ),
         UpcomingVoteCard(:final item) => _VoteCard(
           item,
           width: width,
-          tab: _tabSides[i % _tabSides.length],
           now: _now,
         ),
         DecisionCard(:final decision) when _waitsForSeats(decision) =>
@@ -329,30 +327,18 @@ class _HomePageState extends State<HomePage> {
             label: 'Chargement de la décision',
             container: true,
             excludeSemantics: true,
-            child: _SkeletonCard(
-              width: width,
-              tab: _tabSides[i % _tabSides.length],
-            ),
+            child: _SkeletonCard(width: width),
           ),
         DecisionCard(:final decision) => _DecisionCard(
           decision,
           detail: _details[decision.id],
           width: width,
-          tab: _tabSides[i % _tabSides.length],
           now: _now,
         ),
       },
     );
   }
 }
-
-/// Place des languettes, de carte en carte, comme des chemises rangées :
-/// à gauche, à droite, au centre.
-const _tabSides = [
-  Alignment.centerLeft,
-  Alignment.centerRight,
-  Alignment.center,
-];
 
 /// Largeur visible de la carte suivante, pour montrer qu'il y en a d'autres.
 const deckPeek = 28.0;
@@ -362,8 +348,8 @@ const _deckMargin = 20.0;
 const _deckGap = 12.0;
 
 /// Pile de cartes qui défile de côté, une carte à la fois, avec les points
-/// de la carte en cours dessous. Les cartes gardent leur hauteur, alignées
-/// en haut ; la suivante dépasse de [deckPeek].
+/// de la carte en cours dessous. Toutes les cartes ont la hauteur de la plus
+/// grande ; la suivante dépasse de [deckPeek].
 class CardDeck extends StatefulWidget {
   const CardDeck({super.key, required this.count, required this.itemBuilder});
 
@@ -421,17 +407,19 @@ class _CardDeckState extends State<CardDeck> {
           scrollDirection: Axis.horizontal,
           physics: _CardSnapPhysics(extent: width + _deckGap),
           padding: const EdgeInsets.symmetric(horizontal: _deckMargin),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var i = 0; i < widget.count; i++) ...[
-                if (i > 0) const SizedBox(width: _deckGap),
-                SizedBox(
-                  width: width,
-                  child: widget.itemBuilder(context, i, width),
-                ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < widget.count; i++) ...[
+                  if (i > 0) const SizedBox(width: _deckGap),
+                  SizedBox(
+                    width: width,
+                    child: widget.itemBuilder(context, i, width),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         if (widget.count > 1) ...[
@@ -534,22 +522,24 @@ class _Pager extends StatelessWidget {
   }
 }
 
-/// Carte en chemise de dossier : languette en haut ([tab] : texte et
-/// couleur), feuille qui s'ouvre au toucher.
-class _FolderCard extends StatelessWidget {
-  const _FolderCard({
-    required this.tab,
-    required this.tabColor,
-    required this.tabSide,
+/// Carte de l'accueil, aux couleurs de sa rubrique ([Rubric]) : bandeau
+/// (pictogramme, nom, [detail]), cadre de la même couleur, feuille teintée
+/// jusqu'en bas de la pile. Elle s'ouvre au toucher.
+class _RubricCard extends StatelessWidget {
+  const _RubricCard({
+    required this.rubric,
     required this.onTap,
     required this.semanticsLabel,
     required this.children,
+    this.detail,
     this.link = false,
   });
 
-  final String tab;
-  final Color tabColor;
-  final Alignment tabSide;
+  final Rubric rubric;
+
+  /// Précision à droite du bandeau (date d'une décision).
+  final String? detail;
+
   final VoidCallback? onTap;
 
   /// Description de toute la carte pour les lecteurs d'écran.
@@ -562,71 +552,30 @@ class _FolderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
+    final b = Theme.of(context).brightness;
     return Semantics(
       button: !link && onTap != null,
       link: link,
       label: semanticsLabel,
       onTap: onTap,
       excludeSemantics: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // La languette, en retrait du bord de la feuille.
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _tabInset),
-            child: Align(
-              alignment: tabSide,
-              child: ClipPath(
-                clipper: const _TabClipper(),
-                child: ColoredBox(
-                  color: colors.surface,
-                  child: Container(
-                    height: 30,
-                    padding: const EdgeInsets.fromLTRB(18, 7, 18, 0),
-                    child: Text(
-                      tab,
-                      style: HemicycleText.metaStrong.copyWith(color: tabColor),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      // Feuille à angle droit, sans ombre.
+      child: Material(
+        color: rubric.sheet(context),
+        shape: Border.all(color: rubric.fill(b), width: 3),
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              RubricBand(rubric, detail: detail),
+              ...children,
+            ],
           ),
-          // Feuille à angle droit, sans ombre.
-          Material(
-            color: colors.surface,
-            child: InkWell(
-              onTap: onTap,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: children,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
-}
-
-/// Retrait de la languette depuis le bord de la feuille.
-const _tabInset = 24.0;
-
-/// Languette en trapèze, plus large à sa base, posée sur la feuille.
-class _TabClipper extends CustomClipper<Path> {
-  const _TabClipper();
-
-  @override
-  Path getClip(Size size) => Path()
-    ..moveTo(10, 0)
-    ..lineTo(size.width - 10, 0)
-    ..lineTo(size.width, size.height)
-    ..lineTo(0, size.height)
-    ..close();
-
-  @override
-  bool shouldReclip(_TabClipper old) => false;
 }
 
 /// Largeur de la figure (hémicycle, arc) d'une carte de largeur [card].
@@ -654,16 +603,10 @@ class _CardTitle extends StatelessWidget {
 /// le jour en grand dans son creux, le mois, le jour et l'heure, le titre
 /// court. Ouvre le dossier législatif.
 class _VoteCard extends StatelessWidget {
-  const _VoteCard(
-    this.item, {
-    required this.width,
-    required this.tab,
-    required this.now,
-  });
+  const _VoteCard(this.item, {required this.width, required this.now});
 
   final UpcomingItem item;
   final double width;
-  final Alignment tab;
   final DateTime now;
 
   @override
@@ -671,10 +614,8 @@ class _VoteCard extends StatelessWidget {
     final colors = context.colors;
     final figure = _figureWidth(width);
     final url = item.dossierUrl;
-    return _FolderCard(
-      tab: 'Vote solennel',
-      tabColor: colors.ink,
-      tabSide: tab,
+    return _RubricCard(
+      rubric: Rubric.voteSolennel,
       link: url != null,
       // Sans dossier connu, la carte répond quand même : une grande carte
       // qui ne réagit pas au toucher a l'air cassée.
@@ -702,7 +643,19 @@ class _VoteCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: CustomPaint(painter: _HollowArcPainter(colors.rule)),
+                    // L'arc vide dans la couleur de la rubrique : un gris
+                    // clair se perdrait sur la feuille teintée.
+                    child: CustomPaint(
+                      painter: _HollowArcPainter(
+                        Color.lerp(
+                          Rubric.voteSolennel.sheet(context),
+                          Rubric.voteSolennel.fill(
+                            Theme.of(context).brightness,
+                          ),
+                          0.22,
+                        )!,
+                      ),
+                    ),
                   ),
                   Positioned(
                     left: 0,
@@ -742,21 +695,19 @@ class _VoteCard extends StatelessWidget {
 const upcomingNoLinkNotice = 'Le résultat s’affichera ici après le vote.';
 
 /// Carte du texte en débat : l'hémicycle en attente (personne n'a encore
-/// voté le texte), « En débat », le vote final et les articles déjà votés,
-/// le titre court. Ouvre l'écran « En débat ».
+/// voté le texte), le vote final et les articles déjà votés, le titre
+/// court. Ouvre l'écran « En débat ».
 class _InDebateCard extends StatelessWidget {
   const _InDebateCard(
     this.inDebate, {
     required this.upcoming,
     required this.width,
-    required this.tab,
     required this.now,
   });
 
   final InDebate inDebate;
   final List<UpcomingItem>? upcoming;
   final double width;
-  final Alignment tab;
   final DateTime now;
 
   @override
@@ -768,10 +719,8 @@ class _InDebateCard extends StatelessWidget {
     );
     final finalVote = finalVoteLabel(inDebate, upcoming, now: now);
     final articles = inDebate.articles.length;
-    return _FolderCard(
-      tab: 'En séance',
-      tabColor: colors.ink,
-      tabSide: tab,
+    return _RubricCard(
+      rubric: Rubric.enDebat,
       onTap: () => Navigator.of(
         context,
       ).pushNamed(inDebateRouteName(inDebate.dossierRef)),
@@ -788,14 +737,11 @@ class _InDebateCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 12,
             runSpacing: 4,
+            // « En débat » est déjà dans le bandeau : le vote final en grand.
             children: [
               Text(
-                'En débat',
-                style: HemicycleText.displaySm.copyWith(color: colors.ink),
-              ),
-              Text(
                 finalVote,
-                style: HemicycleText.meta.copyWith(color: colors.ink2),
+                style: HemicycleText.displaySm.copyWith(color: colors.ink),
               ),
             ],
           ),
@@ -859,7 +805,6 @@ class _DecisionCard extends StatelessWidget {
     this.decision, {
     required this.detail,
     required this.width,
-    required this.tab,
     required this.now,
   });
 
@@ -869,7 +814,6 @@ class _DecisionCard extends StatelessWidget {
   final DecisionDetail? detail;
 
   final double width;
-  final Alignment tab;
   final DateTime now;
 
   @override
@@ -887,13 +831,12 @@ class _DecisionCard extends StatelessWidget {
         : null;
     final height = figure * HemicycleSeats.aspect;
     final title = capitalize(decision.compactTitle);
-    return _FolderCard(
-      tab: formatShortFrenchDate(
+    return _RubricCard(
+      rubric: Rubric.decision,
+      detail: formatShortFrenchDate(
         decision.date,
         withYear: decision.date.year != now.year,
       ),
-      tabColor: resultColor(context, result),
-      tabSide: tab,
       onTap: () => Navigator.of(
         context,
       ).pushNamed(decisionRouteName(decision.id), arguments: decision),
@@ -979,13 +922,12 @@ class _DecisionCard extends StatelessWidget {
   }
 }
 
-/// Squelette d'une carte de décision, aux mêmes places : languette,
+/// Squelette d'une carte de décision, aux mêmes places : bandeau,
 /// hémicycle, résultat et chiffres, deux lignes de titre.
 class _SkeletonCard extends StatelessWidget {
-  const _SkeletonCard({required this.width, required this.tab});
+  const _SkeletonCard({required this.width});
 
   final double width;
-  final Alignment tab;
 
   @override
   Widget build(BuildContext context) {
@@ -994,55 +936,49 @@ class _SkeletonCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: _tabInset),
-          child: Align(
-            alignment: tab,
-            child: ClipPath(
-              clipper: const _TabClipper(),
-              child: Container(
-                height: 30,
-                color: colors.surface,
-                padding: const EdgeInsets.fromLTRB(18, 9, 18, 4),
-                child: const SkeletonBlock(width: 48, height: 14),
-              ),
-            ),
-          ),
+        Container(
+          height: 52,
+          color: colors.raised,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          alignment: Alignment.centerLeft,
+          child: SkeletonBlock(width: 110, height: 16, color: colors.surface),
         ),
-        ColoredBox(
-          color: colors.surface,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: SkeletonBlock(
-                    width: figure,
-                    height: figure * HemicycleSeats.aspect,
+        Expanded(
+          child: ColoredBox(
+            color: colors.surface,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: SkeletonBlock(
+                      width: figure,
+                      height: figure * HemicycleSeats.aspect,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SkeletonBlock(width: 96, height: 28),
-                    SkeletonBlock(width: 120, height: 18),
-                  ],
-                ),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 10),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SkeletonBlock(width: width * 0.7, height: 22),
-                      const SizedBox(height: 8),
-                      SkeletonBlock(width: width * 0.45, height: 22),
+                      SkeletonBlock(width: 96, height: 28),
+                      SkeletonBlock(width: 120, height: 18),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 22),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonBlock(width: width * 0.7, height: 22),
+                        const SizedBox(height: 8),
+                        SkeletonBlock(width: width * 0.45, height: 22),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

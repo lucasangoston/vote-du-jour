@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -49,6 +50,12 @@ void main() {
       return http.Response.bytes(utf8.encode(jsonEncode(index.toJson())), 200);
     });
 
+    // Écran de téléphone : la pile de cartes et le bouton tiennent sans
+    // défiler.
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(
       VoteDuJourApp(
         repository: DecisionsRepository(

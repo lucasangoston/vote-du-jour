@@ -346,14 +346,14 @@ void main() {
       ) async {
         await _pumpHome(tester, brightness: brightness, index: _debateIndex);
 
-        expect(find.text('En séance'), findsOneWidget);
+        // Bandeau de la rubrique ; le vote final en grand dans la carte.
         expect(find.text('En débat'), findsOneWidget);
         expect(find.text('Vote final à venir'), findsOneWidget);
         expect(find.text('Texte en débat'), findsOneWidget);
         expect(find.byType(WaitingHemicycle), findsOneWidget);
         // Elle passe avant la carte du vote solennel.
         expect(
-          tester.getTopLeft(find.text('En séance')).dx,
+          tester.getTopLeft(find.text('En débat')).dx,
           lessThan(tester.getTopLeft(find.text('Vote solennel')).dx),
         );
         expect(tester.takeException(), isNull);
