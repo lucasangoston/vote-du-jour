@@ -83,6 +83,12 @@ void main() {
         return http.Response.bytes(utf8.encode(jsonEncode(json)), 200);
       });
 
+      // Écran de téléphone : la pile de cartes et le bouton tiennent sans
+      // défiler.
+      tester.view
+        ..physicalSize = const Size(390, 844)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       await tester.pumpWidget(
         VoteDuJourApp(
           repository: DecisionsRepository(
