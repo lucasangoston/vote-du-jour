@@ -265,6 +265,7 @@ void main() {
     expect(find.text('503'), findsOneWidget);
     // Sièges en attente, pas l'arc par camp : le vote par député manque.
     expect(find.byType(WaitingHemicycle), findsOneWidget);
+    expect(find.text('Vote\nprovisoire'), findsOneWidget);
     expect(find.byType(VoteArc), findsNothing);
     await tester.scrollUntilVisible(
       find.text('Vote par groupe publié après confirmation.'),
