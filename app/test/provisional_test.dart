@@ -76,6 +76,7 @@ void main() {
     // Carte de la décision provisoire : sièges en attente et mention du vote
     // par groupe à venir.
     expect(find.byType(WaitingHemicycle), findsOneWidget);
+    expect(find.text(provisionalVoteLabel), findsOneWidget);
     expect(find.text(provisionalGroupsNotice), findsOneWidget);
     // La liste s'ouvre depuis l'accueil (#79).
     await tester.tap(find.text('Toutes les décisions'));

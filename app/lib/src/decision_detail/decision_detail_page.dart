@@ -482,7 +482,7 @@ class _ProvisionalVoteCard extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) => Column(
           children: [
-            WaitingHemicycle(width: math.min(340.0, constraints.maxWidth)),
+            ProvisionalHemicycle(width: math.min(340.0, constraints.maxWidth)),
             const SizedBox(height: 14),
             Text(
               resultWord(result),

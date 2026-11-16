@@ -918,7 +918,7 @@ class _DecisionCard extends StatelessWidget {
                     width: figure,
                   )
                 : isProvisionalScrutin(decision)
-                ? WaitingHemicycle(width: figure)
+                ? ProvisionalHemicycle(width: figure)
                 // Même hauteur que l'hémicycle : toutes les cartes de la pile
                 // gardent la même figure.
                 : SizedBox(
