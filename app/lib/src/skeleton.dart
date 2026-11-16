@@ -27,7 +27,7 @@ class SkeletonBlock extends StatelessWidget {
 }
 
 /// Squelette de l'écran de détail pendant le chargement du fichier de
-/// détail : la carte du vote, le titre, l'explication et la grille des
+/// détail : le titre, l'explication, la carte du vote et la grille des
 /// groupes, à leur place. Rien ne s'affiche à moitié (l'ancien arc puis
 /// l'hémicycle) : l'écran passe d'un coup du squelette au contenu.
 class DetailSkeleton extends StatelessWidget {
@@ -48,6 +48,18 @@ class DetailSkeleton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
+              // Méta, titre et explication, avant la carte du vote.
+              const SkeletonBlock(width: 220, height: 12),
+              const SizedBox(height: 14),
+              SkeletonBlock(width: width * 0.9, height: 30),
+              const SizedBox(height: 8),
+              SkeletonBlock(width: width * 0.6, height: 30),
+              const SizedBox(height: 18),
+              for (final f in const [1.0, 0.95, 0.9, 0.5]) ...[
+                SkeletonBlock(width: width * f, height: 16),
+                const SizedBox(height: 10),
+              ],
+              const SizedBox(height: 14),
               // Carte du vote : hémicycle, résultat, trois chiffres.
               Container(
                 width: double.infinity,
@@ -81,18 +93,7 @@ class DetailSkeleton extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              const SkeletonBlock(width: 220, height: 12),
-              const SizedBox(height: 14),
-              SkeletonBlock(width: width * 0.9, height: 30),
-              const SizedBox(height: 8),
-              SkeletonBlock(width: width * 0.6, height: 30),
-              const SizedBox(height: 18),
-              for (final f in const [1.0, 0.95, 0.9, 0.5]) ...[
-                SkeletonBlock(width: width * f, height: 16),
-                const SizedBox(height: 10),
-              ],
-              const SizedBox(height: 22),
+              const SizedBox(height: 32),
               const SkeletonBlock(width: 180, height: 24),
               const SizedBox(height: 16),
               GridView.count(
