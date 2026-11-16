@@ -210,6 +210,9 @@ class SummaryCache {
     }
 
     for (final d in published?.decisions ?? const <DecisionSummary>[]) {
+      // Le résumé d'une décision provisoire est celui du texte en débat,
+      // emprunté ([withDebatedText]) : confirmée, elle aura le sien.
+      if (d.status == DecisionStatus.provisoire) continue;
       adopt(d.id, d.summary);
     }
     if (published?.inDebate case final d?) {

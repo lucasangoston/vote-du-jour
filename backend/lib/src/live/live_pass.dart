@@ -366,9 +366,10 @@ Future<LiveOutcome> runLivePass({
             dossiers: dossiers,
           ),
         );
-  final index = summarized
-      .withUpcoming(publishedIndex?.upcoming)
-      .withInDebate(inDebate);
+  final index = withDebatedText(
+    summarized.withUpcoming(publishedIndex?.upcoming).withInDebate(inDebate),
+    published: publishedIndex,
+  );
 
   // Détails des décisions provisoires avant l'index qui renvoie vers eux
   // (#6) ; seuls ceux qui ont changé sont réécrits.

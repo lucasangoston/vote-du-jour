@@ -14,6 +14,7 @@ import 'hemicycle/hemicycle_seats.dart';
 import 'hemicycle/result_style.dart';
 import 'hemicycle/vote_arc.dart';
 import 'hemicycle/vote_glyph.dart';
+import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'skeleton.dart';
 import 'theme.dart';
@@ -642,8 +643,14 @@ class _VoteCard extends StatelessWidget {
       tabColor: colors.ink,
       tabSide: tab,
       link: url != null,
+      // Sans dossier connu, la carte répond quand même : une grande carte
+      // qui ne réagit pas au toucher a l'air cassée.
       onTap: url == null
-          ? null
+          ? () => ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(content: Text(upcomingNoLinkNotice)),
+              )
           : () =>
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       semanticsLabel: [
@@ -697,6 +704,9 @@ class _VoteCard extends StatelessWidget {
     );
   }
 }
+
+/// Message d'une carte de vote à venir dont le dossier n'est pas connu.
+const upcomingNoLinkNotice = 'Le résultat s’affichera ici après le vote.';
 
 /// L'arc vide des maquettes : deux demi-anneaux au filet, dans une boîte de
 /// 300 × 162 unités mise à l'échelle.
@@ -798,6 +808,8 @@ class _DecisionCard extends StatelessWidget {
                     count: detail.count!.tally,
                     width: figure,
                   )
+                : isProvisionalScrutin(decision)
+                ? WaitingHemicycle(width: figure)
                 // Même hauteur que l'hémicycle : toutes les cartes de la pile
                 // gardent la même figure.
                 : SizedBox(
@@ -842,6 +854,14 @@ class _DecisionCard extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerRight,
               child: NoVoteNote(seats),
+            ),
+          )
+        else if (isProvisionalScrutin(decision))
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: Text(
+              provisionalGroupsNotice,
+              style: HemicycleText.meta.copyWith(color: context.colors.ink2),
             ),
           ),
         _CardTitle(title),

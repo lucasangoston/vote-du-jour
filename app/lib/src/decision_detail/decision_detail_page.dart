@@ -143,6 +143,12 @@ class _DecisionDetailPageState extends State<DecisionDetailPage> {
           count: count,
           lit: _lit,
         )
+      else if (isProvisionalScrutin(decision) &&
+          (detail?.count?.tally ?? decision.count) != null)
+        _ProvisionalVoteCard(
+          decision: decision,
+          tally: (detail?.count?.tally ?? decision.count)!,
+        )
       else
         _VoteCard(decision: decision, count: detail?.count),
       // Résumé en points (#9) : dans le fichier de détail seulement.
@@ -250,9 +256,6 @@ const summaryPointsHeading = 'Ce que prévoit le texte';
 /// Mention d'une décision sans scrutin public (ticket #8) : ni décompte ni
 /// vote par groupe.
 const mainLeveeNotice = 'À main levée · sans décompte des voix';
-
-/// Vote par groupe d'une décision provisoire, pas encore publié.
-const provisionalGroupsNotice = 'Vote par groupe publié après confirmation.';
 
 /// Repères sous le grand arc dans l'ordre de l'hémicycle (#67).
 const leftLabel = 'Gauche';
@@ -455,6 +458,65 @@ class _SeatsVoteCard extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Carte d'un scrutin provisoire (#10) : l'hémicycle en attente (le vote de
+/// chaque député n'est pas encore publié), le résultat et les trois chiffres
+/// lus sur le site, aux mêmes places que la carte d'un scrutin confirmé.
+class _ProvisionalVoteCard extends StatelessWidget {
+  const _ProvisionalVoteCard({required this.decision, required this.tally});
+
+  final DecisionSummary decision;
+  final VoteTally tally;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final result = decision.result;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+      color: colors.surface,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          children: [
+            WaitingHemicycle(width: math.min(340.0, constraints.maxWidth)),
+            const SizedBox(height: 14),
+            Text(
+              resultWord(result),
+              style: HemicycleText.displayLg.copyWith(
+                color: resultColor(context, result),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                _Figure(
+                  tally.pour,
+                  'pour',
+                  colors.pour,
+                  glyph: VotePosition.pour,
+                ),
+                const SizedBox(width: 8),
+                _Figure(
+                  tally.contre,
+                  'contre',
+                  colors.contre,
+                  glyph: VotePosition.contre,
+                ),
+                const SizedBox(width: 8),
+                _Figure(
+                  tally.abstentions,
+                  tally.abstentions > 1 ? 'abstentions' : 'abstention',
+                  colors.ink,
+                  glyph: VotePosition.abstention,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

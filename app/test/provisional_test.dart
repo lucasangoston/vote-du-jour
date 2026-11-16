@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -7,6 +8,7 @@ import 'package:vote_contract/vote_contract.dart';
 import 'package:votedujour/main.dart';
 import 'package:votedujour/src/decisions_repository.dart';
 import 'package:votedujour/src/home_widget/widget_snapshot.dart';
+import 'package:votedujour/src/hemicycle/hemicycle_seats.dart';
 import 'package:votedujour/src/provisional_badge.dart';
 
 /// Décision détectée pendant la séance (ticket #10), telle que la publie le
@@ -54,6 +56,11 @@ void main() {
   testWidgets('badge « provisoire » sur la seule décision non confirmée', (
     tester,
   ) async {
+    // Écran de téléphone : la carte et le bouton tiennent sans défiler.
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final client = MockClient(
       (_) async => http.Response.bytes(utf8.encode(jsonEncode(_index)), 200),
     );
@@ -66,6 +73,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // Carte de la décision provisoire : sièges en attente et mention du vote
+    // par groupe à venir.
+    expect(find.byType(WaitingHemicycle), findsOneWidget);
+    expect(find.text(provisionalGroupsNotice), findsOneWidget);
     // La liste s'ouvre depuis l'accueil (#79).
     await tester.tap(find.text('Toutes les décisions'));
     await tester.pumpAndSettle();

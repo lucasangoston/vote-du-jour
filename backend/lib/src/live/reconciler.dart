@@ -75,6 +75,57 @@ Reconciliation reconcile({
   );
 }
 
+/// Décisions provisoires sur l'ensemble du texte en débat : en attendant le
+/// jeu de données, elles n'ont ni dossier rattaché ni résumé, et
+/// s'afficheraient sous l'intitulé officiel complet. Une décision provisoire
+/// non résumée qui vote l'ensemble du texte en débat ([DecisionIndex.inDebate],
+/// même texte aux mots près, [sameVotedText]) en reprend le dossier et le
+/// résumé (titre, titre court, explication, points).
+///
+/// Une fois le texte sorti du bloc « En débat », la décision garde ce
+/// qu'elle avait dans l'index publié [published]. Ce résumé emprunté n'entre
+/// pas dans le cache des résumés ([SummaryCache.adoptPublished] ignore les
+/// décisions provisoires) : confirmée, la décision reçoit son propre résumé.
+DecisionIndex withDebatedText(DecisionIndex index, {DecisionIndex? published}) {
+  final before = {
+    for (final d in published?.decisions ?? const <DecisionSummary>[])
+      if (d.status == DecisionStatus.provisoire) d.id: d,
+  };
+  return index.withDecisions([
+    for (final d in index.decisions)
+      _withDebatedText(d, index.inDebate, before[d.id]),
+  ]);
+}
+
+DecisionSummary _withDebatedText(
+  DecisionSummary d,
+  InDebate? debate,
+  DecisionSummary? before,
+) {
+  if (d.status != DecisionStatus.provisoire ||
+      d.type != DecisionType.ensembleTexte ||
+      d.summary != null) {
+    return d;
+  }
+  if (debate != null &&
+      sameVotedText(d.officialTitle, [
+        debate.shortTitle,
+        ?debate.summary?.title,
+      ])) {
+    return _withDossier(d, debate.dossierUrl).withSummary(debate.summary);
+  }
+  if (before?.summary case final summary?) {
+    return _withDossier(d, before!.dossierUrl).withSummary(summary);
+  }
+  return d;
+}
+
+/// [d] rattaché au dossier [url], s'il ne l'est pas déjà.
+DecisionSummary _withDossier(DecisionSummary d, String? url) =>
+    d.dossierUrl != null || url == null
+    ? d
+    : DecisionSummary.tryFromJson({...d.toJson(), 'dossierUrl': url})!;
+
 /// La même décision, au statut provisoire. Passer par le JSON garde tous les
 /// champs du contrat, y compris ceux qui lui seront ajoutés.
 DecisionSummary _provisional(DecisionSummary d) => DecisionSummary.tryFromJson({
