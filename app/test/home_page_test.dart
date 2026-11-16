@@ -15,6 +15,8 @@ import 'package:votedujour/src/decisions_repository.dart';
 import 'package:votedujour/src/hemicycle/hemicycle_seats.dart';
 import 'package:votedujour/src/hemicycle/vote_arc.dart';
 import 'package:votedujour/src/home_page.dart';
+import 'package:votedujour/src/in_debate/in_debate_page.dart';
+import 'package:votedujour/src/in_debate/in_debate_route.dart';
 import 'package:votedujour/src/skeleton.dart';
 import 'package:votedujour/src/theme.dart';
 
@@ -69,7 +71,8 @@ final _older8706 = DecisionSummary(
   dossierUrl: _d8706.decision.dossierUrl,
 );
 
-/// Texte en débat : annoncé par une notification, jamais en carte.
+/// Texte en débat : annoncé par une notification, et en carte en tête de
+/// l'accueil ([_debateIndex]).
 final _inDebate = InDebate(
   dossierRef: 'DLR5L17N2',
   shortTitle: 'Texte en débat',
@@ -83,6 +86,13 @@ final _index = DecisionIndex(
   generatedAt: DateTime.utc(2026, 10, 23, 8),
   decisions: [_d8706.decision, _older8706, _d8610.decision],
   upcoming: [_plf],
+);
+
+/// [_index] pendant le débat de [_inDebate].
+final _debateIndex = DecisionIndex(
+  generatedAt: _index.generatedAt,
+  decisions: _index.decisions,
+  upcoming: _index.upcoming,
   inDebate: _inDebate,
 );
 
@@ -115,20 +125,22 @@ Future<List<Uri>> _pumpHome(
     baseUrl: 'https://example.test',
     client: client,
   );
+  final repository = DecisionsRepository(
+    baseUrl: 'https://example.test',
+    client: client,
+  );
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: buildTheme(brightness),
       home: HomePage(
-        repository: DecisionsRepository(
-          baseUrl: 'https://example.test',
-          client: client,
-        ),
+        repository: repository,
         detailRepository: detailRepository,
         now: _now,
       ),
       onGenerateRoute: (settings) =>
-          generateDecisionRoute(settings, repository: detailRepository),
+          generateDecisionRoute(settings, repository: detailRepository) ??
+          generateInDebateRoute(settings, repository: repository),
     ),
   );
   await tester.pumpAndSettle();
@@ -166,13 +178,49 @@ void main() {
   });
 
   group('cartes de l\'accueil', () {
-    test('le vote solennel, puis une carte par texte, sans « En débat »', () {
+    test('le vote solennel, puis une carte par texte', () {
       final cards = homeCards(_index, now: _now);
       expect(cards, hasLength(3));
       expect((cards[0] as UpcomingVoteCard).item.id, _plf.id);
       expect(
         [for (final c in cards.skip(1)) (c as DecisionCard).decision.id],
         ['VTANR5L17V8706', 'VTANR5L17V8610'],
+      );
+    });
+
+    test('le texte en débat en tête, avant le vote solennel', () {
+      final cards = homeCards(_debateIndex, now: _now);
+      expect(cards, hasLength(4));
+      expect((cards[0] as InDebateCard).inDebate.dossierRef, 'DLR5L17N2');
+      expect(cards[1], isA<UpcomingVoteCard>());
+    });
+
+    test('texte voté dans son ensemble : plus de carte « En débat »', () {
+      DecisionSummary vote(DateTime date) => DecisionSummary(
+        id: 'VTANR5L17V9905',
+        numero: 9905,
+        type: DecisionType.ensembleTexte,
+        status: DecisionStatus.provisoire,
+        result: VoteResult.adopte,
+        date: date,
+        officialTitle: "l'ensemble du texte en débat",
+        sourceUrl: 'https://example.test/9905',
+        dossierUrl: _inDebate.dossierUrl,
+      );
+      DecisionIndex withVote(DateTime date) => DecisionIndex(
+        generatedAt: _index.generatedAt,
+        decisions: [vote(date), ..._index.decisions],
+        inDebate: _inDebate,
+      );
+      // Voté le jour du débat : la décision prend le relais.
+      expect(
+        homeCards(withVote(DateTime.utc(2026, 10, 23)), now: _now),
+        isNot(contains(isA<InDebateCard>())),
+      );
+      // Un vote d'une lecture précédente ne compte pas.
+      expect(
+        homeCards(withVote(DateTime.utc(2026, 6, 2)), now: _now).first,
+        isA<InDebateCard>(),
       );
     });
 
@@ -226,9 +274,8 @@ void main() {
         expect(find.text('Juges des violences sexuelles'), findsOneWidget);
         expect(find.text('Rejeté'), findsOneWidget);
         expect(find.text('Motion sur le même texte'), findsNothing);
-        // Pas de carte « En débat » (#77).
+        // Aucun texte en débat dans l'index : pas de carte « En débat ».
         expect(find.text('En débat'), findsNothing);
-        expect(find.text('Texte en débat'), findsNothing);
         // Les sièges des deux décisions affichées.
         expect(find.byType(HemicycleSeats), findsNWidgets(2));
         expect(find.byType(VoteArc), findsNothing);
@@ -292,6 +339,32 @@ void main() {
           tester.widget<DecisionDetailPage>(find.byType(DecisionDetailPage)).id,
           'VTANR5L17V8706',
         );
+      });
+
+      testWidgets('carte « En débat » en tête, ouvre l\'écran du texte', (
+        tester,
+      ) async {
+        await _pumpHome(tester, brightness: brightness, index: _debateIndex);
+
+        expect(find.text('En séance'), findsOneWidget);
+        expect(find.text('En débat'), findsOneWidget);
+        expect(find.text('Vote final à venir'), findsOneWidget);
+        expect(find.text('Texte en débat'), findsOneWidget);
+        expect(find.byType(WaitingHemicycle), findsOneWidget);
+        // Elle passe avant la carte du vote solennel.
+        expect(
+          tester.getTopLeft(find.text('En séance')).dx,
+          lessThan(tester.getTopLeft(find.text('Vote solennel')).dx),
+        );
+        expect(tester.takeException(), isNull);
+        await expectLater(
+          find.byType(HomePage),
+          matchesGoldenFile('goldens/accueil-en-debat-$theme.png'),
+        );
+
+        await tester.tap(find.text('Texte en débat'));
+        await tester.pumpAndSettle();
+        expect(find.byType(InDebatePage), findsOneWidget);
       });
     });
   }

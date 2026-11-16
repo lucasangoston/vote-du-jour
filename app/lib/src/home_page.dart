@@ -14,6 +14,8 @@ import 'hemicycle/hemicycle_seats.dart';
 import 'hemicycle/result_style.dart';
 import 'hemicycle/vote_arc.dart';
 import 'hemicycle/vote_glyph.dart';
+import 'in_debate/in_debate_page.dart' show finalVoteLabel;
+import 'in_debate/in_debate_route.dart';
 import 'provisional_badge.dart';
 import 'relative_date.dart';
 import 'skeleton.dart';
@@ -42,12 +44,35 @@ class DecisionCard extends HomeCard {
   final DecisionSummary decision;
 }
 
-/// Cartes de l'accueil : le prochain vote solennel (s'il y en a un à
-/// l'ordre du jour), puis les [homeDecisionCount] dernières décisions, une
+/// Le texte en débat dans l'hémicycle (#77) : ouvert depuis la notification,
+/// il se retrouve ensuite sur l'accueil.
+class InDebateCard extends HomeCard {
+  const InDebateCard(this.inDebate);
+
+  final InDebate inDebate;
+}
+
+/// Cartes de l'accueil : le texte en débat, tant que son vote sur
+/// l'ensemble n'est pas publié ; le prochain vote solennel (s'il y en a un à
+/// l'ordre du jour) ; puis les [homeDecisionCount] dernières décisions, une
 /// par texte (la plus récente : l'index est trié du plus récent au plus
-/// ancien). Pas de carte « En débat » : l'annonce passe par une
-/// notification (#77).
+/// ancien).
 List<HomeCard> homeCards(DecisionIndex index, {required DateTime now}) {
+  final debate = index.inDebate;
+  final debating =
+      debate != null &&
+      !index.decisions.any(
+        (d) =>
+            d.dossierUrl == debate.dossierUrl &&
+            d.type == DecisionType.ensembleTexte &&
+            !d.date.isBefore(
+              DateTime.utc(
+                debate.startsAt.year,
+                debate.startsAt.month,
+                debate.startsAt.day,
+              ),
+            ),
+      );
   final vote = upcomingToShow(
     index.upcoming,
     now: now,
@@ -59,6 +84,7 @@ List<HomeCard> homeCards(DecisionIndex index, {required DateTime now}) {
       if (texts.add(d.dossierUrl ?? d.id)) d,
   ].take(homeDecisionCount);
   return [
+    if (debating) InDebateCard(debate),
     if (vote != null) UpcomingVoteCard(vote),
     for (final d in decisions) DecisionCard(d),
   ];
@@ -285,6 +311,13 @@ class _HomePageState extends State<HomePage> {
     return CardDeck(
       count: cards.length,
       itemBuilder: (context, i, width) => switch (cards[i]) {
+        InDebateCard(:final inDebate) => _InDebateCard(
+          inDebate,
+          upcoming: index.upcoming,
+          width: width,
+          tab: _tabSides[i % _tabSides.length],
+          now: _now,
+        ),
         UpcomingVoteCard(:final item) => _VoteCard(
           item,
           width: width,
@@ -707,6 +740,82 @@ class _VoteCard extends StatelessWidget {
 
 /// Message d'une carte de vote à venir dont le dossier n'est pas connu.
 const upcomingNoLinkNotice = 'Le résultat s’affichera ici après le vote.';
+
+/// Carte du texte en débat : l'hémicycle en attente (personne n'a encore
+/// voté le texte), « En débat », le vote final et les articles déjà votés,
+/// le titre court. Ouvre l'écran « En débat ».
+class _InDebateCard extends StatelessWidget {
+  const _InDebateCard(
+    this.inDebate, {
+    required this.upcoming,
+    required this.width,
+    required this.tab,
+    required this.now,
+  });
+
+  final InDebate inDebate;
+  final List<UpcomingItem>? upcoming;
+  final double width;
+  final Alignment tab;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final summary = inDebate.summary;
+    final title = capitalize(
+      summary?.shortTitle ?? summary?.title ?? inDebate.shortTitle,
+    );
+    final finalVote = finalVoteLabel(inDebate, upcoming, now: now);
+    final articles = inDebate.articles.length;
+    return _FolderCard(
+      tab: 'En séance',
+      tabColor: colors.ink,
+      tabSide: tab,
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(inDebateRouteName(inDebate.dossierRef)),
+      semanticsLabel: ['En débat', finalVote, title].join(', '),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+          child: Center(child: WaitingHemicycle(width: _figureWidth(width))),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 4,
+            children: [
+              Text(
+                'En débat',
+                style: HemicycleText.displaySm.copyWith(color: colors.ink),
+              ),
+              Text(
+                finalVote,
+                style: HemicycleText.meta.copyWith(color: colors.ink2),
+              ),
+            ],
+          ),
+        ),
+        if (articles > 0)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                articles > 1 ? '$articles articles votés' : '1 article voté',
+                style: HemicycleText.meta.copyWith(color: colors.ink2),
+              ),
+            ),
+          ),
+        _CardTitle(title),
+      ],
+    );
+  }
+}
 
 /// L'arc vide des maquettes : deux demi-anneaux au filet, dans une boîte de
 /// 300 × 162 unités mise à l'échelle.
