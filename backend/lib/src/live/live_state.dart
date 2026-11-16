@@ -113,16 +113,19 @@ class LiveState {
     );
   }
 
-  /// Lit l'état ; un état absent ou illisible vaut un état vide (avec un
-  /// avertissement dans [warnings]) : il ne doit jamais bloquer la
-  /// publication.
+  /// Lit l'état ; un état absent ou au contenu illisible vaut un état vide
+  /// (avec un avertissement dans [warnings]) : il ne doit jamais bloquer la
+  /// publication. Une panne de lecture du store, elle, remonte : la prendre
+  /// pour un état vide ferait réécrire l'état sans ses décisions
+  /// provisoires, qui disparaîtraient de l'index.
   static Future<LiveState> read(
     ObjectStore store,
     List<String> warnings,
   ) async {
+    final raw = await store.read(liveStateKey);
+    if (raw == null) return const LiveState();
     try {
-      final raw = await store.read(liveStateKey);
-      return raw == null ? const LiveState() : fromJson(jsonDecode(raw));
+      return fromJson(jsonDecode(raw));
     } on Object catch (e) {
       warnings.add('état de la détection en direct illisible, ignoré ($e)');
       return const LiveState();

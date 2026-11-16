@@ -126,22 +126,42 @@ Future<void> main(List<String> arguments) async {
       ? FileDumpSource(organesFile)
       : HttpDumpSource(url: args.option('organes-url')!);
 
-  final outcome = await runJob(
-    source: source,
-    store: store,
-    dossiers: dossiers,
-    organes: organes,
-    summaries: _summaryServiceFromEnvironment(),
-    force: args.flag('force'),
-  );
-  stdout.writeln(outcome);
   final github = Platform.environment['GITHUB_ACTIONS'] == 'true';
-  final jobWarnings = switch (outcome) {
-    JobPublished(:final warnings) || JobSkipped(:final warnings) => warnings,
-  };
-  if (github) {
-    for (final w in jobWarnings) {
-      stdout.writeln('::warning title=Publication::$w');
+  // Chaque étape est isolée : une panne de l'open data ou d'une archive ne
+  // prive pas les suivantes de leur passage (l'annonce de la veille d'un
+  // vote solennel n'a qu'une fenêtre). L'exécution échoue à la fin.
+  final failed = <String>[];
+  Future<T?> step<T>(String name, Future<T> Function() run) async {
+    try {
+      return await run();
+    } on Object catch (e) {
+      failed.add(name);
+      final message = '$name en échec, étapes suivantes maintenues ($e)';
+      stdout.writeln(github ? '::error title=$name::$message' : message);
+      return null;
+    }
+  }
+
+  final outcome = await step(
+    'Publication',
+    () => runJob(
+      source: source,
+      store: store,
+      dossiers: dossiers,
+      organes: organes,
+      summaries: _summaryServiceFromEnvironment(),
+      force: args.flag('force'),
+    ),
+  );
+  if (outcome != null) {
+    stdout.writeln(outcome);
+    final jobWarnings = switch (outcome) {
+      JobPublished(:final warnings) || JobSkipped(:final warnings) => warnings,
+    };
+    if (github) {
+      for (final w in jobWarnings) {
+        stdout.writeln('::warning title=Publication::$w');
+      }
     }
   }
   // Une décision sans sièges depuis plus de deux jours fait échouer
@@ -151,6 +171,7 @@ Future<void> main(List<String> arguments) async {
       ? outcome.stuckWithoutSeats(DateTime.now().toUtc())
       : const <DecisionSummary>[];
   final agendaFile = args.option('agenda-file');
+  // `_agenda` rattrape déjà ses pannes : sans agenda relu, pas d'annonce.
   final agendaUpToDate = await _agenda(
     store,
     agendaFile != null
@@ -158,8 +179,11 @@ Future<void> main(List<String> arguments) async {
         : HttpAgendaSource(url: args.option('agenda-url')!),
     force: args.flag('force'),
   );
-  await _argue(store);
-  await _notify(store, agendaUpToDate: agendaUpToDate);
+  await step('Arguments', () => _argue(store));
+  await step(
+    'Notifications',
+    () => _notify(store, agendaUpToDate: agendaUpToDate),
+  );
   if (stuck.isNotEmpty) {
     final message =
         '${stuck.length} décisions publiées sans sièges depuis plus de '
@@ -168,7 +192,7 @@ Future<void> main(List<String> arguments) async {
     stdout.writeln(github ? '::error title=Sièges::$message' : message);
   }
   // Le client HTTP par défaut garde des connexions ouvertes.
-  exit(stuck.isEmpty ? 0 : 1);
+  exit(stuck.isEmpty && failed.isEmpty ? 0 : 1);
 }
 
 /// Ordre du jour des prochains jours (#52), après la publication : bloc

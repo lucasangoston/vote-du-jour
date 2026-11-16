@@ -316,6 +316,68 @@ void main() {
     );
   });
 
+  group('pannes du magasin', () {
+    const lastModified = 'Sat, 17 Oct 2026 10:30:00 GMT';
+
+    for (final key in [confirmedSnapshotKey, articleVotesKey, liveStateKey]) {
+      test('écriture de $key en échec : le passage suivant retraite le jeu '
+          'de données', () async {
+        final source = FakeDumpSource(lastModified);
+        await expectLater(
+          runJob(
+            source: source,
+            store: _FailingKeyStore(store, key),
+            clock: () => clock,
+          ),
+          throwsA(isA<HttpException>()),
+        );
+        // L'état du jeu de données s'écrit en dernier : pas de 304 qui
+        // laisserait la publication incomplète.
+        expect(await store.read(stateKey), isNull);
+
+        final outcome = await runJob(
+          source: source,
+          store: store,
+          clock: () => clock,
+        );
+        expect(outcome, isA<JobPublished>());
+        expect(source.requests.last, isNull);
+        expect(await store.read(key), isNotNull);
+        expect(await store.read(stateKey), contains(lastModified));
+      });
+    }
+
+    test('lecture de l\'état de la détection en panne : rien n\'est '
+        'réécrit', () async {
+      const state = '{"version": 1, "provisional": [], "lastSeenNumero": 9}';
+      await store.write(liveStateKey, state);
+      await expectLater(
+        runJob(
+          source: FakeDumpSource(lastModified),
+          store: FailingReadStore(store, {liveStateKey}),
+          clock: () => clock,
+        ),
+        throwsA(isA<HttpException>()),
+      );
+      expect(await store.read(liveStateKey), state);
+      expect(await store.read(stateKey), isNull);
+    });
+
+    test('état de la détection au contenu illisible : ignoré avec un '
+        'avertissement', () async {
+      await store.write(liveStateKey, '{oups');
+      final outcome = await runJob(
+        source: FakeDumpSource(lastModified),
+        store: store,
+        clock: () => clock,
+      );
+      expect(
+        (outcome as JobPublished).warnings,
+        contains(contains('détection en direct illisible')),
+      );
+    });
+  });
+
   test('l\'index contient au plus 50 décisions, les plus récentes', () {
     final scrutins = [
       for (var i = 1; i <= 80; i++)
