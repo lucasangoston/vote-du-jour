@@ -35,14 +35,14 @@ enum Rubric {
       b == Brightness.dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF),
   };
 
-  /// Feuille de la carte : la surface, légèrement teintée de [fill].
+  /// Feuille de la carte : de jour, la surface légèrement teintée de
+  /// [fill] ; de nuit, la surface seule (une teinte sur fond sombre voile la
+  /// carte comme un filtre et éteint les sièges et les chiffres) : le
+  /// bandeau et le cadre suffisent à reconnaître la rubrique.
   Color sheet(BuildContext context) {
     final b = Theme.of(context).brightness;
-    return Color.lerp(
-      context.colors.surface,
-      fill(b),
-      b == Brightness.dark ? 0.16 : 0.10,
-    )!;
+    if (b == Brightness.dark) return context.colors.surface;
+    return Color.lerp(context.colors.surface, fill(b), 0.10)!;
   }
 }
 

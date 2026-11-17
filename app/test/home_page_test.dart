@@ -158,6 +158,8 @@ Future<void> _swipe(WidgetTester tester) async {
 }
 
 void main() {
+  _fitTests();
+
   testWidgets('un seul appui ouvre le détail, même juste après un glissement', (
     tester,
   ) async {
@@ -509,5 +511,100 @@ void main() {
     await tester.tap(find.text('Résilience des infrastructures critiques'));
     await tester.pump();
     expect(find.text(upcomingNoLinkNotice), findsOneWidget);
+  });
+
+  testWidgets('titre long : en entier, les cartes vont jusqu\'aux points', (
+    tester,
+  ) async {
+    const title =
+        'Projet de loi relatif à la résilience des infrastructures critiques '
+        'et au renforcement de la cybersécurité';
+    final long = UpcomingItem(
+      id: 'PT53671',
+      kind: UpcomingKind.voteSolennel,
+      startsAt: DateTime.utc(2026, 11, 3, 14),
+      seanceRef: 'S31005',
+      label: 'Vote solennel : $title',
+      shortTitle: title,
+    );
+    await _pumpHome(
+      tester,
+      index: DecisionIndex(
+        generatedAt: DateTime.utc(2026, 10, 23, 8),
+        decisions: [_d8706.decision],
+        upcoming: [long],
+      ),
+    );
+    expect(tester.widget<Text>(find.text(title)).maxLines, isNull);
+    expect(tester.takeException(), isNull);
+    // La carte remplit la place : son bas touche presque les points.
+    final card = tester.getRect(
+      find
+          .ancestor(of: find.text(title), matching: find.byType(Material))
+          .first,
+    );
+    final button = tester.getTopLeft(find.text('Toutes les décisions')).dy;
+    expect(button - card.bottom, lessThan(110));
+  });
+}
+
+/// Texte d'une carte, mesuré avec la police des tests (chaque signe est un
+/// carré de la taille du texte) : titre sur 320 points de large,
+/// explication en corps 10.
+CardTextFit _fit(String title, String? explanation, double maxHeight) =>
+    fitCardText(
+      title: title,
+      explanation: explanation,
+      maxWidth: 320,
+      maxHeight: maxHeight,
+      titleStyle: (size) => TextStyle(fontSize: size, height: 1),
+      explanationStyle: const TextStyle(fontSize: 10, height: 1),
+    );
+
+void _fitTests() {
+  group('texte d\'une carte', () {
+    // Seize lignes d'explication de 10 points.
+    final long = List.filled(96, 'aaaa').join(' ');
+
+    test('titre et explication en entier, titre au plus grand', () {
+      final fit = _fit('abc def', 'aaaa bbbb', 100);
+      expect(fit.size, titleSizes.first);
+      expect(fit.showExplanation, isTrue);
+      expect(fit.titleLines, isNull);
+      expect(fit.explanationLines, isNull);
+    });
+
+    test('explication trop longue : coupée aux lignes qui tiennent', () {
+      // 100 - 32 (titre) - 10 (écart) : 5 lignes de 10.
+      final fit = _fit('abc def', long, 100);
+      expect(fit.size, titleSizes.first);
+      expect(fit.showExplanation, isTrue);
+      expect(fit.explanationLines, 5);
+    });
+
+    test('moins de deux lignes d\'explication : le titre seul', () {
+      // Même en 26, 50 - 26 - 10 ne laisse qu'une ligne.
+      final fit = _fit('abc def', long, 50);
+      expect(fit.size, titleSizes.first);
+      expect(fit.showExplanation, isFalse);
+    });
+
+    test('l\'explication ne fait pas rapetisser le titre sous 26', () {
+      // Le titre ne tient qu'en 23 (deux lignes de 23 et moins) : il
+      // occupe la carte, sans explication.
+      final title = List.filled(6, 'abcdefg').join(' ');
+      final fit = _fit(title, 'aaaa bbbb', 90);
+      expect(fit.size, lessThan(26));
+      expect(fit.showExplanation, isFalse);
+      expect(fit.titleLines, isNull);
+    });
+
+    test('titre trop long même au plus petit : coupé, au moins une ligne', () {
+      final title = List.filled(20, 'abcdefgh').join(' ');
+      final fit = _fit(title, null, 40);
+      expect(fit.size, titleSizes.last);
+      expect(fit.titleLines, 2);
+      expect(_fit(title, null, 5).titleLines, 1);
+    });
   });
 }
