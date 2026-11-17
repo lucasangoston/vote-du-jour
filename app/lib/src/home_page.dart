@@ -227,59 +227,60 @@ class _HomePageState extends State<HomePage> {
         // sous l'encoche, même en défilant.
         body: SafeArea(
           bottom: false,
-          child: RefreshIndicator(
-            onRefresh: _refresh,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 4),
-                      const BrandBar(),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                        child: Semantics(
-                          header: true,
-                          child: Text(
-                            formatFrenchWeekdayDay(_now),
-                            style: HemicycleText.displayLg.copyWith(
-                              color: context.colors.ink,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Les cartes, centrées entre la date et le bouton.
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 22),
-                          child: Center(child: _body(context)),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          20,
-                          0,
-                          20,
-                          24 + padding.bottom,
-                        ),
-                        child: _PrimaryButton(
-                          label: 'Toutes les décisions',
-                          onPressed: _openList,
-                        ),
-                      ),
-                    ],
+          child: LayoutBuilder(
+            builder: (context, viewport) => RefreshIndicator(
+              onRefresh: _refresh,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    // Les cartes prennent toute la hauteur libre ; sur un
+                    // écran trop court, l'accueil défile.
+                    child: SizedBox(
+                      height: math.max(viewport.maxHeight, homeMinHeight),
+                      child: _page(context, padding),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget _page(BuildContext context, EdgeInsets padding) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const SizedBox(height: 4),
+      const BrandBar(),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+        child: Semantics(
+          header: true,
+          child: Text(
+            formatFrenchWeekdayDay(_now),
+            style: HemicycleText.displayLg.copyWith(color: context.colors.ink),
+          ),
+        ),
+      ),
+      // Les cartes, de la date jusqu'au bouton.
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          child: Center(child: _body(context)),
+        ),
+      ),
+      Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + padding.bottom),
+        child: _PrimaryButton(
+          label: 'Toutes les décisions',
+          onPressed: _openList,
+        ),
+      ),
+    ],
+  );
 
   Widget _body(BuildContext context) {
     final index = _index;
@@ -340,16 +341,28 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+/// Hauteur de l'accueil en dessous de laquelle il défile plutôt que de
+/// tasser les cartes.
+const homeMinHeight = 600.0;
+
 /// Largeur visible de la carte suivante, pour montrer qu'il y en a d'autres.
 const deckPeek = 28.0;
+
+/// Hauteur des points de la pile, écart compris.
+const _pagerHeight = 18.0 + 7 * 1.15;
+
+/// Rapport hauteur / largeur maximal d'une carte : sur tablette, une carte
+/// de téléphone plutôt qu'une colonne étirée.
+const _maxCardAspect = 1.75;
 
 /// Marge des cartes et écart entre deux cartes.
 const _deckMargin = 20.0;
 const _deckGap = 12.0;
 
 /// Pile de cartes qui défile de côté, une carte à la fois, avec les points
-/// de la carte en cours dessous. Toutes les cartes ont la hauteur de la plus
-/// grande ; la suivante dépasse de [deckPeek].
+/// de la carte en cours dessous. Les cartes prennent toute la hauteur
+/// donnée (jusqu'à [_maxCardAspect] fois leur largeur) ; la suivante dépasse
+/// de [deckPeek].
 class CardDeck extends StatefulWidget {
   const CardDeck({super.key, required this.count, required this.itemBuilder});
 
@@ -399,34 +412,41 @@ class _CardDeckState extends State<CardDeck> {
   @override
   Widget build(BuildContext context) {
     final width = _cardWidth;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SingleChildScrollView(
-          controller: _scroll,
-          scrollDirection: Axis.horizontal,
-          physics: _CardSnapPhysics(extent: width + _deckGap),
-          padding: const EdgeInsets.symmetric(horizontal: _deckMargin),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var i = 0; i < widget.count; i++) ...[
-                  if (i > 0) const SizedBox(width: _deckGap),
-                  SizedBox(
-                    width: width,
-                    child: widget.itemBuilder(context, i, width),
-                  ),
+    final pager = widget.count > 1 ? _pagerHeight : 0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = math.min(
+          constraints.maxHeight - pager,
+          width * _maxCardAspect,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SingleChildScrollView(
+              controller: _scroll,
+              scrollDirection: Axis.horizontal,
+              physics: _CardSnapPhysics(extent: width + _deckGap),
+              padding: const EdgeInsets.symmetric(horizontal: _deckMargin),
+              child: Row(
+                children: [
+                  for (var i = 0; i < widget.count; i++) ...[
+                    if (i > 0) const SizedBox(width: _deckGap),
+                    SizedBox(
+                      width: width,
+                      height: height,
+                      child: widget.itemBuilder(context, i, width),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-        ),
-        if (widget.count > 1) ...[
-          const SizedBox(height: 18),
-          _Pager(count: widget.count, current: _current),
-        ],
-      ],
+            if (widget.count > 1) ...[
+              const SizedBox(height: 18),
+              _Pager(count: widget.count, current: _current),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -524,16 +544,25 @@ class _Pager extends StatelessWidget {
 
 /// Carte de l'accueil, aux couleurs de sa rubrique ([Rubric]) : bandeau
 /// (pictogramme, nom, [detail]), cadre de la même couleur, feuille teintée
-/// jusqu'en bas de la pile. Elle s'ouvre au toucher.
+/// jusqu'en bas de la pile. Sous le bandeau, la figure ([children]) puis le
+/// [title] dans toute la place qui reste. Elle s'ouvre au toucher.
 class _RubricCard extends StatelessWidget {
   const _RubricCard({
     required this.rubric,
     required this.onTap,
     required this.semanticsLabel,
     required this.children,
+    required this.title,
+    this.explanation,
     this.detail,
     this.link = false,
   });
+
+  /// Titre court, sous la figure.
+  final String title;
+
+  /// Phrase d'explication du résumé, sous le titre si la place le permet.
+  final String? explanation;
 
   final Rubric rubric;
 
@@ -569,7 +598,13 @@ class _RubricCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               RubricBand(rubric, detail: detail),
-              ...children,
+              Expanded(
+                child: _CardBody(
+                  head: children,
+                  title: title,
+                  explanation: explanation,
+                ),
+              ),
             ],
           ),
         ),
@@ -581,22 +616,262 @@ class _RubricCard extends StatelessWidget {
 /// Largeur de la figure (hémicycle, arc) d'une carte de largeur [card].
 double _figureWidth(double card) => math.min(300, card - 32);
 
-/// Titre court d'une carte, sous la figure.
-class _CardTitle extends StatelessWidget {
-  const _CardTitle(this.text);
+/// Marges du texte d'une carte.
+const _textPadding = EdgeInsets.fromLTRB(22, 18, 22, 22);
 
-  final String text;
+/// Écart entre le titre et l'explication.
+const _explanationGap = 10.0;
+
+/// Tailles du titre, de la plus grande à la plus petite : il prend la plus
+/// grande qui le montre en entier.
+const titleSizes = [32.0, 29.0, 26.0, 23.0, 20.0, 18.0];
+
+/// Lignes de titre toujours gardées sous la figure : si la place manque
+/// (petit écran, grand texte), la figure se réduit d'abord.
+const _titleMinLines = 3;
+
+/// Lignes d'explication en dessous desquelles elle n'est pas montrée.
+const _explanationMinLines = 2;
+
+/// Plus petite taille du titre à côté d'une explication : le titre reste
+/// le plus visible, l'explication ne le fait pas rapetisser au-delà.
+const _titleSizeWithExplanation = 26.0;
+
+TextStyle _titleStyle(BuildContext context, double size) =>
+    HemicycleText.displaySm.copyWith(fontSize: size, color: context.colors.ink);
+
+TextStyle _explanationStyle(BuildContext context) =>
+    HemicycleText.bodySerif.copyWith(color: context.colors.body);
+
+/// Corps d'une carte : la figure et ses chiffres ([head]) en haut, à leur
+/// taille tant que [_titleMinLines] lignes de titre tiennent dessous, puis
+/// le texte ([_CardText]).
+class _CardBody extends StatelessWidget {
+  const _CardBody({
+    required this.head,
+    required this.title,
+    required this.explanation,
+  });
+
+  final List<Widget> head;
+  final String title;
+  final String? explanation;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final line = _lineHeights(
+        'X',
+        _titleStyle(context, titleSizes.last),
+        maxWidth: double.infinity,
+        textScaler: MediaQuery.textScalerOf(context),
+      ).first;
+      final reserve = _textPadding.vertical + line * _titleMinLines;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: math.max(0, constraints.maxHeight - reserve),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: head,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _CardText(title: title, explanation: explanation),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// Texte d'une carte, sous la figure, dans toute la place qui reste : le
+/// titre court, puis l'explication du résumé s'il y en a une ([fitCardText]).
+class _CardText extends StatelessWidget {
+  const _CardText({required this.title, required this.explanation});
+
+  final String title;
+  final String? explanation;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
-    child: Text(
-      text,
-      maxLines: 4,
-      overflow: TextOverflow.ellipsis,
-      style: HemicycleText.displaySm.copyWith(color: context.colors.ink),
+    padding: _textPadding,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final fit = fitCardText(
+          title: title,
+          explanation: explanation,
+          maxWidth: constraints.maxWidth,
+          maxHeight: constraints.maxHeight,
+          titleStyle: (size) => _titleStyle(context, size),
+          explanationStyle: _explanationStyle(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _clamped(title, _titleStyle(context, fit.size), fit.titleLines),
+            if (fit.showExplanation) ...[
+              const SizedBox(height: _explanationGap),
+              _clamped(
+                explanation!,
+                _explanationStyle(context),
+                fit.explanationLines,
+              ),
+            ],
+          ],
+        );
+      },
     ),
   );
+
+  /// [text] sur [maxLines] lignes au plus, coupé par « … » ; sans limite,
+  /// en entier (avec `overflow` mais sans `maxLines`, un texte tient sur une
+  /// seule ligne).
+  static Widget _clamped(String text, TextStyle style, int? maxLines) => Text(
+    text,
+    style: style,
+    maxLines: maxLines,
+    overflow: maxLines == null ? null : TextOverflow.ellipsis,
+  );
+}
+
+/// Mise en page du texte d'une carte : taille du titre, explication montrée
+/// ou non, et lignes du titre et de l'explication (`null` : en entier).
+typedef CardTextFit = ({
+  double size,
+  int? titleLines,
+  bool showExplanation,
+  int? explanationLines,
+});
+
+/// Place le titre et l'explication dans une boîte de [maxWidth] ×
+/// [maxHeight], dans cet ordre de préférence :
+/// 1. le titre et l'explication en entier, titre à la plus grande des
+///    [titleSizes] possible ;
+/// 2. le titre en entier, l'explication coupée par « … » (au moins
+///    [_explanationMinLines] lignes) ;
+///
+/// (avec l'explication, le titre garde au moins [_titleSizeWithExplanation]) ;
+/// 3. le titre seul, en entier ;
+/// 4. le titre seul à la plus petite taille, coupé à la dernière ligne qui
+///    tient (au moins une).
+CardTextFit fitCardText({
+  required String title,
+  required String? explanation,
+  required double maxWidth,
+  required double maxHeight,
+  required TextStyle Function(double size) titleStyle,
+  required TextStyle explanationStyle,
+  TextScaler textScaler = TextScaler.noScaling,
+}) {
+  final titles = {
+    for (final size in titleSizes)
+      size: _lineHeights(
+        title,
+        titleStyle(size),
+        maxWidth: maxWidth,
+        textScaler: textScaler,
+      ),
+  };
+  double total(List<double> lines) => lines.fold(0, (a, b) => a + b);
+  final fitting = [
+    for (final size in titleSizes)
+      if (total(titles[size]!) <= maxHeight) size,
+  ];
+  if (explanation != null && fitting.isNotEmpty) {
+    final body = _lineHeights(
+      explanation,
+      explanationStyle,
+      maxWidth: maxWidth,
+      textScaler: textScaler,
+    );
+    int linesIn(double height) {
+      var count = 0;
+      var bottom = 0.0;
+      for (final line in body) {
+        bottom += line;
+        if (bottom > height) break;
+        count++;
+      }
+      return count;
+    }
+
+    final room = {
+      for (final size in fitting)
+        if (size >= _titleSizeWithExplanation)
+          size: linesIn(maxHeight - total(titles[size]!) - _explanationGap),
+    };
+    for (final size in room.keys) {
+      if (room[size]! >= body.length) {
+        return (
+          size: size,
+          titleLines: null,
+          showExplanation: true,
+          explanationLines: null,
+        );
+      }
+    }
+    for (final size in room.keys) {
+      if (room[size]! >= _explanationMinLines) {
+        return (
+          size: size,
+          titleLines: null,
+          showExplanation: true,
+          explanationLines: room[size],
+        );
+      }
+    }
+  }
+  if (fitting.isNotEmpty) {
+    return (
+      size: fitting.first,
+      titleLines: null,
+      showExplanation: false,
+      explanationLines: null,
+    );
+  }
+  var count = 0;
+  var bottom = 0.0;
+  for (final line in titles[titleSizes.last]!) {
+    bottom += line;
+    if (bottom > maxHeight) break;
+    count++;
+  }
+  return (
+    size: titleSizes.last,
+    titleLines: math.max(1, count),
+    showExplanation: false,
+    explanationLines: null,
+  );
+}
+
+/// Hauteur de chaque ligne de [text] mis en page sur [maxWidth].
+List<double> _lineHeights(
+  String text,
+  TextStyle style, {
+  required double maxWidth,
+  required TextScaler textScaler,
+}) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: TextDirection.ltr,
+    textScaler: textScaler,
+  )..layout(maxWidth: maxWidth);
+  final lines = [for (final l in painter.computeLineMetrics()) l.height];
+  painter.dispose();
+  return lines;
 }
 
 /// Carte du prochain vote solennel : l'arc vide (pas encore de résultat),
@@ -633,6 +908,7 @@ class _VoteCard extends StatelessWidget {
         'à partir de ${parisHourLabel(item.startsAt)}',
         item.shortTitle,
       ].join(', '),
+      title: item.shortTitle,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
@@ -685,7 +961,6 @@ class _VoteCard extends StatelessWidget {
             ),
           ),
         ),
-        _CardTitle(item.shortTitle),
       ],
     );
   }
@@ -725,6 +1000,8 @@ class _InDebateCard extends StatelessWidget {
         context,
       ).pushNamed(inDebateRouteName(inDebate.dossierRef)),
       semanticsLabel: ['En débat', finalVote, title].join(', '),
+      title: title,
+      explanation: summary?.explanation,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
@@ -757,7 +1034,6 @@ class _InDebateCard extends StatelessWidget {
               ),
             ),
           ),
-        _CardTitle(title),
       ],
     );
   }
@@ -848,6 +1124,8 @@ class _DecisionCard extends StatelessWidget {
         formatFrenchDay(decision.date),
         title,
       ].join(', '),
+      title: title,
+      explanation: decision.explanation,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
@@ -916,7 +1194,6 @@ class _DecisionCard extends StatelessWidget {
               style: HemicycleText.meta.copyWith(color: context.colors.ink2),
             ),
           ),
-        _CardTitle(title),
       ],
     );
   }
