@@ -79,7 +79,7 @@ components:
 
 ## Vue d'ensemble
 
-Le Perchoir est d'abord un widget : la dernière décision de l'Assemblée, lue d'un coup d'œil sur l'écran d'accueil du téléphone. L'app est ce qu'on ouvre en le touchant. Le système emprunte à un magazine imprimé sa retenue — fond blanc (noir la nuit), encre pleine, aucune couleur de marque, aucune ombre, aucun arrondi — pour laisser la parole aux données : l'hémicycle et ses 574 places, colorées par groupe.
+Le Perchoir est d'abord un widget : la dernière décision de l'Assemblée, lue d'un coup d'œil sur l'écran d'accueil du téléphone. L'app est ce qu'on ouvre en le touchant. Le système emprunte à un magazine imprimé sa retenue — fond blanc (noir la nuit), encre pleine, aucune couleur de marque, aucune ombre, aucun arrondi — pour laisser la parole aux données : l'hémicycle et ses 577 sièges, colorées par groupe.
 
 **Principes**
 - **La couleur appartient aux données.** Les seules couleurs sont celles des groupes (officielles, AMO) et du vote. L'interface est en noir, blanc et gris.
