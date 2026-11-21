@@ -35,7 +35,7 @@ longueurs entre parenthèses sont comptées en caractères Unicode par
 Modifiable sans nouvelle version.
 
 ```text
-Chaque décision de l'Assemblée nationale en bref : l'hémicycle aux 574 places, qui a voté quoi et pourquoi. Sans compte, sans publicité.
+Chaque décision de l'Assemblée nationale en bref : l'hémicycle aux 577 sièges, qui a voté quoi et pourquoi. Sans compte, sans publicité.
 ```
 
 ## Description (3015) [4000]
@@ -47,7 +47,7 @@ L'ACCUEIL EN CARTES
 Chaque jour, des cartes à faire défiler : le prochain vote solennel inscrit à l'ordre du jour, puis les dernières décisions, chacune avec son résultat et son hémicycle. Le bouton « Toutes les décisions » ouvre la liste complète, jour par jour, filtrable : textes, résolutions, motions.
 
 POUR CHAQUE DÉCISION
-• L'hémicycle aux 574 places : chaque député à sa place réelle, à la couleur officielle de son groupe, et son vote d'un coup d'œil (rond plein pour, anneau contre, petit point abstention)
+• L'hémicycle aux 577 sièges : chaque député à sa place réelle, à la couleur officielle de son groupe, et son vote d'un coup d'œil (rond plein pour, anneau contre, petit point abstention)
 • Le résultat : adopté ou rejeté, avec le décompte des voix pour les scrutins publics
 • Un titre clair et une ligne d'explication
 • Ce que prévoit le texte, en quelques points
@@ -98,7 +98,7 @@ qu'à partir de la deuxième version : s'il n'apparaît pas pour la 1.0.0, rien
 à coller (même texte que la note de version Google Play).
 
 ```text
-Première version : les décisions de l'Assemblée nationale en bref. Accueil en cartes, hémicycle aux 574 places aux couleurs des groupes, « Qui a voté quoi » et les arguments de chaque groupe, écran « En débat », notifications des votes importants, widgets et apparence jour ou nuit.
+Première version : les décisions de l'Assemblée nationale en bref. Accueil en cartes, hémicycle aux 577 sièges aux couleurs des groupes, « Qui a voté quoi » et les arguments de chaque groupe, écran « En débat », notifications des votes importants, widgets et apparence jour ou nuit.
 ```
 
 ## Captures
@@ -113,8 +113,8 @@ Ordre de dépôt (captures du 25 octobre 2026, simulateur iOS, barre d'état
 
 1. `1-accueil` : l'accueil en cartes, carte d'une décision adoptée et son
    hémicycle (jour).
-2. `2-detail-adopte` : détail d'une décision adoptée, hémicycle aux 574
-   places et décompte (jour).
+2. `2-detail-adopte` : détail d'une décision adoptée, hémicycle et décompte
+   (jour).
 3. `3-qui-a-vote-quoi` : « Qui a voté quoi », groupes rangés par position
    (jour).
 4. `4-en-debat` : l'écran « En débat » du texte en séance (jour).
