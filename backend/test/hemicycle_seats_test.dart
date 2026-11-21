@@ -218,6 +218,40 @@ void main() {
       expect(suppleant.sitsOn('2026-07-09'), isTrue);
     });
 
+    test('député parti le jour du scrutin : plus compté dans l\'effectif', () {
+      // Le 19/11/2026, les scrutins de l'après-midi comptaient 23 LIOT, ceux
+      // du matin 24 : le mandat de PA1592 finit ce jour-là (« effectif de
+      // PO845485 : 23 membres, 24 sièges »). Ici, un LIOT de plus que
+      // l'effectif du 8706 (13/10), sur un siège libre.
+      final free = hemicyclePlanX.keys.firstWhere(
+        (p) => hemicycleSeats(fixture(8706), groups).every((s) => s.place != p),
+      );
+      GroupDirectory withLeaver(String end) {
+        final json = jsonDecode(jsonEncode(groups.toJson())) as Map;
+        (json['seats'] as Map)['PA0'] = DeputySeat(
+          place: free,
+          terms: [(start: '2024-07-08', end: end)],
+          groups: [(group: 'PO845485', start: '2024-07-19', end: end)],
+        ).toJson();
+        return GroupDirectory.fromJson(json);
+      }
+
+      final seats = hemicycleSeats(fixture(8706), withLeaver('2026-10-13'));
+      expect(seats, hasLength(574));
+      expect(seats.map((s) => s.place), isNot(contains(free)));
+      // Parti plus tard, il siège encore : l'écart reste une incohérence.
+      expect(
+        () => hemicycleSeats(fixture(8706), withLeaver('2026-10-20')),
+        throwsA(
+          isA<SeatsMismatch>().having(
+            (e) => e.message,
+            'message',
+            contains('effectif de PO845485'),
+          ),
+        ),
+      );
+    });
+
     test('député parti sans successeur : siège relevé dans ses votes', () {
       // PA718884, élue au Sénat le 30/09/2026 : plus de siège dans
       // l'archive, pas encore de successeur.
