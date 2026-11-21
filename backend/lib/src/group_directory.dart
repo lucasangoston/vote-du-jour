@@ -89,6 +89,10 @@ class DeputySeat {
   /// Siège-t-il le [day] (`AAAA-MM-JJ`) ?
   bool sitsOn(String day) => terms.any((t) => _covers(t.start, t.end, day));
 
+  /// Le [day] est-il le dernier jour d'un de ses mandats (démission, décès,
+  /// entrée au Gouvernement) ?
+  bool leavesOn(String day) => terms.any((t) => t.end == day);
+
   /// Premier jour du mandat en cours le [day], pour départager deux députés
   /// sur un même siège le jour d'une passation.
   String startOn(String day) =>
