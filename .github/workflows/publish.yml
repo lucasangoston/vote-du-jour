@@ -14,6 +14,8 @@ on:
 
 permissions:
   contents: read
+  # Issue « sièges manquants ».
+  issues: write
 
 concurrency:
   group: publish
@@ -49,7 +51,32 @@ jobs:
           # Le passage en direct (live.yml) n'en envoie jamais : seules les
           # décisions confirmées sont notifiées.
           FCM_SERVICE_ACCOUNT: ${{ secrets.FCM_SERVICE_ACCOUNT }}
-        run: dart run bin/vote_job.dart --store=r2 ${{ inputs.force && '--force' || '' }}
+        run: dart run bin/vote_job.dart --store=r2 --seats-report="$RUNNER_TEMP/seats.md" ${{ inputs.force && '--force' || '' }}
+      # Une seule issue par incident, au lieu d'un passage en échec toutes
+      # les heures : la publication a réussi, seuls des sièges manquent.
+      - name: Signalement des sièges manquants
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -s "$RUNNER_TEMP/seats.md" ] || { echo "aucun siège manquant"; exit 0; }
+          gh label create sieges --color D93F0B \
+            --description "Décisions publiées sans sièges" 2>/dev/null || true
+          printf '\n\nExécution : %s\n' "$RUN_URL" >> "$RUNNER_TEMP/seats.md"
+          open=$(gh issue list --label sieges --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ -z "$open" ]; then
+            gh issue create --title "Décisions publiées sans sièges" \
+              --label sieges --body-file "$RUNNER_TEMP/seats.md"
+          else
+            # Déjà signalé : un commentaire seulement si la liste a changé.
+            ids=$(head -n 1 "$RUNNER_TEMP/seats.md")
+            if gh issue view "$open" --json body,comments \
+              --jq '[.body, .comments[].body] | join("\n")' | grep -qF -- "$ids"; then
+              echo "déjà signalé dans l'issue #$open"
+            else
+              gh issue comment "$open" --body-file "$RUNNER_TEMP/seats.md"
+            fi
+          fi
       - name: Vérification de la lecture publique
         env:
           R2_PUBLIC_BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}

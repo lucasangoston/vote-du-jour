@@ -87,6 +87,13 @@ Future<void> main(List<String> arguments) async {
       'force',
       help: "Retraite les jeux de données même s'ils n'ont pas changé.",
     )
+    ..addOption(
+      'seats-report',
+      help:
+          'Fichier où écrire les décisions publiées sans sièges depuis plus '
+          'de ${JobPublished.seatsGracePeriod.inDays} jours (corps de '
+          "l'issue ouverte par publish.yml) ; non écrit s'il n'y en a pas.",
+    )
     ..addFlag('help', abbr: 'h', negatable: false);
 
   final ArgResults args;
@@ -164,9 +171,10 @@ Future<void> main(List<String> arguments) async {
       }
     }
   }
-  // Une décision sans sièges depuis plus de deux jours fait échouer
-  // l'exécution, une fois tout publié : sinon l'avertissement passe inaperçu
-  // dans une exécution réussie.
+  // Une décision sans sièges depuis plus de deux jours est signalée à part
+  // (`--seats-report`, une issue dans publish.yml) : l'avertissement passe
+  // inaperçu dans une exécution réussie, et un échec à chaque passage noie
+  // les vraies pannes de publication.
   final stuck = outcome is JobPublished
       ? outcome.stuckWithoutSeats(DateTime.now().toUtc())
       : const <DecisionSummary>[];
@@ -189,10 +197,16 @@ Future<void> main(List<String> arguments) async {
         '${stuck.length} décisions publiées sans sièges depuis plus de '
         '${JobPublished.seatsGracePeriod.inDays} jours : '
         '${stuck.map((d) => d.id).join(', ')} (voir « sièges incohérents »)';
-    stdout.writeln(github ? '::error title=Sièges::$message' : message);
+    stdout.writeln(github ? '::warning title=Sièges::$message' : message);
+    if (args.option('seats-report') case final report?) {
+      final mismatches = (outcome as JobPublished).warnings.where(
+        (w) => w.startsWith('sièges incohérents'),
+      );
+      File(report).writeAsStringSync([message, '', ...mismatches].join('\n'));
+    }
   }
   // Le client HTTP par défaut garde des connexions ouvertes.
-  exit(stuck.isEmpty && failed.isEmpty ? 0 : 1);
+  exit(failed.isEmpty ? 0 : 1);
 }
 
 /// Ordre du jour des prochains jours (#52), après la publication : bloc
