@@ -74,12 +74,12 @@ components:
   segmented:       { border: "1px {colors.ink}", selected: "{colors.ink} plein, texte {colors.ground}", rounded: "{rounded.none}" }
   chip:            { border: "1px {colors.rule}", selected: "{colors.ink} plein", rounded: "{rounded.none}" }
   group-tile:      { backgroundColor: "{colors.surface}", height: 100px, selected: "bord intérieur 2px {colors.ink}", rounded: "{rounded.none}" }
-  hemicycle:       { seats: 574, note: "couleur du groupe, forme du vote ; voir Hémicycle" }
+  hemicycle:       { seats: 577, note: "un siège par député en exercice, vacants non dessinés ; couleur du groupe, forme du vote ; voir Hémicycle" }
 ---
 
 ## Vue d'ensemble
 
-Le Perchoir est d'abord un widget : la dernière décision de l'Assemblée, lue d'un coup d'œil sur l'écran d'accueil du téléphone. L'app est ce qu'on ouvre en le touchant. Le système emprunte à un magazine imprimé sa retenue — fond blanc (noir la nuit), encre pleine, aucune couleur de marque, aucune ombre, aucun arrondi — pour laisser la parole aux données : l'hémicycle et ses 574 places, colorées par groupe.
+Le Perchoir est d'abord un widget : la dernière décision de l'Assemblée, lue d'un coup d'œil sur l'écran d'accueil du téléphone. L'app est ce qu'on ouvre en le touchant. Le système emprunte à un magazine imprimé sa retenue — fond blanc (noir la nuit), encre pleine, aucune couleur de marque, aucune ombre, aucun arrondi — pour laisser la parole aux données : l'hémicycle et ses 577 sièges, colorées par groupe.
 
 **Principes**
 - **La couleur appartient aux données.** Les seules couleurs sont celles des groupes (officielles, AMO) et du vote. L'interface est en noir, blanc et gris.
@@ -114,7 +114,7 @@ Groupes : couleurs officielles inchangées. De jour, celles sous 3:1 sur blanc (
 
 ## Hémicycle
 
-- 574 places réelles (plan du site de l'Assemblée, `placeHemicycle` AMO, `numPlace` du vote nominatif). Dôme ouvert vers le bas, vu du perchoir : LFI-NFP à l'extrême gauche, RN à l'extrême droite.
+- Une place réelle par député en exercice, sur les 577 sièges de l'hémicycle : 574 le 13 octobre 2026, les sièges vacants ne sont pas dessinés (plan du site de l'Assemblée, `placeHemicycle` AMO, `numPlace` du vote nominatif). Dôme ouvert vers le bas, vu du perchoir : LFI-NFP à l'extrême gauche, RN à l'extrême droite.
 - Couleur = groupe ; forme = vote : rond plein pour, anneau contre, petit point abstention, siège à 28 % absent ou non-votant.
 - Le résultat s'écrit sous l'hémicycle, jamais dans le creux.
 - Texte en débat : tous les sièges en gris, même taille — personne n'a encore voté.

@@ -36,7 +36,7 @@ L'ACCUEIL EN CARTES
 Chaque jour, des cartes à faire défiler : le prochain vote solennel inscrit à l'ordre du jour, puis les dernières décisions, chacune avec son résultat et son hémicycle. Le bouton « Toutes les décisions » ouvre la liste complète, jour par jour, filtrable : textes, résolutions, motions.
 
 POUR CHAQUE DÉCISION
-• L'hémicycle aux 574 places : chaque député à sa place réelle, à la couleur officielle de son groupe, et son vote d'un coup d'œil (rond plein pour, anneau contre, petit point abstention)
+• L'hémicycle aux 577 sièges : chaque député à sa place réelle, à la couleur officielle de son groupe, et son vote d'un coup d'œil (rond plein pour, anneau contre, petit point abstention)
 • Le résultat : adopté ou rejeté, avec le décompte des voix pour les scrutins publics
 • Un titre clair et une ligne d'explication
 • Ce que prévoit le texte, en quelques points
@@ -77,7 +77,7 @@ Une question, une erreur dans un résumé ? lucasangostonpro@gmail.com
 les balises de langue proposées par la Console : `<fr-FR>` … `</fr-FR>`.
 
 ```text
-Première version : les décisions de l'Assemblée nationale en bref. Accueil en cartes, hémicycle aux 574 places aux couleurs des groupes, « Qui a voté quoi » et les arguments de chaque groupe, écran « En débat », notifications des votes importants, widgets et apparence jour ou nuit.
+Première version : les décisions de l'Assemblée nationale en bref. Accueil en cartes, hémicycle aux 577 sièges aux couleurs des groupes, « Qui a voté quoi » et les arguments de chaque groupe, écran « En débat », notifications des votes importants, widgets et apparence jour ou nuit.
 ```
 
 ## Éléments graphiques
