@@ -141,7 +141,9 @@ const groupChangeWindow = 15;
 /// L'effectif des groupes publié avec le scrutin (`nombreMembresGroupe`) ne
 /// suit pas toujours, au jour près, les dates de l'archive AMO : un absent qui
 /// a changé de groupe dans les [groupChangeWindow] jours autour du scrutin
-/// passe d'un groupe en trop à un groupe qui en manque.
+/// passe d'un groupe en trop à un groupe qui en manque. De même, un absent
+/// dont le mandat finit le jour du scrutin n'a plus de siège si son groupe en
+/// a un de trop.
 void _settleGroupChanges(
   Scrutin scrutin,
   Map<int, HemicycleSeat> seats,
@@ -170,6 +172,18 @@ void _settleGroupChanges(
     );
     count[seat.group] = count[seat.group]! - 1;
     count[other] = (count[other] ?? 0) + 1;
+  }
+  // Le dernier jour d'un mandat, l'effectif publié ne compte plus toujours
+  // le député (scrutins de l'après-midi d'un départ survenu dans la
+  // journée) : un absent qui quitte l'Assemblée ce jour-là libère son siège
+  // si son groupe en a un de trop.
+  for (final MapEntry(key: place, value: acteur) in absentAt.entries) {
+    final group = seats[place]!.group;
+    if (gap(group) <= 0 || !(groups.seats[acteur]?.leavesOn(day) ?? false)) {
+      continue;
+    }
+    seats.remove(place);
+    count[group] = count[group]! - 1;
   }
 }
 
