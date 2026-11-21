@@ -96,7 +96,7 @@ class JobPublished extends JobOutcome {
   final List<DecisionSummary> withoutSeats;
 
   /// Décisions de [withoutSeats] votées depuis plus de [seatsGracePeriod] à
-  /// [now] : le job les signale en échec.
+  /// [now] : le job les signale (issue GitHub, `--seats-report`).
   List<DecisionSummary> stuckWithoutSeats(DateTime now) => [
     for (final d in withoutSeats)
       if (now.difference(d.date) > seatsGracePeriod) d,

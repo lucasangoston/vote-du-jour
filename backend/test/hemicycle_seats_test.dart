@@ -515,7 +515,7 @@ void main() {
     expect((outcome as JobPublished).withoutSeats, isEmpty);
   });
 
-  test('décisions sans sièges : en échec après deux jours', () async {
+  test('décisions sans sièges : signalées après deux jours', () async {
     final dir = Directory.systemTemp.createTempSync('vote_job_seats');
     addTearDown(() => dir.deleteSync(recursive: true));
     final outcome = await runJob(
